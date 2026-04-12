@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `use_case_categories` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`categoryId` int NOT NULL,\n\tCONSTRAINT `use_case_categories_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `uc_cat_unique` UNIQUE(`useCaseId`,`categoryId`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3U88QiHqLLRvau3.3ccbfad70b32 --database jnjQ5dYouig6ULcXneQuMs --execute CREATE TABLE `use_case_categories` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`categoryId` int NOT NULL,\n\tCONSTRAINT `use_case_categories_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `uc_cat_unique` UNIQUE(`useCaseId`,`categoryId`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1619
+}

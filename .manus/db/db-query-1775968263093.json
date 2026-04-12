@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `categories` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(128) NOT NULL,\n\t`slug` varchar(128) NOT NULL,\n\t`type` enum('job_function','feature') NOT NULL,\n\t`sortOrder` int NOT NULL DEFAULT 0,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `categories_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `categories_slug_unique` UNIQUE(`slug`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3U88QiHqLLRvau3.3ccbfad70b32 --database jnjQ5dYouig6ULcXneQuMs --execute CREATE TABLE `categories` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`name` varchar(128) NOT NULL,\n\t`slug` varchar(128) NOT NULL,\n\t`type` enum('job_function','feature') NOT NULL,\n\t`sortOrder` int NOT NULL DEFAULT 0,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `categories_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `categories_slug_unique` UNIQUE(`slug`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1607
+}

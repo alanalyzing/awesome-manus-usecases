@@ -1,0 +1,55 @@
+# Project TODO
+
+- [x] Database schema: use_cases, categories, use_case_categories, screenshots, upvotes tables
+- [x] Backend API: CRUD for use cases (list, get by id/slug, create, update, delete)
+- [x] Backend API: Category listing (by job function, by feature)
+- [x] Backend API: Upvote toggle (one per user per use case)
+- [x] Backend API: Screenshot upload to S3 (max 5 files, 5MB each, PNG/JPG/WebP/GIF)
+- [x] Backend API: Admin moderation queue (pending/approved/rejected)
+- [x] Backend API: Admin approve/reject with category editing and highlight toggle
+- [x] Backend API: Owner notification on new submission
+- [x] Backend API: View count tracking
+- [x] Backend API: Search, filter by category, sort (popular/newest/most viewed)
+- [x] Frontend: Two-panel layout with collapsible left sidebar
+- [x] Frontend: Sidebar with Job Function/Industry categories
+- [x] Frontend: Sidebar with Feature categories
+- [x] Frontend: Sidebar "Only Possible with Manus" highlight section
+- [x] Frontend: Sidebar social links (LinkedIn, X, YouTube, Instagram, TikTok)
+- [x] Frontend: Gallery grid with interactive use case cards
+- [x] Frontend: Card design (title, tags, thumbnail, description, date, upvote count)
+- [x] Frontend: Detail view modal with full content
+- [x] Frontend: Screenshot gallery in detail modal
+- [x] Frontend: Session replay embed/link in detail modal
+- [x] Frontend: Share functionality in detail modal
+- [x] Frontend: Related use cases in detail modal
+- [x] Frontend: Global search bar
+- [x] Frontend: Multi-select category filtering
+- [x] Frontend: Sort options (Most Popular, Newest, Most Viewed)
+- [x] Frontend: Empty states per category
+- [x] Frontend: User submission form with all required fields
+- [x] Frontend: S3-backed screenshot upload in submission form
+- [x] Frontend: Submission confirmation page
+- [x] Frontend: Admin dashboard with moderation queue
+- [x] Frontend: Admin approve/reject workflow with category editing
+- [x] Frontend: Admin highlight toggle ("Only Possible with Manus")
+- [x] Frontend: Admin analytics (submission count, approval rate, top categories)
+- [x] i18n: English
+- [x] i18n: Simplified Chinese
+- [x] i18n: Japanese
+- [x] i18n: Korean
+- [x] i18n: Brazilian Portuguese
+- [x] Theme: Light mode with Manus brand colors
+- [x] Theme: Dark mode with Manus brand colors
+- [x] Theme: Libre Baskerville + DM Sans + Noto Serif/Sans typography
+- [x] Theme: Manus logo and "Made with Manus" badge
+- [x] Accessibility: Keyboard navigation and screen reader support
+- [x] SEO: Unique URLs per use case with Open Graph meta tags
+- [x] Responsive: Desktop-first with mobile-friendly layout
+- [x] Fix: Add Manus logo/glyph SVG asset and proper Made with Manus badge
+- [x] Fix: Add mobile sidebar drawer for small screens
+- [x] Fix: Enforce consent checkbox as required before submission
+- [x] Fix: Add top-categories analytics to admin dashboard
+- [x] Fix: Write vitest tests for backend routes
+- [x] Fix: Add dynamic per-use-case OG meta tags (title, description, image) via server-side rendering
+- [x] Fix: Add detail modal overlay from gallery cards with focus trap, ESC close, body scroll lock
+- [x] Fix: Add skip-to-content link and focus management for accessibility

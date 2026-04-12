@@ -4,36 +4,43 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { I18nProvider } from "./contexts/I18nContext";
 import Home from "./pages/Home";
+import SubmitPage from "./pages/Submit";
+import SubmitSuccessPage from "./pages/SubmitSuccess";
+import AdminPage from "./pages/Admin";
+import UseCaseDetailPage from "./pages/UseCaseDetail";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path="/" component={Home} />
+      <Route path="/submit" component={SubmitPage} />
+      <Route path="/submit/success" component={SubmitSuccessPage} />
+      <Route path="/admin" component={AdminPage} />
+      <Route path="/use-case/:slug" component={UseCaseDetailPage} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+      <ThemeProvider defaultTheme="light" switchable>
+        <I18nProvider>
+          <TooltipProvider>
+            <Toaster />
+            <a
+              href="#main-content"
+              className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-primary focus:text-primary-foreground focus:px-4 focus:py-2 focus:rounded-md focus:text-sm focus:font-medium focus:shadow-lg"
+            >
+              Skip to main content
+            </a>
+            <Router />
+          </TooltipProvider>
+        </I18nProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

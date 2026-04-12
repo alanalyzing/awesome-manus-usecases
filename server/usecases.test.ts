@@ -1,0 +1,196 @@
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { appRouter } from "./routers";
+import { COOKIE_NAME } from "../shared/const";
+import type { TrpcContext } from "./_core/context";
+
+type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
+
+function createPublicContext(): TrpcContext {
+  return {
+    user: null,
+    req: {
+      protocol: "https",
+      headers: {},
+    } as TrpcContext["req"],
+    res: {
+      clearCookie: vi.fn(),
+    } as unknown as TrpcContext["res"],
+  };
+}
+
+function createAuthContext(role: "user" | "admin" = "user"): TrpcContext {
+  const user: AuthenticatedUser = {
+    id: 1,
+    openId: "test-user-open-id",
+    email: "test@example.com",
+    name: "Test User",
+    loginMethod: "manus",
+    role,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastSignedIn: new Date(),
+  };
+
+  return {
+    user,
+    req: {
+      protocol: "https",
+      headers: {},
+    } as TrpcContext["req"],
+    res: {
+      clearCookie: vi.fn(),
+    } as unknown as TrpcContext["res"],
+  };
+}
+
+describe("categories.list", () => {
+  it("returns an array of categories", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.categories.list();
+    expect(Array.isArray(result)).toBe(true);
+    // Each category should have id, name, slug, type
+    if (result.length > 0) {
+      expect(result[0]).toHaveProperty("id");
+      expect(result[0]).toHaveProperty("name");
+      expect(result[0]).toHaveProperty("slug");
+      expect(result[0]).toHaveProperty("type");
+    }
+  });
+
+  it("returns categories by type", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const jobFunctions = await caller.categories.byType({ type: "job_function" });
+    expect(Array.isArray(jobFunctions)).toBe(true);
+    for (const cat of jobFunctions) {
+      expect(cat.type).toBe("job_function");
+    }
+    const features = await caller.categories.byType({ type: "feature" });
+    expect(Array.isArray(features)).toBe(true);
+    for (const cat of features) {
+      expect(cat.type).toBe("feature");
+    }
+  });
+});
+
+describe("useCases.list", () => {
+  it("returns paginated use cases with items and total", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.useCases.list({ limit: 10, offset: 0 });
+    expect(result).toHaveProperty("items");
+    expect(result).toHaveProperty("total");
+    expect(Array.isArray(result.items)).toBe(true);
+    expect(typeof result.total).toBe("number");
+  });
+
+  it("supports search parameter", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.useCases.list({ search: "nonexistent-query-xyz-123" });
+    expect(result.items).toHaveLength(0);
+  });
+
+  it("supports highlight filter", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.useCases.list({ highlightOnly: true });
+    expect(Array.isArray(result.items)).toBe(true);
+    for (const uc of result.items) {
+      expect(uc.isHighlight).toBe(true);
+    }
+  });
+
+  it("supports sort options", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    // Should not throw for any sort option
+    await expect(caller.useCases.list({ sort: "popular" })).resolves.toBeDefined();
+    await expect(caller.useCases.list({ sort: "newest" })).resolves.toBeDefined();
+    await expect(caller.useCases.list({ sort: "views" })).resolves.toBeDefined();
+  });
+});
+
+describe("useCases.toggleUpvote", () => {
+  it("requires authentication", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.useCases.toggleUpvote({ useCaseId: 1 })).rejects.toThrow();
+  });
+});
+
+describe("useCases.submit", () => {
+  it("requires authentication", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.useCases.submit({
+        title: "Test",
+        description: "Test description",
+        categoryIds: [1],
+        screenshotUrls: [{ url: "https://example.com/img.png", fileKey: "test/key.png" }],
+        language: "en",
+        consentToContact: false,
+      })
+    ).rejects.toThrow();
+  });
+});
+
+describe("admin.stats", () => {
+  it("requires admin role", async () => {
+    const ctx = createAuthContext("user");
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.admin.stats()).rejects.toThrow();
+  });
+
+  it("returns stats for admin users", async () => {
+    const ctx = createAuthContext("admin");
+    const caller = appRouter.createCaller(ctx);
+    const stats = await caller.admin.stats();
+    expect(stats).toHaveProperty("totalSubmissions");
+    expect(stats).toHaveProperty("pendingCount");
+    expect(stats).toHaveProperty("approvedCount");
+    expect(stats).toHaveProperty("rejectedCount");
+    expect(stats).toHaveProperty("totalUpvotes");
+    expect(stats).toHaveProperty("totalViews");
+    expect(stats).toHaveProperty("topCategories");
+    expect(Array.isArray(stats.topCategories)).toBe(true);
+  });
+});
+
+describe("admin.submissions", () => {
+  it("requires admin role", async () => {
+    const ctx = createAuthContext("user");
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.admin.submissions({})).rejects.toThrow();
+  });
+
+  it("returns submissions for admin users", async () => {
+    const ctx = createAuthContext("admin");
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.admin.submissions({});
+    expect(result).toHaveProperty("items");
+    expect(result).toHaveProperty("total");
+    expect(Array.isArray(result.items)).toBe(true);
+  });
+
+  it("supports status filter", async () => {
+    const ctx = createAuthContext("admin");
+    const caller = appRouter.createCaller(ctx);
+    const pending = await caller.admin.submissions({ status: "pending" });
+    expect(Array.isArray(pending.items)).toBe(true);
+    for (const item of pending.items) {
+      expect(item.status).toBe("pending");
+    }
+  });
+});
+
+describe("auth.logout", () => {
+  it("clears the session cookie and reports success", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.auth.logout();
+    expect(result).toEqual({ success: true });
+  });
+});

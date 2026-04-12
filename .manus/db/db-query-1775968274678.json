@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `upvotes` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`userId` int NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `upvotes_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `upvote_unique` UNIQUE(`useCaseId`,`userId`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3U88QiHqLLRvau3.3ccbfad70b32 --database jnjQ5dYouig6ULcXneQuMs --execute CREATE TABLE `upvotes` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`userId` int NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `upvotes_id` PRIMARY KEY(`id`),\n\tCONSTRAINT `upvote_unique` UNIQUE(`useCaseId`,`userId`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1649
+}
