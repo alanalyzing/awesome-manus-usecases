@@ -3,7 +3,8 @@ import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, ExternalLink, X, Trophy, ArrowUp, BookOpen } from "lucide-react";
+import { Sparkles, ExternalLink, X, Trophy, ArrowUp, BookOpen, Info } from "lucide-react";
+import { Link } from "wouter";
 import { MadeWithManusBadge } from "./ManusLogo";
 
 const LEARN_MORE_LINKS = [
@@ -219,6 +220,15 @@ export function MobileSidebar({
                 Learn More
               </h3>
               <div className="space-y-0.5">
+                <Link href="/about">
+                  <span
+                    onClick={onClose}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors cursor-pointer"
+                  >
+                    <Info size={13} />
+                    About This Portal
+                  </span>
+                </Link>
                 {LEARN_MORE_LINKS.map((link) => (
                   <a
                     key={link.name}

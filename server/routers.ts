@@ -41,7 +41,7 @@ import {
   getContributorLeaderboard,
   getPendingWithoutAiScore,
 } from "./db";
-import { useCases } from "../drizzle/schema";
+import { useCases, users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 /** Derive a stable visitor key from IP + User-Agent for anonymous upvote dedup */
@@ -247,17 +247,28 @@ export const appRouter = router({
           details: JSON.stringify({ categoryIds: input.categoryIds, isHighlight: input.isHighlight }),
         });
 
-        // Notify submitter
+        // Notify submitter (in-app + owner notification)
         const db = await getDb();
         if (db) {
           const uc = await db.select().from(useCases).where(eq(useCases.id, input.id)).limit(1);
           if (uc.length > 0) {
+            const submitter = await db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, uc[0].submitterId)).limit(1);
+            const submitterName = submitter[0]?.name || "Anonymous";
+            const submitterEmail = submitter[0]?.email || "no email";
+
+            // In-app notification
             await createSubmitterNotification({
               useCaseId: input.id,
               userId: uc[0].submitterId,
               type: "approved",
               message: `Your use case "${uc[0].title}" has been approved and is now live in the gallery!`,
             });
+
+            // Owner notification (email digest)
+            await notifyOwner({
+              title: `Use Case Approved: ${uc[0].title}`,
+              content: `Admin ${ctx.user.name || "Unknown"} approved the use case "${uc[0].title}" submitted by ${submitterName} (${submitterEmail}).\n\nThe use case is now live in the gallery.`,
+            }).catch(() => {}); // Non-blocking
           }
         }
 
@@ -280,17 +291,28 @@ export const appRouter = router({
           details: JSON.stringify({ reason: input.reason }),
         });
 
-        // Notify submitter
+        // Notify submitter (in-app + owner notification)
         const db = await getDb();
         if (db) {
           const uc = await db.select().from(useCases).where(eq(useCases.id, input.id)).limit(1);
           if (uc.length > 0) {
+            const submitter = await db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, uc[0].submitterId)).limit(1);
+            const submitterName = submitter[0]?.name || "Anonymous";
+            const submitterEmail = submitter[0]?.email || "no email";
+
+            // In-app notification
             await createSubmitterNotification({
               useCaseId: input.id,
               userId: uc[0].submitterId,
               type: "rejected",
               message: `Your use case "${uc[0].title}" was not approved. Reason: ${input.reason}`,
             });
+
+            // Owner notification (email digest)
+            await notifyOwner({
+              title: `Use Case Rejected: ${uc[0].title}`,
+              content: `Admin ${ctx.user.name || "Unknown"} rejected the use case "${uc[0].title}" submitted by ${submitterName} (${submitterEmail}).\n\nReason: ${input.reason}`,
+            }).catch(() => {}); // Non-blocking
           }
         }
 

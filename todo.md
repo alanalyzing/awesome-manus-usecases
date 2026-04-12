@@ -102,3 +102,5 @@
 - [x] Feature: Rich text / Markdown support in descriptions — allow submitters to use basic formatting (bold, lists, links) and render Markdown in use case detail pages and gallery cards
 - [x] Feature: Learn More section in left sidebar — add Team Plan (https://manus.im/team) and Trust Center (https://trust.manus.im/) links
 - [x] Bug: Sidebar category items retain highlight/shade after being clicked even when no longer the active filter — only the currently selected category should be highlighted
+- [x] Feature: Email notifications for contributors — owner notification on approve/reject with submitter details; in-app notifications already existed
+- [x] Feature: About page — introduce what the portal does, what to expect, that it's built with Manus; linked from sidebar Learn More section

@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { MarkdownContent, stripMarkdown } from "@/components/MarkdownContent";
 import { getLoginUrl } from "@/const";
 import { useI18n } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc";
@@ -235,8 +236,8 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
                 )}
 
                 {/* Description */}
-                <div className="prose prose-sm max-w-none mb-6 text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                  {uc.description}
+                <div className="max-w-none mb-6 text-foreground/90 leading-relaxed">
+                  <MarkdownContent content={uc.description ?? ""} />
                 </div>
 
                 {/* Action Links */}
@@ -289,7 +290,7 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
                                 {related.title}
                               </h4>
                               <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                                {related.description}
+                                {stripMarkdown(related.description ?? "")}
                               </p>
                             </div>
                           </button>
