@@ -14,6 +14,7 @@ import MySubmissionsPage from "./pages/MySubmissions";
 import AboutPage from "./pages/About";
 import ProfileSetupPage from "./pages/ProfileSetup";
 import ProfilePage from "./pages/Profile";
+import LeaderboardPage from "./pages/Leaderboard";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/about" component={AboutPage} />
       <Route path="/profile/setup" component={ProfileSetupPage} />
       <Route path="/profile/:username" component={ProfilePage} />
+      <Route path="/leaderboard" component={LeaderboardPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

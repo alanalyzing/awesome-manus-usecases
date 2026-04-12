@@ -712,9 +712,12 @@ Return your evaluation as JSON.`;
 
     // ─── Contributor Leaderboard ────────────────────────────────
     contributorLeaderboard: publicProcedure
-      .input(z.object({ limit: z.number().min(1).max(50).optional() }).optional())
+      .input(z.object({
+        limit: z.number().min(1).max(50).optional(),
+        sortBy: z.enum(["usecases", "likes"]).optional(),
+      }).optional())
       .query(async ({ input }) => {
-        return getContributorLeaderboard(input?.limit ?? 10);
+        return getContributorLeaderboard(input?.limit ?? 10, input?.sortBy ?? "usecases");
       }),
 
     // ─── Bulk AI Scan ───────────────────────────────────────────

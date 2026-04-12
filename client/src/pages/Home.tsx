@@ -268,6 +268,9 @@ function LeaderboardWidget() {
           </Link>
         ))}
       </div>
+      <Link href="/leaderboard" className="block mt-2 px-2">
+        <span className="text-[11px] text-primary hover:underline">View full leaderboard →</span>
+      </Link>
     </div>
   );
 }

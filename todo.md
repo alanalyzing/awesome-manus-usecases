@@ -148,3 +148,7 @@
 - [x] Fix: Mobile header title should be left-aligned, not centered
 - [x] UX: Improve profile page discoverability — make it clear how users find their profile after creating it
 - [x] UX: Add URL prefixes (linkedin.com/in/, x.com/, instagram.com/) to social handle inputs so users know to only enter the handle part
+- [x] Feature: Dedicated leaderboard page showing top users by number of use cases and likes received
+- [x] Backend: Leaderboard query supports sortBy parameter (usecases or likes)
+- [x] Frontend: Leaderboard page with toggle for sorting by use cases vs likes, medal ranks, avatars
+- [x] Navigation: 'View full leaderboard' link in desktop sidebar and mobile sidebar widgets

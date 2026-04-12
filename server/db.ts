@@ -973,9 +973,16 @@ export interface LeaderboardEntry {
   totalUpvotes: number;
 }
 
-export async function getContributorLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
+export async function getContributorLeaderboard(
+  limit = 10,
+  sortBy: "usecases" | "likes" = "usecases"
+): Promise<LeaderboardEntry[]> {
   const db = await getDb();
   if (!db) return [];
+
+  const orderClause = sortBy === "likes"
+    ? sql`ORDER BY totalUpvotes DESC, approvedCount DESC`
+    : sql`ORDER BY approvedCount DESC, totalUpvotes DESC`;
 
   const rows: any[] = await db.execute(sql`
     SELECT
@@ -989,7 +996,7 @@ export async function getContributorLeaderboard(limit = 10): Promise<Leaderboard
     INNER JOIN use_cases uc ON uc.submitterId = u.id AND uc.status = 'approved'
     LEFT JOIN user_profiles up ON up.userId = u.id
     GROUP BY u.id, u.name, up.username, up.avatarUrl
-    ORDER BY approvedCount DESC, totalUpvotes DESC
+    ${orderClause}
     LIMIT ${limit}
   `);
 
