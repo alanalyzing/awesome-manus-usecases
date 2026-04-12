@@ -5,41 +5,64 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
-import { getUseCaseBySlug } from "../db";
+import { getUseCaseMetaBySlug } from "../db";
+
+/** Build an absolute site URL from the request or fallback to known domain */
+function getSiteOrigin(req?: express.Request): string {
+  if (req) {
+    const proto = req.headers["x-forwarded-proto"] || req.protocol || "https";
+    const host = req.headers["x-forwarded-host"] || req.headers.host;
+    if (host) return `${proto}://${host}`;
+  }
+  return "https://manuslib-jnjq5dyo.manus.space";
+}
 
 /** Inject dynamic OG meta tags for /use-case/:slug pages */
-async function injectOgMeta(html: string, url: string): Promise<string> {
+async function injectOgMeta(html: string, url: string, req?: express.Request): Promise<string> {
   const match = url.match(/^\/use-case\/([^?#]+)/);
   if (!match) return html;
 
   try {
     const slug = decodeURIComponent(match[1]);
-    const uc = await getUseCaseBySlug(slug);
+    // Pass no visitorKey to avoid counting bot crawls as views
+    const uc = await getUseCaseMetaBySlug(slug);
     if (!uc) return html;
 
+    const origin = getSiteOrigin(req);
     const title = uc.title.replace(/"/g, '&quot;').replace(/</g, '&lt;');
-    const desc = (uc.description || '').substring(0, 200).replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const rawDesc = (uc.description || '').replace(/\n/g, ' ').substring(0, 200);
+    const desc = rawDesc.replace(/"/g, '&quot;').replace(/</g, '&lt;');
     const image = uc.screenshots?.[0]?.url || '';
+    const canonicalUrl = `${origin}/use-case/${encodeURIComponent(slug)}`;
+    const siteName = "Awesome Manus Use Cases";
 
     const ogTags = [
-      `<meta property="og:title" content="${title} — Awesome Manus Use Cases" />`,
+      // Open Graph
+      `<meta property="og:title" content="${title} — ${siteName}" />`,
       `<meta property="og:description" content="${desc}" />`,
       `<meta property="og:type" content="article" />`,
-      `<meta property="og:url" content="/use-case/${encodeURIComponent(slug)}" />`,
+      `<meta property="og:url" content="${canonicalUrl}" />`,
+      `<meta property="og:site_name" content="${siteName}" />`,
       image ? `<meta property="og:image" content="${image}" />` : '',
+      image ? `<meta property="og:image:width" content="1200" />` : '',
+      image ? `<meta property="og:image:height" content="630" />` : '',
+      // Twitter Card
       `<meta name="twitter:card" content="summary_large_image" />`,
       `<meta name="twitter:title" content="${title}" />`,
       `<meta name="twitter:description" content="${desc}" />`,
       image ? `<meta name="twitter:image" content="${image}" />` : '',
-      `<link rel="canonical" href="/use-case/${encodeURIComponent(slug)}" />`,
-      `<title>${title} — Awesome Manus Use Cases</title>`,
+      // Standard meta
+      `<meta name="description" content="${desc}" />`,
+      // Canonical
+      `<link rel="canonical" href="${canonicalUrl}" />`,
+      // Title
+      `<title>${title} — ${siteName}</title>`,
     ].filter(Boolean).join('\n    ');
 
-    // Replace existing static OG tags
-    html = html.replace(/<meta property="og:title"[^>]*>/g, '');
-    html = html.replace(/<meta property="og:description"[^>]*>/g, '');
-    html = html.replace(/<meta property="og:type"[^>]*>/g, '');
-    html = html.replace(/<meta name="twitter:card"[^>]*>/g, '');
+    // Strip all existing static OG / Twitter / meta description / title tags
+    html = html.replace(/<meta property="og:[^"]*"[^>]*>/g, '');
+    html = html.replace(/<meta name="twitter:[^"]*"[^>]*>/g, '');
+    html = html.replace(/<meta name="description"[^>]*>/g, '');
     html = html.replace(/<title>[^<]*<\/title>/, '');
 
     // Insert dynamic tags before </head>
@@ -83,7 +106,7 @@ export async function setupVite(app: Express, server: Server) {
         `src="/src/main.tsx?v=${nanoid()}"`
       );
       let page = await vite.transformIndexHtml(url, template);
-      page = await injectOgMeta(page, url);
+      page = await injectOgMeta(page, url, req);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
@@ -108,7 +131,7 @@ export function serveStatic(app: Express) {
   // fall through to index.html if the file doesn't exist
   app.use("*", async (_req, res) => {
     let html = await fs.promises.readFile(path.resolve(distPath, "index.html"), "utf-8");
-    html = await injectOgMeta(html, _req.originalUrl);
+    html = await injectOgMeta(html, _req.originalUrl, _req);
     res.status(200).set({ "Content-Type": "text/html" }).end(html);
   });
 }

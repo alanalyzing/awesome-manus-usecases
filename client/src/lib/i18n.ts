@@ -83,6 +83,23 @@ type TranslationKeys = {
   "submit.success": string;
   "submit.successDesc": string;
   "submit.backToGallery": string;
+  // Submit guidelines
+  "submit.guidelinesTitle": string;
+  "submit.guidelinesIntro": string;
+  "submit.guideStep1Title": string;
+  "submit.guideStep1Desc": string;
+  "submit.guideStep2Title": string;
+  "submit.guideStep2Desc": string;
+  "submit.guideStep3Title": string;
+  "submit.guideStep3Desc": string;
+  "submit.guideStep4Title": string;
+  "submit.guideStep4Desc": string;
+  "submit.titlePlaceholder": string;
+  "submit.descPlaceholder": string;
+  "submit.titleHint": string;
+  "submit.descHint": string;
+  "submit.sessionReplayHint": string;
+  "submit.deliverableHint": string;
   // Admin
   "admin.title": string;
   "admin.submissions": string;
@@ -176,6 +193,22 @@ const translations: Record<Locale, TranslationKeys> = {
     "submit.success": "Submission Received!",
     "submit.successDesc": "Your use case has been submitted and is under review. We'll notify you once it's approved.",
     "submit.backToGallery": "Back to Gallery",
+    "submit.guidelinesTitle": "Submission Guidelines",
+    "submit.guidelinesIntro": "Follow these steps to create a compelling submission that stands out.",
+    "submit.guideStep1Title": "Write a clear, specific title",
+    "submit.guideStep1Desc": "Describe what you built, not how. Good: \"Competitive Market Analysis Dashboard\". Avoid: \"My Manus Project\".",
+    "submit.guideStep2Title": "Tell the full story",
+    "submit.guideStep2Desc": "Explain the problem you solved, how Manus helped, and what the outcome was. Include specific results if possible.",
+    "submit.guideStep3Title": "Add compelling screenshots",
+    "submit.guideStep3Desc": "Show the final result first, then key steps. Crop to the relevant area — avoid full-desktop screenshots with toolbars.",
+    "submit.guideStep4Title": "Include links when possible",
+    "submit.guideStep4Desc": "A session replay or deliverable link lets reviewers verify your work and greatly increases approval chances.",
+    "submit.titlePlaceholder": "e.g. Quarterly Financial Report Automation",
+    "submit.descPlaceholder": "What problem did you solve?\nHow did Manus help?\nWhat was the outcome?",
+    "submit.titleHint": "Be specific — mention the deliverable or outcome (max 200 characters)",
+    "submit.descHint": "Tip: Describe the problem, your approach with Manus, and the results",
+    "submit.sessionReplayHint": "Link to the Manus session replay (strongly recommended)",
+    "submit.deliverableHint": "Link to the final output — website, document, dashboard, etc.",
     "admin.title": "Admin Dashboard",
     "admin.submissions": "Submissions",
     "admin.pending": "Pending",
@@ -265,6 +298,22 @@ const translations: Record<Locale, TranslationKeys> = {
     "submit.success": "提交成功！",
     "submit.successDesc": "您的用例已提交，正在审核中。审核通过后会通知您。",
     "submit.backToGallery": "返回用例库",
+    "submit.guidelinesTitle": "提交指南",
+    "submit.guidelinesIntro": "按照以下步骤创建引人注目的提交。",
+    "submit.guideStep1Title": "写一个清晰、具体的标题",
+    "submit.guideStep1Desc": "描述你构建了什么，而非如何构建。好的例子：\"竞争市场分析仪表盘\"。避免：\"我的 Manus 项目\"。",
+    "submit.guideStep2Title": "讲述完整的故事",
+    "submit.guideStep2Desc": "说明你解决了什么问题、Manus 如何帮助你、以及最终成果。尽量包含具体数据。",
+    "submit.guideStep3Title": "添加有说服力的截图",
+    "submit.guideStep3Desc": "先展示最终成果，再展示关键步骤。裁剪到相关区域，避免包含工具栏的全屏截图。",
+    "submit.guideStep4Title": "尽量包含链接",
+    "submit.guideStep4Desc": "会话回放或成果链接能让审核者验证你的工作，大大提高通过率。",
+    "submit.titlePlaceholder": "例如：季度财务报告自动化",
+    "submit.descPlaceholder": "你解决了什么问题？\nManus 如何帮助你？\n最终成果是什么？",
+    "submit.titleHint": "请具体说明——提及成果或产出（最多200字符）",
+    "submit.descHint": "提示：描述问题、你使用 Manus 的方法和结果",
+    "submit.sessionReplayHint": "Manus 会话回放链接（强烈推荐）",
+    "submit.deliverableHint": "最终产出链接——网站、文档、仪表盘等",
     "admin.title": "管理后台",
     "admin.submissions": "提交列表",
     "admin.pending": "待审核",
@@ -354,6 +403,22 @@ const translations: Record<Locale, TranslationKeys> = {
     "submit.success": "投稿完了！",
     "submit.successDesc": "ユースケースが投稿されました。審査後に通知いたします。",
     "submit.backToGallery": "ギャラリーに戻る",
+    "submit.guidelinesTitle": "投稿ガイドライン",
+    "submit.guidelinesIntro": "以下のステップに従って、魅力的な投稿を作成しましょう。",
+    "submit.guideStep1Title": "明確で具体的なタイトルを書く",
+    "submit.guideStep1Desc": "何を作ったかを説明しましょう。良い例：\"競合市場分析ダッシュボード\"。避ける例：\"私のManusプロジェクト\"。",
+    "submit.guideStep2Title": "ストーリー全体を伝える",
+    "submit.guideStep2Desc": "解決した問題、Manusがどう役立ったか、結果を説明しましょう。可能なら具体的な数値も含めてください。",
+    "submit.guideStep3Title": "説得力のあるスクリーンショットを追加",
+    "submit.guideStep3Desc": "最終結果を最初に、次に重要なステップを表示。関連部分にトリミングし、ツールバー付きのフルスクリーンは避けましょう。",
+    "submit.guideStep4Title": "可能な限りリンクを含める",
+    "submit.guideStep4Desc": "セッションリプレイや成果物のリンクがあると、審査者が確認でき、承認率が大幅に上がります。",
+    "submit.titlePlaceholder": "例：四半期財務レポート自動化",
+    "submit.descPlaceholder": "どんな問題を解決しましたか？\nManusがどう役立ちましたか？\n結果はどうでしたか？",
+    "submit.titleHint": "具体的に——成果物や結果を記載（最大200文字）",
+    "submit.descHint": "ヒント：問題、Manusでのアプローチ、結果を説明しましょう",
+    "submit.sessionReplayHint": "Manusセッションリプレイリンク（強く推奨）",
+    "submit.deliverableHint": "最終成果物のリンク——ウェブサイト、ドキュメント、ダッシュボードなど",
     "admin.title": "管理画面",
     "admin.submissions": "投稿一覧",
     "admin.pending": "審査待ち",
@@ -443,6 +508,22 @@ const translations: Record<Locale, TranslationKeys> = {
     "submit.success": "제출 완료!",
     "submit.successDesc": "유스케이스가 제출되었습니다. 검토 후 알려드리겠습니다.",
     "submit.backToGallery": "갤러리로 돌아가기",
+    "submit.guidelinesTitle": "제출 가이드라인",
+    "submit.guidelinesIntro": "다음 단계를 따라 매력적인 제출을 만들어 보세요.",
+    "submit.guideStep1Title": "명확하고 구체적인 제목 작성",
+    "submit.guideStep1Desc": "무엇을 만들었는지 설명하세요. 좋은 예: \"경쟁 시장 분석 대시보드\". 피해야 할 예: \"내 Manus 프로젝트\"",
+    "submit.guideStep2Title": "전체 스토리 전달",
+    "submit.guideStep2Desc": "해결한 문제, Manus가 어떻게 도움이 되었는지, 결과를 설명하세요. 가능하면 구체적인 수치를 포함하세요.",
+    "submit.guideStep3Title": "설득력 있는 스크린샷 추가",
+    "submit.guideStep3Desc": "최종 결과를 먼저 보여주고, 그 다음 핵심 단계를 보여주세요. 관련 부분만 자르고 툴바 포함 전체 화면은 피하세요.",
+    "submit.guideStep4Title": "가능한 한 링크 포함",
+    "submit.guideStep4Desc": "세션 리플레이나 결과물 링크가 있으면 검토자가 확인할 수 있어 승인률이 크게 높아집니다.",
+    "submit.titlePlaceholder": "예: 분기 재무 보고서 자동화",
+    "submit.descPlaceholder": "어떤 문제를 해결했나요?\nManus가 어떻게 도움이 되었나요?\n결과는 어떠나요?",
+    "submit.titleHint": "구체적으로——결과물이나 성과를 언급 (최대 200자)",
+    "submit.descHint": "팁: 문제, Manus를 활용한 방법, 결과를 설명하세요",
+    "submit.sessionReplayHint": "Manus 세션 리플레이 링크 (강력 권장)",
+    "submit.deliverableHint": "최종 결과물 링크——웹사이트, 문서, 대시보드 등",
     "admin.title": "관리자 대시보드",
     "admin.submissions": "제출 목록",
     "admin.pending": "대기 중",
@@ -532,6 +613,22 @@ const translations: Record<Locale, TranslationKeys> = {
     "submit.success": "Submissão Recebida!",
     "submit.successDesc": "Seu caso de uso foi enviado e está em revisão. Notificaremos quando for aprovado.",
     "submit.backToGallery": "Voltar à Galeria",
+    "submit.guidelinesTitle": "Diretrizes de Submissão",
+    "submit.guidelinesIntro": "Siga estes passos para criar uma submissão atraente.",
+    "submit.guideStep1Title": "Escreva um título claro e específico",
+    "submit.guideStep1Desc": "Descreva o que você construiu. Bom exemplo: \"Painel de Análise de Mercado Competitivo\". Evite: \"Meu Projeto Manus\".",
+    "submit.guideStep2Title": "Conte a história completa",
+    "submit.guideStep2Desc": "Explique o problema resolvido, como o Manus ajudou e qual foi o resultado. Inclua dados específicos se possível.",
+    "submit.guideStep3Title": "Adicione capturas de tela convincentes",
+    "submit.guideStep3Desc": "Mostre o resultado final primeiro, depois os passos-chave. Recorte para a área relevante — evite capturas de tela inteiras com barras de ferramentas.",
+    "submit.guideStep4Title": "Inclua links quando possível",
+    "submit.guideStep4Desc": "Um replay de sessão ou link de entrega permite que os revisores verifiquem seu trabalho e aumenta muito as chances de aprovação.",
+    "submit.titlePlaceholder": "ex: Automação de Relatório Financeiro Trimestral",
+    "submit.descPlaceholder": "Qual problema você resolveu?\nComo o Manus ajudou?\nQual foi o resultado?",
+    "submit.titleHint": "Seja específico — mencione a entrega ou resultado (máx. 200 caracteres)",
+    "submit.descHint": "Dica: Descreva o problema, sua abordagem com Manus e os resultados",
+    "submit.sessionReplayHint": "Link do replay da sessão Manus (fortemente recomendado)",
+    "submit.deliverableHint": "Link da entrega final — site, documento, painel, etc.",
     "admin.title": "Painel Admin",
     "admin.submissions": "Submissões",
     "admin.pending": "Pendente",

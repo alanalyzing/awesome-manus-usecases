@@ -14,7 +14,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  ArrowLeft,
+  Upload,
+  X,
+  Loader2,
+  Lightbulb,
+  PenLine,
+  BookOpen,
+  ImageIcon,
+  LinkIcon,
+} from "lucide-react";
 import { useState, useCallback, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
@@ -30,6 +46,52 @@ type UploadedFile = {
   name: string;
   preview: string;
 };
+
+const GUIDE_ICONS = [PenLine, BookOpen, ImageIcon, LinkIcon];
+
+function SubmissionGuidelines() {
+  const { t } = useI18n();
+  const steps = [
+    { title: t("submit.guideStep1Title"), desc: t("submit.guideStep1Desc") },
+    { title: t("submit.guideStep2Title"), desc: t("submit.guideStep2Desc") },
+    { title: t("submit.guideStep3Title"), desc: t("submit.guideStep3Desc") },
+    { title: t("submit.guideStep4Title"), desc: t("submit.guideStep4Desc") },
+  ];
+
+  return (
+    <div className="rounded-xl border bg-card p-5 mb-8">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="p-1.5 rounded-lg bg-primary/10">
+          <Lightbulb size={16} className="text-primary" />
+        </div>
+        <h3 className="font-semibold text-sm">{t("submit.guidelinesTitle")}</h3>
+      </div>
+      <p className="text-xs text-muted-foreground mb-4">{t("submit.guidelinesIntro")}</p>
+
+      <Accordion type="single" collapsible className="w-full">
+        {steps.map((step, i) => {
+          const Icon = GUIDE_ICONS[i];
+          return (
+            <AccordionItem key={i} value={`step-${i}`} className="border-b-0">
+              <AccordionTrigger className="py-2.5 text-sm hover:no-underline gap-2">
+                <span className="flex items-center gap-2.5 text-left">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted text-xs font-medium shrink-0">
+                    {i + 1}
+                  </span>
+                  <Icon size={14} className="text-muted-foreground shrink-0" />
+                  <span>{step.title}</span>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="text-xs text-muted-foreground pl-[3.25rem] pb-3">
+                {step.desc}
+              </AccordionContent>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
+    </div>
+  );
+}
 
 export default function SubmitPage() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -188,6 +250,9 @@ export default function SubmitPage() {
           <p className="text-muted-foreground text-sm">{t("submit.desc")}</p>
         </div>
 
+        {/* Submission Guidelines */}
+        <SubmissionGuidelines />
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <div className="space-y-2">
@@ -198,8 +263,13 @@ export default function SubmitPage() {
               onChange={(e) => setTitle(e.target.value)}
               maxLength={200}
               required
+              placeholder={t("submit.titlePlaceholder")}
               className="bg-card"
             />
+            <p className="text-xs text-muted-foreground">
+              {t("submit.titleHint")}
+              <span className="float-right">{title.length}/200</span>
+            </p>
           </div>
 
           {/* Description */}
@@ -211,10 +281,14 @@ export default function SubmitPage() {
               onChange={(e) => setDescription(e.target.value)}
               maxLength={5000}
               required
-              rows={6}
+              rows={8}
+              placeholder={t("submit.descPlaceholder")}
               className="w-full rounded-md border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y"
             />
-            <p className="text-xs text-muted-foreground">{description.length}/5000</p>
+            <p className="text-xs text-muted-foreground">
+              {t("submit.descHint")}
+              <span className="float-right">{description.length}/5000</span>
+            </p>
           </div>
 
           {/* Job Function Categories */}
@@ -282,6 +356,11 @@ export default function SubmitPage() {
                   >
                     <X size={12} />
                   </button>
+                  {i === 0 && (
+                    <Badge className="absolute bottom-1 left-1 text-[10px] bg-primary/90 text-primary-foreground border-0">
+                      Cover
+                    </Badge>
+                  )}
                 </div>
               ))}
               {uploadedFiles.length < MAX_FILES && (
@@ -289,7 +368,7 @@ export default function SubmitPage() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="aspect-[16/10] rounded-lg border-2 border-dashed hover:border-primary/50 flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+                  className="aspect-[16/10] rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all bg-muted/30"
                 >
                   {uploading ? (
                     <Loader2 size={20} className="animate-spin" />
@@ -314,15 +393,21 @@ export default function SubmitPage() {
 
           {/* Session Replay URL */}
           <div className="space-y-2">
-            <Label htmlFor="sessionReplay">{t("submit.sessionReplayUrl")}</Label>
+            <Label htmlFor="sessionReplay">
+              {t("submit.sessionReplayUrl")}
+              <Badge variant="secondary" className="ml-2 text-[10px] font-normal">
+                Recommended
+              </Badge>
+            </Label>
             <Input
               id="sessionReplay"
               type="url"
               value={sessionReplayUrl}
               onChange={(e) => setSessionReplayUrl(e.target.value)}
-              placeholder="https://..."
+              placeholder="https://manus.im/share/..."
               className="bg-card"
             />
+            <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
           </div>
 
           {/* Deliverable URL */}
@@ -336,6 +421,7 @@ export default function SubmitPage() {
               placeholder="https://..."
               className="bg-card"
             />
+            <p className="text-xs text-muted-foreground">{t("submit.deliverableHint")}</p>
           </div>
 
           {/* Language */}

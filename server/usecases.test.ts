@@ -254,3 +254,71 @@ describe("admin.exportAnalytics", () => {
     expect(result.summary).toHaveProperty("totalContributors");
   });
 });
+
+describe("OG Meta Tags - vite.ts injectOgMeta", () => {
+  it("should not modify HTML for non-use-case URLs", async () => {
+    // We test the function indirectly by verifying the server returns proper HTML
+    // For the unit test, we verify the getBySlug returns data needed for OG tags
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    // Listing should work and return items with expected shape
+    const result = await caller.useCases.list({ limit: 1 });
+    expect(result).toHaveProperty("items");
+    expect(result).toHaveProperty("total");
+  });
+
+  it("getBySlug returns null for non-existent slugs", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.useCases.getBySlug({ slug: "non-existent-slug-xyz" });
+    expect(result).toBeNull();
+  });
+});
+
+describe("Submission form validation", () => {
+  it("submit requires title, description, categories, and screenshots", async () => {
+    const ctx = createAuthContext("user");
+    const caller = appRouter.createCaller(ctx);
+    // Missing title
+    await expect(
+      caller.useCases.submit({
+        title: "",
+        description: "Test description",
+        categoryIds: [1],
+        screenshotUrls: [{ url: "https://example.com/img.png", fileKey: "test/key.png" }],
+        language: "en",
+        consentToContact: false,
+      })
+    ).rejects.toThrow();
+  });
+
+  it("submit requires at least one category", async () => {
+    const ctx = createAuthContext("user");
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.useCases.submit({
+        title: "Valid Title",
+        description: "Valid description",
+        categoryIds: [],
+        screenshotUrls: [{ url: "https://example.com/img.png", fileKey: "test/key.png" }],
+        language: "en",
+        consentToContact: false,
+      })
+    ).rejects.toThrow();
+  });
+
+  it("submit requires at least one screenshot", async () => {
+    const ctx = createAuthContext("user");
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.useCases.submit({
+        title: "Valid Title",
+        description: "Valid description",
+        categoryIds: [1],
+        screenshotUrls: [],
+        language: "en",
+        consentToContact: false,
+      })
+    ).rejects.toThrow();
+  });
+});

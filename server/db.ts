@@ -205,6 +205,24 @@ export async function getApprovedUseCases(opts: {
   return { items, total };
 }
 
+/** Lightweight fetch for OG meta injection — does NOT increment view count or log view events */
+export async function getUseCaseMetaBySlug(slug: string): Promise<{ title: string; description: string; screenshots: { url: string }[] } | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  const rows = await db.select().from(useCases).where(eq(useCases.slug, slug)).limit(1);
+  if (rows.length === 0) return null;
+  const uc = rows[0];
+
+  const screenshotRows = await db.select({ url: screenshots.url }).from(screenshots).where(eq(screenshots.useCaseId, uc.id)).orderBy(asc(screenshots.sortOrder)).limit(1);
+
+  return {
+    title: uc.title,
+    description: uc.description ?? '',
+    screenshots: screenshotRows,
+  };
+}
+
 export async function getUseCaseBySlug(slug: string, visitorKey?: string): Promise<UseCaseWithDetails | null> {
   const db = await getDb();
   if (!db) return null;

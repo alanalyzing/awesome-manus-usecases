@@ -97,3 +97,5 @@
 - [x] Feature: Contributor leaderboard — sidebar widget ranking top submitters by approved use cases and total upvotes
 - [x] Feature: CSV export — download button on admin Analytics tab to export trend data as CSV
 - [x] Remove all seed data from the database (use cases, screenshots, upvotes, view events, activity log entries for seed data)
+- [x] Feature: Social sharing & Open Graph meta tags — OG image, title, description for individual use case pages so they preview well on LinkedIn, X/Twitter, Slack
+- [x] Feature: Submission guidelines / template — guided submission form with field hints, character limits, example prompts, and step-by-step instructions
