@@ -96,3 +96,4 @@
 - [x] Feature: Bulk AI scan — "Scan All Pending" button in admin moderation queue to batch-evaluate all unscored submissions
 - [x] Feature: Contributor leaderboard — sidebar widget ranking top submitters by approved use cases and total upvotes
 - [x] Feature: CSV export — download button on admin Analytics tab to export trend data as CSV
+- [x] Remove all seed data from the database (use cases, screenshots, upvotes, view events, activity log entries for seed data)
