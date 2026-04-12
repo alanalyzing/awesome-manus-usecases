@@ -116,6 +116,20 @@ type TranslationKeys = {
   "admin.totalSubmissions": string;
   "admin.totalUpvotes": string;
   "admin.totalViews": string;
+  // Hero
+  "hero.title1": string;
+  "hero.title2": string;
+  "hero.desc": string;
+  "hero.submitCta": string;
+  "hero.highlightsCta": string;
+  "hero.highlightsCtaShort": string;
+  "hero.useCases": string;
+  "hero.categories": string;
+  "hero.languages": string;
+  // Sidebar extra
+  "sidebar.learnMore": string;
+  "sidebar.aboutPortal": string;
+  "sidebar.trendingThisWeek": string;
   // Common
   "common.loading": string;
   "common.error": string;
@@ -231,6 +245,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "Close",
     "common.loginRequired": "Sign In Required",
     "common.loginRequiredDesc": "Please sign in with your Manus account to continue.",
+    "hero.title1": "Discover what people build",
+    "hero.title2": "with Manus",
+    "hero.desc": "A curated gallery of real-world use cases from the Manus community. Browse by industry, feature, or explore what's only possible with Manus.",
+    "hero.submitCta": "Share your use case",
+    "hero.highlightsCta": "Only Possible with Manus",
+    "hero.highlightsCtaShort": "Highlights",
+    "hero.useCases": "Use Cases",
+    "hero.categories": "Categories",
+    "hero.languages": "Languages",
+    "sidebar.learnMore": "Learn More",
+    "sidebar.aboutPortal": "About This Portal",
+    "sidebar.trendingThisWeek": "Trending This Week",
   },
   zh: {
     "nav.useCaseLibrary": "Awesome Manus 用例",
@@ -336,6 +362,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "关闭",
     "common.loginRequired": "需要登录",
     "common.loginRequiredDesc": "请使用 Manus 账号登录以继续。",
+    "hero.title1": "发现人们用 Manus",
+    "hero.title2": "构建的作品",
+    "hero.desc": "来自 Manus 社区的真实用例精选集。按行业、功能浏览，或探索 Manus 独有的可能性。",
+    "hero.submitCta": "分享你的用例",
+    "hero.highlightsCta": "Manus 独有",
+    "hero.highlightsCtaShort": "精选",
+    "hero.useCases": "用例",
+    "hero.categories": "分类",
+    "hero.languages": "语言",
+    "sidebar.learnMore": "了解更多",
+    "sidebar.aboutPortal": "关于本站",
+    "sidebar.trendingThisWeek": "本周热门",
   },
   ja: {
     "nav.useCaseLibrary": "Awesome Manus ユースケース",
@@ -441,6 +479,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "閉じる",
     "common.loginRequired": "ログインが必要です",
     "common.loginRequiredDesc": "続けるにはManusアカウントでログインしてください。",
+    "hero.title1": "Manusで人々が",
+    "hero.title2": "何を作るか発見しよう",
+    "hero.desc": "Manusコミュニティからの実際のユースケースを厳選したギャラリー。業界、機能別に閲覧するか、Manusでしか実現できないものを探索しましょう。",
+    "hero.submitCta": "ユースケースを共有",
+    "hero.highlightsCta": "Manusならでは",
+    "hero.highlightsCtaShort": "注目",
+    "hero.useCases": "ユースケース",
+    "hero.categories": "カテゴリ",
+    "hero.languages": "言語",
+    "sidebar.learnMore": "詳しく見る",
+    "sidebar.aboutPortal": "このポータルについて",
+    "sidebar.trendingThisWeek": "今週のトレンド",
   },
   ko: {
     "nav.useCaseLibrary": "Awesome Manus 유스케이스",
@@ -546,6 +596,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "닫기",
     "common.loginRequired": "로그인 필요",
     "common.loginRequiredDesc": "계속하려면 Manus 계정으로 로그인해 주세요.",
+    "hero.title1": "사람들이 Manus로",
+    "hero.title2": "무엇을 만드는지 발견하세요",
+    "hero.desc": "Manus 커뮤니티의 실제 사용 사례를 엄선한 갤러리입니다. 산업별, 기능별로 탐색하거나 Manus만의 가능성을 발견하세요.",
+    "hero.submitCta": "사용 사례 공유",
+    "hero.highlightsCta": "Manus만 가능",
+    "hero.highlightsCtaShort": "하이라이트",
+    "hero.useCases": "사용 사례",
+    "hero.categories": "카테고리",
+    "hero.languages": "언어",
+    "sidebar.learnMore": "더 알아보기",
+    "sidebar.aboutPortal": "이 포털 소개",
+    "sidebar.trendingThisWeek": "이번 주 트렌드",
   },
   "pt-BR": {
     "nav.useCaseLibrary": "Awesome Manus Use Cases",
@@ -651,6 +713,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "Fechar",
     "common.loginRequired": "Login Necessário",
     "common.loginRequiredDesc": "Faça login com sua conta Manus para continuar.",
+    "hero.title1": "Descubra o que as pessoas",
+    "hero.title2": "constroem com o Manus",
+    "hero.desc": "Uma galeria curada de casos de uso reais da comunidade Manus. Navegue por setor, recurso ou explore o que só é possível com o Manus.",
+    "hero.submitCta": "Compartilhe seu caso de uso",
+    "hero.highlightsCta": "Só Possível com Manus",
+    "hero.highlightsCtaShort": "Destaques",
+    "hero.useCases": "Casos de Uso",
+    "hero.categories": "Categorias",
+    "hero.languages": "Idiomas",
+    "sidebar.learnMore": "Saiba Mais",
+    "sidebar.aboutPortal": "Sobre Este Portal",
+    "sidebar.trendingThisWeek": "Tendências da Semana",
   },
 };
 

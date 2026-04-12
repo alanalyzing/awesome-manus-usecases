@@ -62,7 +62,7 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
         <div className="p-6 max-w-7xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
             <Flame size={16} className="text-primary" />
-            <h2 className="font-serif font-bold text-sm">Trending This Week</h2>
+            <h2 className="font-serif font-bold text-sm">{t("sidebar.trendingThisWeek")}</h2>
           </div>
           <div className="flex gap-4 overflow-hidden">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -87,7 +87,7 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
           <Flame size={16} className="text-primary" />
-          <h2 className="font-serif font-bold text-sm">Trending This Week</h2>
+          <h2 className="font-serif font-bold text-sm">{t("sidebar.trendingThisWeek")}</h2>
         </div>
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
           {items.map((uc: any, index: number) => (
@@ -595,13 +595,13 @@ export default function Home() {
                   {/* Learn More */}
                   <div>
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                      Learn More
+                      {t("sidebar.learnMore")}
                     </h3>
                     <div className="space-y-0.5">
                       <Link href="/about">
                         <span className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors cursor-pointer">
                           <Info size={13} />
-                          About This Portal
+                          {t("sidebar.aboutPortal")}
                         </span>
                       </Link>
                       {LEARN_MORE_LINKS.map((link) => (
@@ -688,9 +688,9 @@ export default function Home() {
                           transition={{ delay: 0.1, duration: 0.5 }}
                         >
                           <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
-                            Discover what people build
+                            {t("hero.title1")}
                             <br />
-                            <span className="text-primary/70">with Manus</span>
+                            <span className="text-primary/70">{t("hero.title2")}</span>
                           </h1>
                         </motion.div>
                         <motion.p
@@ -699,8 +699,7 @@ export default function Home() {
                           transition={{ delay: 0.2, duration: 0.5 }}
                           className="text-muted-foreground text-sm md:text-base max-w-lg leading-relaxed"
                         >
-                          A curated gallery of real-world use cases from the Manus community.
-                          Browse by industry, feature, or explore what's only possible with Manus.
+                          {t("hero.desc")}
                         </motion.p>
                         <motion.div
                           initial={{ opacity: 0, y: 16 }}
@@ -711,7 +710,7 @@ export default function Home() {
                           <Link href="/submit">
                             <Button className="gap-2 shadow-sm">
                               <Plus size={15} />
-                              Share your use case
+                              {t("hero.submitCta")}
                             </Button>
                           </Link>
                           <Button
@@ -720,8 +719,8 @@ export default function Home() {
                             onClick={handleHighlightToggle}
                           >
                             <Sparkles size={15} />
-                            <span className="hidden sm:inline">Only Possible with Manus</span>
-                            <span className="sm:hidden">Highlights</span>
+                            <span className="hidden sm:inline">{t("hero.highlightsCta")}</span>
+                            <span className="sm:hidden">{t("hero.highlightsCtaShort")}</span>
                           </Button>
                         </motion.div>
                       </div>
@@ -740,7 +739,7 @@ export default function Home() {
                           <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
                             <AnimatedCounter target={heroStats.total} />
                           </div>
-                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Use Cases</div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.useCases")}</div>
                         </div>
                         <div className="text-center space-y-1">
                           <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
@@ -749,7 +748,7 @@ export default function Home() {
                           <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
                             <AnimatedCounter target={heroStats.categories} />
                           </div>
-                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Categories</div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.categories")}</div>
                         </div>
                         <div className="text-center space-y-1">
                           <div className="w-10 h-10 mx-auto rounded-lg bg-accent flex items-center justify-center mb-1">
@@ -758,7 +757,7 @@ export default function Home() {
                           <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
                             <AnimatedCounter target={5} />
                           </div>
-                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Languages</div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.languages")}</div>
                         </div>
                       </motion.div>
                     </div>

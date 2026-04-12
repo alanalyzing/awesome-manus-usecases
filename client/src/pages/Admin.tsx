@@ -460,7 +460,7 @@ export default function AdminPage() {
                                   <Brain size={14} className="text-primary" />
                                   <span className="text-xs font-semibold">AI Pre-Scan Score</span>
                                 </div>
-                                <div className="grid grid-cols-6 gap-2 text-center">
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
                                   <div>
                                     <div className="text-lg font-bold text-primary">{uc.aiScore.overall}</div>
                                     <div className="text-[10px] text-muted-foreground">Overall</div>

@@ -217,7 +217,7 @@ export function MobileSidebar({
             {/* Learn More */}
             <div>
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
-                Learn More
+                {t("sidebar.learnMore")}
               </h3>
               <div className="space-y-0.5">
                 <Link href="/about">
@@ -226,7 +226,7 @@ export function MobileSidebar({
                     className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors cursor-pointer"
                   >
                     <Info size={13} />
-                    About This Portal
+                    {t("sidebar.aboutPortal")}
                   </span>
                 </Link>
                 {LEARN_MORE_LINKS.map((link) => (

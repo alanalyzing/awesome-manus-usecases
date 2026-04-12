@@ -109,4 +109,6 @@
 - [x] Create server-side Slack notification helper with rich message formatting
 - [x] Wire Slack notification into the use case submission creation flow (non-blocking)
 - [x] Write tests for Slack notification helper
-- [ ] QA: Comprehensive QA of entire site including mobile version — test all pages, forms, interactions, and responsive layouts
+- [x] QA: Comprehensive QA of entire site including mobile version — test all pages, forms, interactions, and responsive layouts
+- [x] Fix: Admin AI Score grid responsive — changed grid-cols-6 to grid-cols-3 sm:grid-cols-6 for mobile
+- [x] Fix: i18n gaps — localize hero title/description/CTA buttons, stats labels, Learn More labels, and footer strings in non-English locales
