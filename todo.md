@@ -53,3 +53,18 @@
 - [x] Fix: Add dynamic per-use-case OG meta tags (title, description, image) via server-side rendering
 - [x] Fix: Add detail modal overlay from gallery cards with focus trap, ESC close, body scroll lock
 - [x] Fix: Add skip-to-content link and focus management for accessibility
+- [x] Change: Upvote without login — remove auth requirement, use IP-based deduplication
+- [x] Feature: In-app notification system for submitters (status updates on approve/reject)
+- [x] Feature: Submitter notifications table in database
+- [x] Feature: "My Submissions" page for logged-in users to track status
+- [x] Feature: Owner notification includes submitter email for manual follow-up
+- [x] Feature: Admin approve/reject triggers submitter notification record
+- [x] Admin: Add/remove admins from the dashboard (promote user to admin, demote admin to user)
+- [x] Admin: Activity log table tracking all admin actions (approve, reject, highlight toggle, edit, admin changes)
+- [x] Admin: Activity log UI with filterable timeline view
+- [x] Admin: Submission trend charts (submissions over time, approval rate over time)
+- [x] Admin: AI pre-scan scoring — LLM evaluates use case links for completeness, innovativeness, and impact (score out of 5)
+- [x] Admin: AI score displayed on each submission card in moderation queue
+- [x] Admin: Ability to trigger re-scan of AI evaluation
+- [x] Fix: Verify owner notification payload includes submitter email in submission flow
+- [x] Fix: Add activity log filters (action type) in Admin UI

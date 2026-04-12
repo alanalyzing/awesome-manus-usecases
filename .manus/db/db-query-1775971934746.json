@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `submitter_notifications` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`userId` int NOT NULL,\n\t`type` enum('approved','rejected') NOT NULL,\n\t`message` text,\n\t`isRead` boolean NOT NULL DEFAULT false,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `submitter_notifications_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3U88QiHqLLRvau3.3ccbfad70b32 --database jnjQ5dYouig6ULcXneQuMs --execute CREATE TABLE `submitter_notifications` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`userId` int NOT NULL,\n\t`type` enum('approved','rejected') NOT NULL,\n\t`message` text,\n\t`isRead` boolean NOT NULL DEFAULT false,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `submitter_notifications_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1565
+}

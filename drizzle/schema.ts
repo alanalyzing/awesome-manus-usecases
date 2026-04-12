@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, bigint, uniqueIndex } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, bigint, uniqueIndex, decimal } from "drizzle-orm/mysql-core";
 
 // ─── Users ───────────────────────────────────────────────────────────
 export const users = mysqlTable("users", {
@@ -76,14 +76,55 @@ export const screenshots = mysqlTable("screenshots", {
 
 export type Screenshot = typeof screenshots.$inferSelect;
 
-// ─── Upvotes ─────────────────────────────────────────────────────────
+// ─── Upvotes (visitor-key based, no login required) ─────────────────
 export const upvotes = mysqlTable("upvotes", {
   id: int("id").autoincrement().primaryKey(),
   useCaseId: int("useCaseId").notNull(),
-  userId: int("userId").notNull(),
+  visitorKey: varchar("visitorKey", { length: 128 }).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => [
-  uniqueIndex("upvote_unique").on(table.useCaseId, table.userId),
+  uniqueIndex("upvote_visitor_unique").on(table.useCaseId, table.visitorKey),
 ]);
 
 export type Upvote = typeof upvotes.$inferSelect;
+
+// ─── Submitter Notifications ────────────────────────────────────────
+export const submitterNotifications = mysqlTable("submitter_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  useCaseId: int("useCaseId").notNull(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("type", ["approved", "rejected"]).notNull(),
+  message: text("message"),
+  isRead: boolean("isRead").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SubmitterNotification = typeof submitterNotifications.$inferSelect;
+
+// ─── Admin Activity Log ─────────────────────────────────────────────
+export const adminActivityLog = mysqlTable("admin_activity_log", {
+  id: int("id").autoincrement().primaryKey(),
+  adminId: int("adminId").notNull(),
+  action: varchar("action", { length: 64 }).notNull(), // approve, reject, highlight, edit, promote_admin, demote_admin, ai_scan
+  targetType: varchar("targetType", { length: 32 }).notNull(), // use_case, user
+  targetId: int("targetId").notNull(),
+  details: text("details"), // JSON string with action-specific details
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdminActivityLog = typeof adminActivityLog.$inferSelect;
+
+// ─── AI Scores ──────────────────────────────────────────────────────
+export const aiScores = mysqlTable("ai_scores", {
+  id: int("id").autoincrement().primaryKey(),
+  useCaseId: int("useCaseId").notNull(),
+  completenessScore: decimal("completenessScore", { precision: 3, scale: 1 }).notNull(),
+  innovativenessScore: decimal("innovativenessScore", { precision: 3, scale: 1 }).notNull(),
+  impactScore: decimal("impactScore", { precision: 3, scale: 1 }).notNull(),
+  overallScore: decimal("overallScore", { precision: 3, scale: 1 }).notNull(),
+  reasoning: text("reasoning"),
+  scannedAt: timestamp("scannedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AiScore = typeof aiScores.$inferSelect;

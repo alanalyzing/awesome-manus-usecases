@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE `upvotes` DROP INDEX `upvote_unique`;\nALTER TABLE `upvotes` ADD `visitorKey` varchar(128) NOT NULL DEFAULT 'legacy';\nALTER TABLE `upvotes` ADD CONSTRAINT `upvote_visitor_unique` UNIQUE(`useCaseId`,`visitorKey`);\nALTER TABLE `upvotes` DROP COLUMN `userId`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3U88QiHqLLRvau3.3ccbfad70b32 --database jnjQ5dYouig6ULcXneQuMs --execute ALTER TABLE `upvotes` DROP INDEX `upvote_unique`;\nALTER TABLE `upvotes` ADD `visitorKey` varchar(128) NOT NULL DEFAULT 'legacy';\nALTER TABLE `upvotes` ADD CONSTRAINT `upvote_visitor_unique` UNIQUE(`useCaseId`,`visitorKey`);\nALTER TABLE `upvotes` DROP COLUMN `userId`;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2998
+}

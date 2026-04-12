@@ -10,6 +10,7 @@ import SubmitPage from "./pages/Submit";
 import SubmitSuccessPage from "./pages/SubmitSuccess";
 import AdminPage from "./pages/Admin";
 import UseCaseDetailPage from "./pages/UseCaseDetail";
+import MySubmissionsPage from "./pages/MySubmissions";
 
 function Router() {
   return (
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/submit" component={SubmitPage} />
       <Route path="/submit/success" component={SubmitSuccessPage} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/my-submissions" component={MySubmissionsPage} />
       <Route path="/use-case/:slug" component={UseCaseDetailPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

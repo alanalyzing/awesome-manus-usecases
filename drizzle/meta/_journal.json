@@ -15,6 +15,13 @@
       "when": 1775968245112,
       "tag": "0001_magenta_tyger_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775971890908,
+      "tag": "0002_panoramic_lilandra",
+      "breakpoints": true
     }
   ]
 }

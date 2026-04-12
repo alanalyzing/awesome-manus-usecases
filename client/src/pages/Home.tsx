@@ -31,6 +31,8 @@ import {
   ExternalLink,
   Shield,
   ArrowUp,
+  Bell,
+  FileText,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "wouter";
@@ -113,20 +115,16 @@ export default function Home() {
 
   const handleUpvote = useCallback(
     (useCaseId: number) => {
-      if (!isAuthenticated) {
-        toast.error(t("common.loginRequired"), {
-          description: t("common.loginRequiredDesc"),
-          action: {
-            label: t("nav.login"),
-            onClick: () => { window.location.href = getLoginUrl(); },
-          },
-        });
-        return;
-      }
       toggleUpvote.mutate({ useCaseId });
     },
-    [isAuthenticated, toggleUpvote, t]
+    [toggleUpvote]
   );
+
+  // Notification count for logged-in users
+  const unreadCountQuery = trpc.user.unreadCount.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const unreadCount = unreadCountQuery.data ?? 0;
 
   const items = useCasesQuery.data?.items ?? [];
   const total = useCasesQuery.data?.total ?? 0;
@@ -204,6 +202,22 @@ export default function Home() {
           {/* Auth */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
+              {/* Notifications Bell */}
+              <Link href="/my-submissions">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="relative p-2 hover:bg-accent rounded-md transition-colors">
+                      <Bell size={16} />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>Notifications & My Submissions</TooltipContent>
+                </Tooltip>
+              </Link>
               <span className="text-xs text-muted-foreground hidden md:inline">{user?.name}</span>
             </div>
           ) : (

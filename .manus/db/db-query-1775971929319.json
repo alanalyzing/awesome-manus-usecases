@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `ai_scores` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`completenessScore` decimal(3,1) NOT NULL,\n\t`innovativenessScore` decimal(3,1) NOT NULL,\n\t`impactScore` decimal(3,1) NOT NULL,\n\t`overallScore` decimal(3,1) NOT NULL,\n\t`reasoning` text,\n\t`scannedAt` timestamp NOT NULL DEFAULT (now()),\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `ai_scores_id` PRIMARY KEY(`id`)\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3U88QiHqLLRvau3.3ccbfad70b32 --database jnjQ5dYouig6ULcXneQuMs --execute CREATE TABLE `ai_scores` (\n\t`id` int AUTO_INCREMENT NOT NULL,\n\t`useCaseId` int NOT NULL,\n\t`completenessScore` decimal(3,1) NOT NULL,\n\t`innovativenessScore` decimal(3,1) NOT NULL,\n\t`impactScore` decimal(3,1) NOT NULL,\n\t`overallScore` decimal(3,1) NOT NULL,\n\t`reasoning` text,\n\t`scannedAt` timestamp NOT NULL DEFAULT (now()),\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `ai_scores_id` PRIMARY KEY(`id`)\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1620
+}

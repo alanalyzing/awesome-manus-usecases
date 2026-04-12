@@ -48,20 +48,10 @@ export default function UseCaseDetailPage() {
   });
 
   const handleUpvote = useCallback(() => {
-    if (!isAuthenticated) {
-      toast.error(t("common.loginRequired"), {
-        description: t("common.loginRequiredDesc"),
-        action: {
-          label: t("nav.login"),
-          onClick: () => { window.location.href = getLoginUrl(); },
-        },
-      });
-      return;
-    }
     if (useCaseQuery.data) {
       toggleUpvote.mutate({ useCaseId: useCaseQuery.data.id });
     }
-  }, [isAuthenticated, useCaseQuery.data, toggleUpvote, t]);
+  }, [useCaseQuery.data, toggleUpvote]);
 
   const handleShare = useCallback(() => {
     const url = window.location.href;
