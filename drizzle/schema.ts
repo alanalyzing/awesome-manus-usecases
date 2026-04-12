@@ -76,17 +76,31 @@ export const screenshots = mysqlTable("screenshots", {
 
 export type Screenshot = typeof screenshots.$inferSelect;
 
-// ─── Upvotes (visitor-key based, no login required) ─────────────────
+// ─── Upvotes (user-based, login required) ───────────────────────
 export const upvotes = mysqlTable("upvotes", {
   id: int("id").autoincrement().primaryKey(),
   useCaseId: int("useCaseId").notNull(),
-  visitorKey: varchar("visitorKey", { length: 128 }).notNull(),
+  userId: int("userId").notNull(),
+  visitorKey: varchar("visitorKey", { length: 128 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => [
-  uniqueIndex("upvote_visitor_unique").on(table.useCaseId, table.visitorKey),
+  uniqueIndex("upvote_user_unique").on(table.useCaseId, table.userId),
 ]);
 
 export type Upvote = typeof upvotes.$inferSelect;
+
+// ─── User Follows ───────────────────────────────────────────────
+export const userFollows = mysqlTable("user_follows", {
+  id: int("id").autoincrement().primaryKey(),
+  followerId: int("followerId").notNull(),
+  followingId: int("followingId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("follow_unique").on(table.followerId, table.followingId),
+]);
+
+export type UserFollow = typeof userFollows.$inferSelect;
+export type InsertUserFollow = typeof userFollows.$inferInsert;
 
 // ─── Submitter Notifications ────────────────────────────────────────
 export const submitterNotifications = mysqlTable("submitter_notifications", {
@@ -140,3 +154,33 @@ export const viewEvents = mysqlTable("view_events", {
 });
 
 export type ViewEvent = typeof viewEvents.$inferSelect;
+
+// ─── User Profiles ─────────────────────────────────────────────────
+export const userProfiles = mysqlTable("user_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  username: varchar("username", { length: 32 }).notNull().unique(),
+  proficiency: mysqlEnum("proficiency", ["beginner", "intermediate", "advanced", "expert"]).notNull(),
+  company: varchar("company", { length: 128 }),
+  bio: text("bio"),
+  avatarUrl: text("avatarUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type InsertUserProfile = typeof userProfiles.$inferInsert;
+
+// ─── User Social Handles ───────────────────────────────────────────
+export const userSocialHandles = mysqlTable("user_social_handles", {
+  id: int("id").autoincrement().primaryKey(),
+  profileId: int("profileId").notNull(),
+  platform: mysqlEnum("platform", ["x", "instagram", "linkedin", "other"]).notNull(),
+  handle: varchar("handle", { length: 256 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("profile_platform_unique").on(table.profileId, table.platform),
+]);
+
+export type UserSocialHandle = typeof userSocialHandles.$inferSelect;
+export type InsertUserSocialHandle = typeof userSocialHandles.$inferInsert;

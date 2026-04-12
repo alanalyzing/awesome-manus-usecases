@@ -50,10 +50,19 @@ export default function UseCaseDetailPage() {
   });
 
   const handleUpvote = useCallback(() => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to upvote", {
+        action: {
+          label: "Sign In",
+          onClick: () => { window.location.href = getLoginUrl(); },
+        },
+      });
+      return;
+    }
     if (useCaseQuery.data) {
       toggleUpvote.mutate({ useCaseId: useCaseQuery.data.id });
     }
-  }, [useCaseQuery.data, toggleUpvote]);
+  }, [useCaseQuery.data, toggleUpvote, isAuthenticated]);
 
   const handleShare = useCallback(() => {
     const url = window.location.href;
@@ -156,10 +165,17 @@ export default function UseCaseDetailPage() {
             {uc.viewCount} {t("gallery.views")}
           </span>
           {uc.submitterName && (
-            <span>
-              {t("detail.submittedBy")} <strong>{uc.submitterName}</strong>
-            </span>
-          )}
+             <span>
+               {t("detail.submittedBy")}{" "}
+               {uc.submitterUsername ? (
+                 <Link href={`/profile/${uc.submitterUsername}`} className="font-semibold text-primary hover:underline">
+                   {uc.submitterName}
+                 </Link>
+               ) : (
+                 <strong>{uc.submitterName}</strong>
+               )}
+             </span>
+           )}
         </div>
 
         {/* Category tags */}

@@ -11,6 +11,9 @@ import {
   adminActivityLog, AdminActivityLog,
   aiScores, AiScore,
   viewEvents,
+  userProfiles, UserProfile, InsertUserProfile,
+  userSocialHandles, UserSocialHandle, InsertUserSocialHandle,
+  userFollows,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -94,6 +97,7 @@ export async function getCategoriesByType(type: "job_function" | "feature"): Pro
 
 export type UseCaseWithDetails = UseCase & {
   submitterName: string | null;
+  submitterUsername: string | null;
   categories: { id: number; name: string; slug: string; type: string }[];
   screenshots: { id: number; url: string; sortOrder: number }[];
   hasUpvoted?: boolean;
@@ -107,7 +111,7 @@ export async function getApprovedUseCases(opts: {
   sort?: "popular" | "newest" | "views";
   limit?: number;
   offset?: number;
-  visitorKey?: string;
+  userId?: number;
 }): Promise<{ items: UseCaseWithDetails[]; total: number }> {
   const db = await getDb();
   if (!db) return { items: [], total: 0 };
@@ -163,12 +167,16 @@ export async function getApprovedUseCases(opts: {
 
   const ucIds = rows.map(r => r.id);
 
-  // Fetch submitter names
+  // Fetch submitter names + profile usernames
   const submitterIds = Array.from(new Set(rows.map(r => r.submitterId)));
   const submitters = submitterIds.length > 0
     ? await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, submitterIds))
     : [];
   const submitterMap = new Map(submitters.map(s => [s.id, s.name]));
+  const profileRows = submitterIds.length > 0
+    ? await db.select({ userId: userProfiles.userId, username: userProfiles.username }).from(userProfiles).where(inArray(userProfiles.userId, submitterIds))
+    : [];
+  const profileUsernameMap = new Map(profileRows.map(p => [p.userId, p.username]));
 
   // Fetch categories
   const ucCats = await db
@@ -184,22 +192,23 @@ export async function getApprovedUseCases(opts: {
   const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
   for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
 
-  // Fetch visitor upvotes
-  let upvoteSet = new Set<number>();
-  if (opts.visitorKey) {
-    const visitorUpvotes = await db
-      .select({ useCaseId: upvotes.useCaseId })
-      .from(upvotes)
-      .where(and(inArray(upvotes.useCaseId, ucIds), eq(upvotes.visitorKey, opts.visitorKey)));
-    upvoteSet = new Set(visitorUpvotes.map(u => u.useCaseId));
-  }
+  // Fetch user upvotes
+   let upvoteSet = new Set<number>();
+   if (opts.userId) {
+     const userUpvotes = await db
+       .select({ useCaseId: upvotes.useCaseId })
+       .from(upvotes)
+       .where(and(inArray(upvotes.useCaseId, ucIds), eq(upvotes.userId, opts.userId)));
+     upvoteSet = new Set(userUpvotes.map(u => u.useCaseId));
+   }
 
   const items: UseCaseWithDetails[] = rows.map(uc => ({
     ...uc,
     submitterName: submitterMap.get(uc.submitterId) ?? null,
+    submitterUsername: profileUsernameMap.get(uc.submitterId) ?? null,
     categories: catMap.get(uc.id) ?? [],
     screenshots: ssMap.get(uc.id) ?? [],
-    hasUpvoted: opts.visitorKey ? upvoteSet.has(uc.id) : undefined,
+    hasUpvoted: opts.userId ? upvoteSet.has(uc.id) : undefined,
   }));
 
   return { items, total };
@@ -223,7 +232,7 @@ export async function getUseCaseMetaBySlug(slug: string): Promise<{ title: strin
   };
 }
 
-export async function getUseCaseBySlug(slug: string, visitorKey?: string): Promise<UseCaseWithDetails | null> {
+export async function getUseCaseBySlug(slug: string, userId?: number): Promise<UseCaseWithDetails | null> {
   const db = await getDb();
   if (!db) return null;
 
@@ -233,9 +242,10 @@ export async function getUseCaseBySlug(slug: string, visitorKey?: string): Promi
 
   // Increment cumulative counter AND log a discrete view event
   await db.update(useCases).set({ viewCount: sql`${useCases.viewCount} + 1` }).where(eq(useCases.id, uc.id));
-  await db.insert(viewEvents).values({ useCaseId: uc.id, visitorKey: visitorKey ?? null });
+  await db.insert(viewEvents).values({ useCaseId: uc.id, visitorKey: null });
 
   const submitterRows = await db.select({ name: users.name }).from(users).where(eq(users.id, uc.submitterId)).limit(1);
+  const submitterProfileRows = await db.select({ username: userProfiles.username }).from(userProfiles).where(eq(userProfiles.userId, uc.submitterId)).limit(1);
 
   const ucCats = await db
     .select({ categoryId: useCaseCategories.categoryId, name: categories.name, slug: categories.slug, type: categories.type })
@@ -246,8 +256,8 @@ export async function getUseCaseBySlug(slug: string, visitorKey?: string): Promi
   const screenshotRows = await db.select().from(screenshots).where(eq(screenshots.useCaseId, uc.id)).orderBy(asc(screenshots.sortOrder));
 
   let hasUpvoted = false;
-  if (visitorKey) {
-    const upvoteRow = await db.select().from(upvotes).where(and(eq(upvotes.useCaseId, uc.id), eq(upvotes.visitorKey, visitorKey))).limit(1);
+  if (userId) {
+    const upvoteRow = await db.select().from(upvotes).where(and(eq(upvotes.useCaseId, uc.id), eq(upvotes.userId, userId))).limit(1);
     hasUpvoted = upvoteRow.length > 0;
   }
 
@@ -267,6 +277,7 @@ export async function getUseCaseBySlug(slug: string, visitorKey?: string): Promi
     ...uc,
     viewCount: uc.viewCount + 1,
     submitterName: submitterRows[0]?.name ?? null,
+    submitterUsername: submitterProfileRows[0]?.username ?? null,
     categories: ucCats.map(c => ({ id: c.categoryId, name: c.name, slug: c.slug, type: c.type })),
     screenshots: screenshotRows.map(s => ({ id: s.id, url: s.url, sortOrder: s.sortOrder })),
     hasUpvoted,
@@ -320,6 +331,7 @@ export async function getRelatedUseCases(useCaseId: number, categoryIds: number[
   return rows.map(uc => ({
     ...uc,
     submitterName: submitterMap.get(uc.submitterId) ?? null,
+    submitterUsername: null,
     categories: catMap.get(uc.id) ?? [],
     screenshots: ssMap.get(uc.id) ?? [],
   }));
@@ -372,6 +384,7 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
     return rows.map(uc => ({
       ...uc,
       submitterName: submitterMap.get(uc.submitterId) ?? null,
+      submitterUsername: null,
       categories: catMap.get(uc.id) ?? [],
       screenshots: ssMap.get(uc.id) ?? [],
     }));
@@ -406,6 +419,7 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
     .map(uc => ({
       ...uc,
       submitterName: submitterMap.get(uc.submitterId) ?? null,
+      submitterUsername: null,
       categories: catMap.get(uc.id) ?? [],
       screenshots: ssMap.get(uc.id) ?? [],
       recentUpvotes: trendingMap.get(uc.id) ?? 0,
@@ -470,21 +484,21 @@ export async function createUseCase(data: {
   return created[0];
 }
 
-// ─── Upvote Helpers (visitor-key based, no login required) ──────────
+// ─── Upvote Helpers (user-based, login required) ────────────────────
 
-export async function toggleUpvote(useCaseId: number, visitorKey: string): Promise<{ upvoted: boolean; newCount: number }> {
+export async function toggleUpvote(useCaseId: number, userId: number): Promise<{ upvoted: boolean; newCount: number }> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
-  const existing = await db.select().from(upvotes).where(and(eq(upvotes.useCaseId, useCaseId), eq(upvotes.visitorKey, visitorKey))).limit(1);
+  const existing = await db.select().from(upvotes).where(and(eq(upvotes.useCaseId, useCaseId), eq(upvotes.userId, userId))).limit(1);
 
   if (existing.length > 0) {
-    await db.delete(upvotes).where(and(eq(upvotes.useCaseId, useCaseId), eq(upvotes.visitorKey, visitorKey)));
+    await db.delete(upvotes).where(and(eq(upvotes.useCaseId, useCaseId), eq(upvotes.userId, userId)));
     await db.update(useCases).set({ upvoteCount: sql`GREATEST(${useCases.upvoteCount} - 1, 0)` }).where(eq(useCases.id, useCaseId));
     const updated = await db.select({ upvoteCount: useCases.upvoteCount }).from(useCases).where(eq(useCases.id, useCaseId)).limit(1);
     return { upvoted: false, newCount: updated[0]?.upvoteCount ?? 0 };
   } else {
-    await db.insert(upvotes).values({ useCaseId, visitorKey });
+    await db.insert(upvotes).values({ useCaseId, userId });
     await db.update(useCases).set({ upvoteCount: sql`${useCases.upvoteCount} + 1` }).where(eq(useCases.id, useCaseId));
     const updated = await db.select({ upvoteCount: useCases.upvoteCount }).from(useCases).where(eq(useCases.id, useCaseId)).limit(1);
     return { upvoted: true, newCount: updated[0]?.upvoteCount ?? 0 };
@@ -990,4 +1004,334 @@ export async function getPendingWithoutAiScore(): Promise<number[]> {
 
   const result = (rows as any)?.[0] ?? rows;
   return (Array.isArray(result) ? result : []).map((r: any) => Number(r.id));
+}
+
+// ─── User Profile Helpers ──────────────────────────────────────────
+
+const RESERVED_USERNAMES = new Set([
+  "admin", "administrator", "manus", "system", "support", "help",
+  "api", "www", "app", "profile", "profiles", "user", "users",
+  "about", "submit", "login", "logout", "settings", "notifications",
+]);
+
+export function isUsernameValid(username: string): { valid: boolean; reason?: string } {
+  if (username.length < 3) return { valid: false, reason: "Username must be at least 3 characters" };
+  if (username.length > 32) return { valid: false, reason: "Username must be at most 32 characters" };
+  if (!/^[a-zA-Z0-9_-]+$/.test(username)) return { valid: false, reason: "Username can only contain letters, numbers, hyphens, and underscores" };
+  if (RESERVED_USERNAMES.has(username.toLowerCase())) return { valid: false, reason: "This username is reserved" };
+  return { valid: true };
+}
+
+export async function isUsernameTaken(username: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select({ id: userProfiles.id }).from(userProfiles).where(eq(userProfiles.username, username)).limit(1);
+  return rows.length > 0;
+}
+
+export async function getProfileByUserId(userId: number): Promise<(UserProfile & { socialHandles: UserSocialHandle[] }) | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  if (rows.length === 0) return null;
+  const profile = rows[0];
+  const handles = await db.select().from(userSocialHandles).where(eq(userSocialHandles.profileId, profile.id));
+  return { ...profile, socialHandles: handles };
+}
+
+export async function getProfileByUsername(username: string): Promise<(UserProfile & {
+  socialHandles: UserSocialHandle[];
+  user: { id: number; name: string | null; email: string | null; createdAt: Date };
+  stats: { approvedCount: number; totalUpvotes: number; totalViews: number };
+  useCases: (UseCase & { categories: { id: number; name: string; slug: string; type: string }[]; screenshots: { id: number; url: string; sortOrder: number }[] })[];
+}) | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  const profileRows = await db.select().from(userProfiles).where(eq(userProfiles.username, username)).limit(1);
+  if (profileRows.length === 0) return null;
+  const profile = profileRows[0];
+
+  const handles = await db.select().from(userSocialHandles).where(eq(userSocialHandles.profileId, profile.id));
+
+  const userRows = await db.select({
+    id: users.id, name: users.name, email: users.email, createdAt: users.createdAt,
+  }).from(users).where(eq(users.id, profile.userId)).limit(1);
+  const user = userRows[0] ?? { id: profile.userId, name: null, email: null, createdAt: new Date() };
+
+  // Get approved use cases by this user
+  const ucRows = await db.select().from(useCases)
+    .where(and(eq(useCases.submitterId, profile.userId), eq(useCases.status, "approved")))
+    .orderBy(desc(useCases.upvoteCount));
+
+  let ucWithDetails: any[] = [];
+  if (ucRows.length > 0) {
+    const ucIds = ucRows.map(r => r.id);
+    const ucCats = await db
+      .select({ useCaseId: useCaseCategories.useCaseId, categoryId: useCaseCategories.categoryId, name: categories.name, slug: categories.slug, type: categories.type })
+      .from(useCaseCategories)
+      .innerJoin(categories, eq(useCaseCategories.categoryId, categories.id))
+      .where(inArray(useCaseCategories.useCaseId, ucIds));
+    const catMap = new Map<number, { id: number; name: string; slug: string; type: string }[]>();
+    for (const c of ucCats) { if (!catMap.has(c.useCaseId)) catMap.set(c.useCaseId, []); catMap.get(c.useCaseId)!.push({ id: c.categoryId, name: c.name, slug: c.slug, type: c.type }); }
+    const screenshotRows = await db.select().from(screenshots).where(inArray(screenshots.useCaseId, ucIds)).orderBy(asc(screenshots.sortOrder));
+    const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
+    for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
+    ucWithDetails = ucRows.map(uc => ({
+      ...uc,
+      categories: catMap.get(uc.id) ?? [],
+      screenshots: ssMap.get(uc.id) ?? [],
+    }));
+  }
+
+  // Compute stats
+  const totalUpvotes = ucRows.reduce((sum, uc) => sum + uc.upvoteCount, 0);
+  const totalViews = ucRows.reduce((sum, uc) => sum + uc.viewCount, 0);
+
+  return {
+    ...profile,
+    socialHandles: handles,
+    user,
+    stats: { approvedCount: ucRows.length, totalUpvotes, totalViews },
+    useCases: ucWithDetails,
+  };
+}
+
+export async function createProfile(data: {
+  userId: number;
+  username: string;
+  proficiency: "beginner" | "intermediate" | "advanced" | "expert";
+  company?: string;
+  bio?: string;
+  socialHandles: { platform: "x" | "instagram" | "linkedin" | "other"; handle: string }[];
+}): Promise<UserProfile> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const result = await db.insert(userProfiles).values({
+    userId: data.userId,
+    username: data.username,
+    proficiency: data.proficiency,
+    company: data.company || null,
+    bio: data.bio || null,
+  });
+
+  const profileId = result[0].insertId;
+
+  if (data.socialHandles.length > 0) {
+    await db.insert(userSocialHandles).values(
+      data.socialHandles.map(h => ({ profileId, platform: h.platform, handle: h.handle }))
+    );
+  }
+
+  const created = await db.select().from(userProfiles).where(eq(userProfiles.id, profileId)).limit(1);
+  return created[0];
+}
+
+export async function updateProfile(userId: number, data: {
+  username?: string;
+  proficiency?: "beginner" | "intermediate" | "advanced" | "expert";
+  company?: string | null;
+  bio?: string | null;
+  socialHandles?: { platform: "x" | "instagram" | "linkedin" | "other"; handle: string }[];
+}): Promise<UserProfile | null> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const existing = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  if (existing.length === 0) return null;
+
+  const profile = existing[0];
+  const updates: Record<string, any> = {};
+  if (data.username !== undefined) updates.username = data.username;
+  if (data.proficiency !== undefined) updates.proficiency = data.proficiency;
+  if (data.company !== undefined) updates.company = data.company;
+  if (data.bio !== undefined) updates.bio = data.bio;
+
+  if (Object.keys(updates).length > 0) {
+    await db.update(userProfiles).set(updates).where(eq(userProfiles.id, profile.id));
+  }
+
+  if (data.socialHandles !== undefined) {
+    await db.delete(userSocialHandles).where(eq(userSocialHandles.profileId, profile.id));
+    if (data.socialHandles.length > 0) {
+      await db.insert(userSocialHandles).values(
+        data.socialHandles.map(h => ({ profileId: profile.id, platform: h.platform, handle: h.handle }))
+      );
+    }
+  }
+
+  const updated = await db.select().from(userProfiles).where(eq(userProfiles.id, profile.id)).limit(1);
+  return updated[0];
+}
+
+// ─── Follow Helpers ─────────────────────────────────────────────────
+
+export async function toggleFollow(followerId: number, followingId: number): Promise<{ following: boolean }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (followerId === followingId) throw new Error("Cannot follow yourself");
+
+  const existing = await db.select().from(userFollows)
+    .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)))
+    .limit(1);
+
+  if (existing.length > 0) {
+    await db.delete(userFollows)
+      .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)));
+    return { following: false };
+  } else {
+    await db.insert(userFollows).values({ followerId, followingId });
+    return { following: true };
+  }
+}
+
+export async function isFollowing(followerId: number, followingId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db.select().from(userFollows)
+    .where(and(eq(userFollows.followerId, followerId), eq(userFollows.followingId, followingId)))
+    .limit(1);
+  return rows.length > 0;
+}
+
+export async function getFollowers(userId: number): Promise<{ id: number; name: string | null; username: string | null; avatarUrl: string | null }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select({
+    id: users.id,
+    name: users.name,
+    username: userProfiles.username,
+    avatarUrl: userProfiles.avatarUrl,
+  })
+    .from(userFollows)
+    .innerJoin(users, eq(userFollows.followerId, users.id))
+    .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+    .where(eq(userFollows.followingId, userId))
+    .orderBy(desc(userFollows.createdAt));
+  return rows;
+}
+
+export async function getFollowing(userId: number): Promise<{ id: number; name: string | null; username: string | null; avatarUrl: string | null }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows = await db.select({
+    id: users.id,
+    name: users.name,
+    username: userProfiles.username,
+    avatarUrl: userProfiles.avatarUrl,
+  })
+    .from(userFollows)
+    .innerJoin(users, eq(userFollows.followingId, users.id))
+    .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+    .where(eq(userFollows.followerId, userId))
+    .orderBy(desc(userFollows.createdAt));
+  return rows;
+}
+
+export async function getFollowerCount(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db.select({ count: sql<number>`COUNT(*)` }).from(userFollows).where(eq(userFollows.followingId, userId));
+  return rows[0]?.count ?? 0;
+}
+
+export async function getFollowingCount(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db.select({ count: sql<number>`COUNT(*)` }).from(userFollows).where(eq(userFollows.followerId, userId));
+  return rows[0]?.count ?? 0;
+}
+
+// ─── Liked Use Cases (upvoted by a user) ────────────────────────────
+
+export async function getLikedUseCases(userId: number): Promise<UseCaseWithDetails[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const upvoteRows = await db.select({ useCaseId: upvotes.useCaseId })
+    .from(upvotes)
+    .where(eq(upvotes.userId, userId))
+    .orderBy(desc(upvotes.createdAt));
+
+  if (upvoteRows.length === 0) return [];
+
+  const ucIds = upvoteRows.map(r => r.useCaseId);
+  const rows = await db.select().from(useCases)
+    .where(and(inArray(useCases.id, ucIds), eq(useCases.status, "approved")));
+
+  if (rows.length === 0) return [];
+
+  // Fetch submitter names
+  const submitterIds = Array.from(new Set(rows.map(r => r.submitterId)));
+  const submitterRows = await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, submitterIds));
+  const submitterMap = new Map(submitterRows.map(s => [s.id, s.name]));
+
+  // Fetch profile usernames
+  const profileRows = await db.select({ userId: userProfiles.userId, username: userProfiles.username }).from(userProfiles).where(inArray(userProfiles.userId, submitterIds));
+  const profileMap = new Map(profileRows.map(p => [p.userId, p.username]));
+
+  // Fetch categories
+  const catJoin = await db.select({
+    useCaseId: useCaseCategories.useCaseId,
+    categoryId: useCaseCategories.categoryId,
+    name: categories.name,
+    slug: categories.slug,
+    type: categories.type,
+  }).from(useCaseCategories).innerJoin(categories, eq(useCaseCategories.categoryId, categories.id)).where(inArray(useCaseCategories.useCaseId, ucIds));
+  const catMap = new Map<number, { id: number; name: string; slug: string; type: string }[]>();
+  for (const c of catJoin) { if (!catMap.has(c.useCaseId)) catMap.set(c.useCaseId, []); catMap.get(c.useCaseId)!.push({ id: c.categoryId, name: c.name, slug: c.slug, type: c.type }); }
+
+  // Fetch screenshots
+  const ssRows = await db.select().from(screenshots).where(inArray(screenshots.useCaseId, ucIds)).orderBy(asc(screenshots.sortOrder));
+  const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
+  for (const s of ssRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
+
+  // Maintain upvote order
+  const ucMap = new Map(rows.map(r => [r.id, r]));
+  return ucIds
+    .filter(id => ucMap.has(id))
+    .map(id => {
+      const uc = ucMap.get(id)!;
+      return {
+        ...uc,
+        submitterName: submitterMap.get(uc.submitterId) ?? null,
+        submitterUsername: profileMap.get(uc.submitterId) ?? null,
+        categories: catMap.get(uc.id) ?? [],
+        screenshots: ssMap.get(uc.id) ?? [],
+        hasUpvoted: true,
+      };
+    });
+}
+
+// ─── Profile Stats ──────────────────────────────────────────────────
+
+export async function getProfileStats(userId: number): Promise<{
+  useCaseCount: number;
+  upvotesReceived: number;
+  followerCount: number;
+  followingCount: number;
+}> {
+  const db = await getDb();
+  if (!db) return { useCaseCount: 0, upvotesReceived: 0, followerCount: 0, followingCount: 0 };
+
+  // Count approved use cases
+  const ucRows = await db.select({ count: sql<number>`COUNT(*)` }).from(useCases)
+    .where(and(eq(useCases.submitterId, userId), eq(useCases.status, "approved")));
+  const useCaseCount = ucRows[0]?.count ?? 0;
+
+  // Sum upvotes received on all their approved use cases
+  const upvoteRows = await db.select({ total: sql<number>`COALESCE(SUM(${useCases.upvoteCount}), 0)` }).from(useCases)
+    .where(and(eq(useCases.submitterId, userId), eq(useCases.status, "approved")));
+  const upvotesReceived = upvoteRows[0]?.total ?? 0;
+
+  // Follower count
+  const followerRows = await db.select({ count: sql<number>`COUNT(*)` }).from(userFollows).where(eq(userFollows.followingId, userId));
+  const followerCount = followerRows[0]?.count ?? 0;
+
+  // Following count
+  const followingRows = await db.select({ count: sql<number>`COUNT(*)` }).from(userFollows).where(eq(userFollows.followerId, userId));
+  const followingCount = followingRows[0]?.count ?? 0;
+
+  return { useCaseCount, upvotesReceived, followerCount, followingCount };
 }

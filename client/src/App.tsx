@@ -12,6 +12,8 @@ import AdminPage from "./pages/Admin";
 import UseCaseDetailPage from "./pages/UseCaseDetail";
 import MySubmissionsPage from "./pages/MySubmissions";
 import AboutPage from "./pages/About";
+import ProfileSetupPage from "./pages/ProfileSetup";
+import ProfilePage from "./pages/Profile";
 
 function Router() {
   return (
@@ -23,6 +25,8 @@ function Router() {
       <Route path="/my-submissions" component={MySubmissionsPage} />
       <Route path="/use-case/:slug" component={UseCaseDetailPage} />
       <Route path="/about" component={AboutPage} />
+      <Route path="/profile/setup" component={ProfileSetupPage} />
+      <Route path="/profile/:username" component={ProfilePage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

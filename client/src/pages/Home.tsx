@@ -40,6 +40,7 @@ import {
   Trophy,
   BookOpen,
   Info,
+  UserCircle,
 } from "lucide-react";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
@@ -276,6 +277,12 @@ export default function Home() {
   // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // Profile check for onboarding nudge
+  const profileQuery = trpc.profile.me.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const hasProfile = !!profileQuery.data;
+
   // Queries
   const categoriesQuery = trpc.categories.list.useQuery();
   // Global count (unfiltered) for sidebar badge
@@ -348,9 +355,18 @@ export default function Home() {
 
   const handleUpvote = useCallback(
     (useCaseId: number) => {
+      if (!isAuthenticated) {
+        toast.error("Please sign in to upvote", {
+          action: {
+            label: "Sign In",
+            onClick: () => { window.location.href = getLoginUrl(); },
+          },
+        });
+        return;
+      }
       toggleUpvote.mutate({ useCaseId });
     },
-    [toggleUpvote]
+    [toggleUpvote, isAuthenticated]
   );
 
   // Notification count for logged-in users
@@ -475,6 +491,18 @@ export default function Home() {
                   <TooltipContent>Notifications & My Submissions</TooltipContent>
                 </Tooltip>
               </Link>
+              {!hasProfile && !profileQuery.isLoading && (
+                <Link href="/profile/setup">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="p-2 hover:bg-accent rounded-md transition-colors text-primary">
+                        <UserCircle size={16} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Set up your profile</TooltipContent>
+                  </Tooltip>
+                </Link>
+              )}
               <span className="text-xs text-muted-foreground hidden md:inline">{user?.name}</span>
             </div>
           ) : (
@@ -927,6 +955,17 @@ export default function Home() {
                           {/* Footer */}
                           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                             <div className="flex items-center gap-3 pt-2">
+                              {uc.submitterName && (
+                                <span className="flex items-center gap-1 truncate max-w-[100px]">
+                                  {uc.submitterUsername ? (
+                                    <Link href={`/profile/${uc.submitterUsername}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="hover:text-primary hover:underline truncate">
+                                      {uc.submitterName}
+                                    </Link>
+                                  ) : (
+                                    <span className="truncate">{uc.submitterName}</span>
+                                  )}
+                                </span>
+                              )}
                               <span className="flex items-center gap-1">
                                 <Eye size={12} />
                                 {uc.viewCount}

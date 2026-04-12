@@ -113,14 +113,12 @@ describe("useCases.list", () => {
 });
 
 describe("useCases.toggleUpvote", () => {
-  it("allows anonymous upvoting without authentication", async () => {
+  it("requires authentication to upvote", async () => {
     const ctx = createPublicContext();
     const caller = appRouter.createCaller(ctx);
-    const result = await caller.useCases.toggleUpvote({ useCaseId: 1 });
-    expect(result).toHaveProperty("upvoted");
-    expect(result).toHaveProperty("newCount");
-    expect(typeof result.upvoted).toBe("boolean");
-    expect(typeof result.newCount).toBe("number");
+    await expect(
+      caller.useCases.toggleUpvote({ useCaseId: 1 })
+    ).rejects.toThrow();
   });
 });
 

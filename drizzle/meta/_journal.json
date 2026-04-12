@@ -36,6 +36,20 @@
       "when": 1775979786485,
       "tag": "0004_material_ben_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1775993077200,
+      "tag": "0005_brave_blonde_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1775994069592,
+      "tag": "0006_smart_lightspeed",
+      "breakpoints": true
     }
   ]
 }

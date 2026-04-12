@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { toast } from "sonner";
 
 interface UseCaseModalProps {
@@ -80,10 +80,19 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
   }, [slug, onClose]);
 
   const handleUpvote = useCallback(() => {
+    if (!user) {
+      toast.error("Please sign in to upvote", {
+        action: {
+          label: "Sign In",
+          onClick: () => { window.location.href = getLoginUrl(); },
+        },
+      });
+      return;
+    }
     if (useCaseQuery.data) {
       toggleUpvote.mutate({ useCaseId: useCaseQuery.data.id });
     }
-  }, [useCaseQuery.data, toggleUpvote]);
+  }, [useCaseQuery.data, toggleUpvote, user]);
 
   const handleShare = useCallback(() => {
     const url = `${window.location.origin}/use-case/${slug}`;
@@ -173,10 +182,17 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
                     {uc.viewCount} {t("gallery.views")}
                   </span>
                   {uc.submitterName && (
-                    <span>
-                      {t("detail.submittedBy")} <strong>{uc.submitterName}</strong>
-                    </span>
-                  )}
+                     <span>
+                       {t("detail.submittedBy")}{" "}
+                       {uc.submitterUsername ? (
+                         <Link href={`/profile/${uc.submitterUsername}`} className="font-semibold text-primary hover:underline">
+                           {uc.submitterName}
+                         </Link>
+                       ) : (
+                         <strong>{uc.submitterName}</strong>
+                       )}
+                     </span>
+                   )}
                 </div>
 
                 {/* Category tags */}

@@ -112,3 +112,27 @@
 - [x] QA: Comprehensive QA of entire site including mobile version — test all pages, forms, interactions, and responsive layouts
 - [x] Fix: Admin AI Score grid responsive — changed grid-cols-6 to grid-cols-3 sm:grid-cols-6 for mobile
 - [x] Fix: i18n gaps — localize hero title/description/CTA buttons, stats labels, Learn More labels, and footer strings in non-English locales
+- [x] Feature: User profile system — username (unique, duplicate check), social handles (X/Instagram/LinkedIn/Other, at least one required), Manus proficiency level, company (optional)
+- [x] Schema: user_profiles and user_social_handles tables with username, proficiency, company, bio
+- [x] Backend: Profile CRUD API with username uniqueness validation and reserved word checking
+- [x] Frontend: Profile creation/onboarding flow after first login with nudge banner
+- [x] Frontend: Public profile page (/profile/:username) with use case directory and accumulated upvotes
+- [x] Frontend: Integrate profile data — submitter names link to profiles in modal and detail views
+- [x] Tests: Username validation tests (valid/invalid/reserved)
+- [x] Frontend: Integrate profile links into gallery cards (Home.tsx) — show submitter username linking to /profile/:username
+- [x] Tests: Add vitest coverage for profile tRPC API endpoints (create/update/getByUsername/getMine/username availability)
+- [x] Change: Restrict upvotes to logged-in users only (remove guest/IP-based upvoting)
+- [x] Schema: Add user_follows table (follower_id, following_id, created_at)
+- [x] Schema: Update upvotes table to use userId instead of visitorKey
+- [x] Backend: Refactor toggleUpvote to require authentication (protectedProcedure)
+- [x] Backend: Follow/unfollow API endpoints
+- [x] Backend: Get liked use cases for a user profile
+- [x] Backend: Get followers/following lists for a user profile
+- [x] Frontend: Update upvote button to require login (show toast with sign-in action for guests)
+- [x] Frontend: Profile page stats bar (use cases, upvotes received, followers, following)
+- [x] Frontend: Profile page tabs — Use Cases, Liked, Followers, Following
+- [x] Frontend: Follow/unfollow button on profile pages
+- [x] Frontend: Followers/following lists on profile pages
+- [x] Tests: Follow system and auth-gated upvote tests
+- [x] Tests: Add explicit vitest cases for profile tRPC endpoints: create, update, getByUsername, me, username availability
+- [x] Tests: Add vitest coverage for follow system (toggleFollow, isFollowing, followers, following, stats, likedUseCases)

@@ -40,6 +40,18 @@ import {
   getTrafficSummary,
   getContributorLeaderboard,
   getPendingWithoutAiScore,
+  isUsernameValid,
+  isUsernameTaken,
+  getProfileByUserId,
+  getProfileByUsername,
+  createProfile,
+  updateProfile,
+  toggleFollow,
+  isFollowing,
+  getFollowers,
+  getFollowing,
+  getLikedUseCases,
+  getProfileStats,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -88,18 +100,16 @@ export const appRouter = router({
         offset: z.number().min(0).optional(),
       }))
       .query(async ({ input, ctx }) => {
-        const visitorKey = getVisitorKey(ctx.req);
         return getApprovedUseCases({
           ...input,
-          visitorKey,
+          userId: ctx.user?.id,
         });
       }),
 
     getBySlug: publicProcedure
       .input(z.object({ slug: z.string() }))
       .query(async ({ input, ctx }) => {
-        const visitorKey = getVisitorKey(ctx.req);
-        return getUseCaseBySlug(input.slug, visitorKey);
+        return getUseCaseBySlug(input.slug, ctx.user?.id);
       }),
 
     related: publicProcedure
@@ -114,12 +124,11 @@ export const appRouter = router({
         return getTrendingUseCases(input?.limit ?? 6);
       }),
 
-    // ─── Upvote (Public — no login required) ────────────────────
-    toggleUpvote: publicProcedure
+    // ─── Upvote (Protected — login required) ────────────────────
+    toggleUpvote: protectedProcedure
       .input(z.object({ useCaseId: z.number() }))
       .mutation(async ({ input, ctx }) => {
-        const visitorKey = getVisitorKey(ctx.req);
-        return toggleUpvote(input.useCaseId, visitorKey);
+        return toggleUpvote(input.useCaseId, ctx.user.id);
       }),
 
     // ─── Submit (Protected) ──────────────────────────────────────
@@ -228,6 +237,132 @@ export const appRouter = router({
     mySubmissions: protectedProcedure.query(async ({ ctx }) => {
       return getUserSubmissions(ctx.user.id);
     }),
+  }),
+
+  // ─── Profile ──────────────────────────────────────────────────────
+  profile: router({
+    // Check username availability (public — for real-time validation)
+    checkUsername: publicProcedure
+      .input(z.object({ username: z.string() }))
+      .query(async ({ input }) => {
+        const validation = isUsernameValid(input.username);
+        if (!validation.valid) return { available: false, reason: validation.reason };
+        const taken = await isUsernameTaken(input.username);
+        return { available: !taken, reason: taken ? "This username is already taken" : undefined };
+      }),
+
+    // Get current user's profile (protected)
+    me: protectedProcedure.query(async ({ ctx }) => {
+      return getProfileByUserId(ctx.user.id);
+    }),
+
+    // Get public profile by username
+    getByUsername: publicProcedure
+      .input(z.object({ username: z.string() }))
+      .query(async ({ input }) => {
+        return getProfileByUsername(input.username);
+      }),
+
+    // Create profile (protected, one per user)
+    create: protectedProcedure
+      .input(z.object({
+        username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_-]+$/),
+        proficiency: z.enum(["beginner", "intermediate", "advanced", "expert"]),
+        company: z.string().max(128).optional(),
+        bio: z.string().max(500).optional(),
+        socialHandles: z.array(z.object({
+          platform: z.enum(["x", "instagram", "linkedin", "other"]),
+          handle: z.string().min(1).max(256),
+        })).min(1, "At least one social handle is required"),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // Check if user already has a profile
+        const existing = await getProfileByUserId(ctx.user.id);
+        if (existing) throw new Error("Profile already exists. Use update instead.");
+
+        // Validate username
+        const validation = isUsernameValid(input.username);
+        if (!validation.valid) throw new Error(validation.reason);
+        const taken = await isUsernameTaken(input.username);
+        if (taken) throw new Error("This username is already taken");
+
+        return createProfile({
+          userId: ctx.user.id,
+          username: input.username,
+          proficiency: input.proficiency,
+          company: input.company,
+          bio: input.bio,
+          socialHandles: input.socialHandles,
+        });
+      }),
+
+    // Update profile (protected)
+    update: protectedProcedure
+      .input(z.object({
+        username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_-]+$/).optional(),
+        proficiency: z.enum(["beginner", "intermediate", "advanced", "expert"]).optional(),
+        company: z.string().max(128).nullable().optional(),
+        bio: z.string().max(500).nullable().optional(),
+        socialHandles: z.array(z.object({
+          platform: z.enum(["x", "instagram", "linkedin", "other"]),
+          handle: z.string().min(1).max(256),
+        })).min(1, "At least one social handle is required").optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        // If changing username, validate it
+        if (input.username) {
+          const validation = isUsernameValid(input.username);
+          if (!validation.valid) throw new Error(validation.reason);
+          const existing = await getProfileByUserId(ctx.user.id);
+          if (existing && existing.username !== input.username) {
+            const taken = await isUsernameTaken(input.username);
+            if (taken) throw new Error("This username is already taken");
+          }
+        }
+
+        const updated = await updateProfile(ctx.user.id, input);
+        if (!updated) throw new Error("Profile not found");
+        return updated;
+      }),
+
+    // ─── Follow System ──────────────────────────────────────────
+    toggleFollow: protectedProcedure
+      .input(z.object({ targetUserId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        return toggleFollow(ctx.user.id, input.targetUserId);
+      }),
+
+    isFollowing: protectedProcedure
+      .input(z.object({ targetUserId: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return isFollowing(ctx.user.id, input.targetUserId);
+      }),
+
+    followers: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return getFollowers(input.userId);
+      }),
+
+    following: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return getFollowing(input.userId);
+      }),
+
+    // ─── Liked Use Cases ────────────────────────────────────────
+    likedUseCases: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return getLikedUseCases(input.userId);
+      }),
+
+    // ─── Profile Stats ──────────────────────────────────────────
+    stats: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return getProfileStats(input.userId);
+      }),
   }),
 
   // ─── Admin ───────────────────────────────────────────────────────
