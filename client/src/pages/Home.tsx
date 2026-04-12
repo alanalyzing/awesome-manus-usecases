@@ -226,18 +226,34 @@ function LeaderboardWidget() {
       </h3>
       <div className="space-y-0.5">
         {entries.map((entry: any, index: number) => (
-          <div
+          <Link
             key={entry.userId}
+            href={entry.username ? `/profile/${entry.username}` : "#"}
             className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-sidebar-accent/50 transition-colors"
           >
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-              index === 0
-                ? "bg-primary/15 text-primary"
-                : index === 1
-                ? "bg-primary/10 text-primary/80"
-                : "bg-muted text-muted-foreground"
-            }`}>
-              {index + 1}
+            <div className="relative shrink-0">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold overflow-hidden ${
+                index === 0
+                  ? "bg-primary/15 text-primary"
+                  : index === 1
+                  ? "bg-primary/10 text-primary/80"
+                  : "bg-muted text-muted-foreground"
+              }`}>
+                {entry.avatarUrl ? (
+                  <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  (entry.name || "A").charAt(0).toUpperCase()
+                )}
+              </div>
+              <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold border border-background ${
+                index === 0
+                  ? "bg-primary text-primary-foreground"
+                  : index === 1
+                  ? "bg-primary/80 text-primary-foreground"
+                  : "bg-muted-foreground/60 text-background"
+              }`}>
+                {index + 1}
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-xs font-medium truncate">{entry.name || "Anonymous"}</div>
@@ -249,7 +265,7 @@ function LeaderboardWidget() {
                 {entry.totalUpvotes}
               </span>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
@@ -956,7 +972,14 @@ export default function Home() {
                           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
                             <div className="flex items-center gap-3 pt-2">
                               {uc.submitterName && (
-                                <span className="flex items-center gap-1 truncate max-w-[100px]">
+                                <span className="flex items-center gap-1.5 truncate max-w-[140px]">
+                                  <span className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center text-[9px] font-bold text-primary shrink-0 overflow-hidden">
+                                    {uc.submitterAvatar ? (
+                                      <img src={uc.submitterAvatar} alt="" className="h-full w-full object-cover" />
+                                    ) : (
+                                      uc.submitterName.charAt(0).toUpperCase()
+                                    )}
+                                  </span>
                                   {uc.submitterUsername ? (
                                     <Link href={`/profile/${uc.submitterUsername}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="hover:text-primary hover:underline truncate">
                                       {uc.submitterName}

@@ -1,29 +1,24 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ManusLogo } from "@/components/ManusLogo";
-import { Check, X, Loader2, Plus, Trash2, User, Briefcase, Award, Share2 } from "lucide-react";
+import { Check, X, Loader2, Plus, Trash2, User, Briefcase, Award, Share2, Camera, ImageIcon } from "lucide-react";
 
 type SocialHandle = {
   platform: "x" | "instagram" | "linkedin" | "other";
   handle: string;
 };
 
-const PLATFORM_LABELS: Record<string, string> = {
-  x: "X (Twitter)",
-  instagram: "Instagram",
-  linkedin: "LinkedIn",
-  other: "Other",
-};
+const MAX_AVATAR_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 
 const PROFICIENCY_LABELS: Record<string, { label: string; description: string }> = {
   beginner: { label: "Beginner", description: "Just getting started with Manus" },
@@ -54,6 +49,12 @@ export default function ProfileSetup() {
     { platform: "x", handle: "" },
   ]);
 
+  // Avatar state
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   // Debounced username check
   const [debouncedUsername, setDebouncedUsername] = useState("");
   useEffect(() => {
@@ -66,6 +67,19 @@ export default function ProfileSetup() {
     { enabled: debouncedUsername.length >= 3 }
   );
 
+  const uploadAvatar = trpc.profile.uploadAvatar.useMutation({
+    onSuccess: (data) => {
+      setAvatarUrl(data.url);
+      setAvatarUploading(false);
+      toast.success("Avatar uploaded!");
+    },
+    onError: (err) => {
+      setAvatarUploading(false);
+      setAvatarPreview(null);
+      toast.error(err.message);
+    },
+  });
+
   const createProfile = trpc.profile.create.useMutation({
     onSuccess: () => {
       toast.success("Profile created successfully!");
@@ -75,6 +89,44 @@ export default function ProfileSetup() {
       toast.error(err.message);
     },
   });
+
+  const handleAvatarSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+      toast.error("Only PNG, JPG, WebP, and GIF files are allowed");
+      return;
+    }
+    if (file.size > MAX_AVATAR_SIZE) {
+      toast.error("File size exceeds 10MB limit");
+      return;
+    }
+
+    // Show local preview immediately
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+    setAvatarUploading(true);
+
+    // Convert to base64 and upload
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadAvatar.mutate({
+        fileBase64: base64,
+        contentType: file.type,
+      });
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input so same file can be re-selected
+    e.target.value = "";
+  }, [uploadAvatar]);
+
+  const removeAvatar = useCallback(() => {
+    setAvatarPreview(null);
+    setAvatarUrl(null);
+  }, []);
 
   const addSocialHandle = useCallback(() => {
     const usedPlatforms = new Set(socialHandles.map(h => h.platform));
@@ -96,9 +148,10 @@ export default function ProfileSetup() {
       usernameCheck.data?.available === true &&
       proficiency !== "" &&
       socialHandles.length >= 1 &&
-      socialHandles.every(h => h.handle.trim().length > 0)
+      socialHandles.every(h => h.handle.trim().length > 0) &&
+      !avatarUploading
     );
-  }, [username, usernameCheck.data, proficiency, socialHandles]);
+  }, [username, usernameCheck.data, proficiency, socialHandles, avatarUploading]);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
@@ -154,6 +207,84 @@ export default function ProfileSetup() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Avatar Upload */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Camera className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Profile Photo</CardTitle>
+                  <CardDescription>Upload an avatar (optional, max 10MB)</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-6">
+                {/* Avatar preview */}
+                <div className="relative group">
+                  <div
+                    className="h-24 w-24 rounded-full border-2 border-dashed border-border flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary/50 transition-colors"
+                    onClick={() => avatarInputRef.current?.click()}
+                  >
+                    {avatarUploading ? (
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    ) : avatarPreview ? (
+                      <img src={avatarPreview} alt="Avatar preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                    )}
+                  </div>
+                  {avatarPreview && !avatarUploading && (
+                    <button
+                      type="button"
+                      onClick={removeAvatar}
+                      className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs hover:bg-destructive/90 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
+                  >
+                    {avatarUploading ? (
+                      <>
+                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        Uploading...
+                      </>
+                    ) : avatarPreview ? (
+                      "Change photo"
+                    ) : (
+                      "Upload photo"
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    PNG, JPG, WebP, or GIF. Max 10MB.
+                  </p>
+                  {avatarUrl && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <Check className="h-3 w-3" /> Uploaded successfully
+                    </p>
+                  )}
+                </div>
+              </div>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={handleAvatarSelect}
+              />
+            </CardContent>
+          </Card>
+
           {/* Step 1: Username */}
           <Card>
             <CardHeader>
@@ -191,7 +322,7 @@ export default function ProfileSetup() {
               {debouncedUsername.length >= 3 && usernameCheck.data && (
                 <p className={`text-xs ${usernameCheck.data.available ? "text-green-600" : "text-red-600"}`}>
                   {usernameCheck.data.available
-                    ? `✓ /profile/${debouncedUsername} is available`
+                    ? `\u2713 /profile/${debouncedUsername} is available`
                     : usernameCheck.data.reason}
                 </p>
               )}

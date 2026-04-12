@@ -18,7 +18,11 @@ describe("Slack webhook integration", () => {
 
   describe("notifySlackNewSubmission", () => {
     it("should return false when SLACK_WEBHOOK_URL is not set", async () => {
-      // ENV.slackWebhookUrl defaults to "" when not set
+      // Temporarily unset the env so the helper sees no webhook
+      const originalEnv = process.env.SLACK_WEBHOOK_URL;
+      delete process.env.SLACK_WEBHOOK_URL;
+
+      vi.resetModules();
       const { notifySlackNewSubmission } = await import("./slack");
       const result = await notifySlackNewSubmission({
         title: "Test Use Case",
@@ -31,6 +35,9 @@ describe("Slack webhook integration", () => {
       });
       expect(result).toBe(false);
       expect(mockFetch).not.toHaveBeenCalled();
+
+      // Restore
+      if (originalEnv !== undefined) process.env.SLACK_WEBHOOK_URL = originalEnv;
     });
 
     it("should send a POST request with Block Kit payload when webhook is configured", async () => {

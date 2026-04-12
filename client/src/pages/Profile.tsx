@@ -169,8 +169,12 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row gap-6 mb-8">
             {/* Avatar / Identity */}
             <div className="flex flex-col items-center md:items-start gap-4 md:w-64 shrink-0">
-              <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-serif font-bold text-primary">
-                {(profile.user.name || username).charAt(0).toUpperCase()}
+              <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-serif font-bold text-primary overflow-hidden">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt={profile.username} className="h-full w-full object-cover" />
+                ) : (
+                  (profile.user.name || username).charAt(0).toUpperCase()
+                )}
               </div>
               <div className="text-center md:text-left">
                 <h1 className="text-2xl font-serif font-bold text-foreground">
@@ -522,8 +526,12 @@ function UserListTab({
             <Link href={`/profile/${person.username}`}>
               <Card className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-serif font-bold text-primary shrink-0">
-                    {(person.name || person.username || "?").charAt(0).toUpperCase()}
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-serif font-bold text-primary shrink-0 overflow-hidden">
+                    {person.avatarUrl ? (
+                      <img src={person.avatarUrl} alt={person.name || person.username || ""} className="h-full w-full object-cover" />
+                    ) : (
+                      (person.name || person.username || "?").charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="font-medium text-sm text-foreground truncate">
@@ -539,8 +547,12 @@ function UserListTab({
           ) : (
             <Card>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-serif font-bold text-muted-foreground shrink-0">
-                  {(person.name || "?").charAt(0).toUpperCase()}
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-sm font-serif font-bold text-muted-foreground shrink-0 overflow-hidden">
+                  {person.avatarUrl ? (
+                    <img src={person.avatarUrl} alt={person.name || ""} className="h-full w-full object-cover" />
+                  ) : (
+                    (person.name || "?").charAt(0).toUpperCase()
+                  )}
                 </div>
                 <div className="min-w-0">
                   <div className="font-medium text-sm text-foreground truncate">

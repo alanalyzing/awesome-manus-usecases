@@ -219,6 +219,38 @@ describe("Profile System", () => {
     });
   });
 
+  describe("Avatar Upload", () => {
+    it("profile.uploadAvatar requires authentication", async () => {
+      const ctx = createPublicContext();
+      const caller = appRouter.createCaller(ctx);
+      // A tiny 1x1 transparent PNG in base64
+      const tinyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+      await expect(
+        caller.profile.uploadAvatar({ fileBase64: tinyPng, contentType: "image/png" })
+      ).rejects.toThrow();
+    });
+
+    it("profile.uploadAvatar rejects invalid content types", async () => {
+      const ctx = createAuthContext(1);
+      const caller = appRouter.createCaller(ctx);
+      const tinyPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+      await expect(
+        caller.profile.uploadAvatar({ fileBase64: tinyPng, contentType: "application/pdf" })
+      ).rejects.toThrow();
+    });
+
+    it("profile.uploadAvatar rejects oversized files (>10MB)", async () => {
+      const ctx = createAuthContext(1);
+      const caller = appRouter.createCaller(ctx);
+      // Create a base64 string that decodes to >10MB
+      const bigBuffer = Buffer.alloc(11 * 1024 * 1024, 0);
+      const bigBase64 = bigBuffer.toString("base64");
+      await expect(
+        caller.profile.uploadAvatar({ fileBase64: bigBase64, contentType: "image/png" })
+      ).rejects.toThrow(/10MB/);
+    });
+  });
+
   describe("Auth-gated Upvotes", () => {
     it("upvote requires authentication", async () => {
       const ctx = createPublicContext();

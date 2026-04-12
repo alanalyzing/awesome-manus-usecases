@@ -98,6 +98,7 @@ export async function getCategoriesByType(type: "job_function" | "feature"): Pro
 export type UseCaseWithDetails = UseCase & {
   submitterName: string | null;
   submitterUsername: string | null;
+  submitterAvatar: string | null;
   categories: { id: number; name: string; slug: string; type: string }[];
   screenshots: { id: number; url: string; sortOrder: number }[];
   hasUpvoted?: boolean;
@@ -174,9 +175,10 @@ export async function getApprovedUseCases(opts: {
     : [];
   const submitterMap = new Map(submitters.map(s => [s.id, s.name]));
   const profileRows = submitterIds.length > 0
-    ? await db.select({ userId: userProfiles.userId, username: userProfiles.username }).from(userProfiles).where(inArray(userProfiles.userId, submitterIds))
+    ? await db.select({ userId: userProfiles.userId, username: userProfiles.username, avatarUrl: userProfiles.avatarUrl }).from(userProfiles).where(inArray(userProfiles.userId, submitterIds))
     : [];
   const profileUsernameMap = new Map(profileRows.map(p => [p.userId, p.username]));
+  const profileAvatarMap = new Map(profileRows.map(p => [p.userId, p.avatarUrl]));
 
   // Fetch categories
   const ucCats = await db
@@ -206,6 +208,7 @@ export async function getApprovedUseCases(opts: {
     ...uc,
     submitterName: submitterMap.get(uc.submitterId) ?? null,
     submitterUsername: profileUsernameMap.get(uc.submitterId) ?? null,
+    submitterAvatar: profileAvatarMap.get(uc.submitterId) ?? null,
     categories: catMap.get(uc.id) ?? [],
     screenshots: ssMap.get(uc.id) ?? [],
     hasUpvoted: opts.userId ? upvoteSet.has(uc.id) : undefined,
@@ -245,7 +248,7 @@ export async function getUseCaseBySlug(slug: string, userId?: number): Promise<U
   await db.insert(viewEvents).values({ useCaseId: uc.id, visitorKey: null });
 
   const submitterRows = await db.select({ name: users.name }).from(users).where(eq(users.id, uc.submitterId)).limit(1);
-  const submitterProfileRows = await db.select({ username: userProfiles.username }).from(userProfiles).where(eq(userProfiles.userId, uc.submitterId)).limit(1);
+  const submitterProfileRows = await db.select({ username: userProfiles.username, avatarUrl: userProfiles.avatarUrl }).from(userProfiles).where(eq(userProfiles.userId, uc.submitterId)).limit(1);
 
   const ucCats = await db
     .select({ categoryId: useCaseCategories.categoryId, name: categories.name, slug: categories.slug, type: categories.type })
@@ -278,6 +281,7 @@ export async function getUseCaseBySlug(slug: string, userId?: number): Promise<U
     viewCount: uc.viewCount + 1,
     submitterName: submitterRows[0]?.name ?? null,
     submitterUsername: submitterProfileRows[0]?.username ?? null,
+    submitterAvatar: submitterProfileRows[0]?.avatarUrl ?? null,
     categories: ucCats.map(c => ({ id: c.categoryId, name: c.name, slug: c.slug, type: c.type })),
     screenshots: screenshotRows.map(s => ({ id: s.id, url: s.url, sortOrder: s.sortOrder })),
     hasUpvoted,
@@ -332,6 +336,7 @@ export async function getRelatedUseCases(useCaseId: number, categoryIds: number[
     ...uc,
     submitterName: submitterMap.get(uc.submitterId) ?? null,
     submitterUsername: null,
+    submitterAvatar: null,
     categories: catMap.get(uc.id) ?? [],
     screenshots: ssMap.get(uc.id) ?? [],
   }));
@@ -385,11 +390,14 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
       ...uc,
       submitterName: submitterMap.get(uc.submitterId) ?? null,
       submitterUsername: null,
+      submitterAvatar: null,
       categories: catMap.get(uc.id) ?? [],
       screenshots: ssMap.get(uc.id) ?? [],
+      hasUpvoted: false,
     }));
   }
 
+  // Main path: we have trending IDs
   const candidateIds = trendingIds.map(r => r.useCaseId);
   const rows = await db.select().from(useCases)
     .where(and(inArray(useCases.id, candidateIds), eq(useCases.status, "approved")))
@@ -420,6 +428,7 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
       ...uc,
       submitterName: submitterMap.get(uc.submitterId) ?? null,
       submitterUsername: null,
+      submitterAvatar: null,
       categories: catMap.get(uc.id) ?? [],
       screenshots: ssMap.get(uc.id) ?? [],
       recentUpvotes: trendingMap.get(uc.id) ?? 0,
@@ -958,6 +967,8 @@ export async function getTrafficSummary(): Promise<{
 export interface LeaderboardEntry {
   userId: number;
   name: string | null;
+  username: string | null;
+  avatarUrl: string | null;
   approvedCount: number;
   totalUpvotes: number;
 }
@@ -970,11 +981,14 @@ export async function getContributorLeaderboard(limit = 10): Promise<Leaderboard
     SELECT
       u.id as userId,
       u.name,
+      up.username,
+      up.avatarUrl,
       COUNT(DISTINCT uc.id) as approvedCount,
       COALESCE(SUM(uc.upvoteCount), 0) as totalUpvotes
     FROM users u
     INNER JOIN use_cases uc ON uc.submitterId = u.id AND uc.status = 'approved'
-    GROUP BY u.id, u.name
+    LEFT JOIN user_profiles up ON up.userId = u.id
+    GROUP BY u.id, u.name, up.username, up.avatarUrl
     ORDER BY approvedCount DESC, totalUpvotes DESC
     LIMIT ${limit}
   `);
@@ -983,6 +997,8 @@ export async function getContributorLeaderboard(limit = 10): Promise<Leaderboard
   return (Array.isArray(result) ? result : []).map((r: any) => ({
     userId: Number(r.userId),
     name: r.name ?? null,
+    username: r.username ?? null,
+    avatarUrl: r.avatarUrl ?? null,
     approvedCount: Number(r.approvedCount),
     totalUpvotes: Number(r.totalUpvotes),
   }));
@@ -1133,6 +1149,7 @@ export async function updateProfile(userId: number, data: {
   proficiency?: "beginner" | "intermediate" | "advanced" | "expert";
   company?: string | null;
   bio?: string | null;
+  avatarUrl?: string | null;
   socialHandles?: { platform: "x" | "instagram" | "linkedin" | "other"; handle: string }[];
 }): Promise<UserProfile | null> {
   const db = await getDb();
@@ -1147,6 +1164,7 @@ export async function updateProfile(userId: number, data: {
   if (data.proficiency !== undefined) updates.proficiency = data.proficiency;
   if (data.company !== undefined) updates.company = data.company;
   if (data.bio !== undefined) updates.bio = data.bio;
+  if (data.avatarUrl !== undefined) updates.avatarUrl = data.avatarUrl;
 
   if (Object.keys(updates).length > 0) {
     await db.update(userProfiles).set(updates).where(eq(userProfiles.id, profile.id));
@@ -1297,6 +1315,7 @@ export async function getLikedUseCases(userId: number): Promise<UseCaseWithDetai
         ...uc,
         submitterName: submitterMap.get(uc.submitterId) ?? null,
         submitterUsername: profileMap.get(uc.submitterId) ?? null,
+        submitterAvatar: null,
         categories: catMap.get(uc.id) ?? [],
         screenshots: ssMap.get(uc.id) ?? [],
         hasUpvoted: true,

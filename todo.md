@@ -136,3 +136,10 @@
 - [x] Tests: Follow system and auth-gated upvote tests
 - [x] Tests: Add explicit vitest cases for profile tRPC endpoints: create, update, getByUsername, me, username availability
 - [x] Tests: Add vitest coverage for follow system (toggleFollow, isFollowing, followers, following, stats, likedUseCases)
+- [x] Feature: Profile avatar upload (10MB max)
+- [x] Schema: Add avatarUrl column to user_profiles table
+- [x] Backend: Avatar upload endpoint with S3 storage and 10MB size validation
+- [x] Frontend: Avatar upload UI on profile setup and edit pages
+- [x] Frontend: Display avatars on profile pages, gallery cards, modals, detail views, leaderboard widgets, and followers/following lists
+- [x] Tests: Avatar upload endpoint tests
+- [x] Feature: Configure Slack webhook URL for use case notifications

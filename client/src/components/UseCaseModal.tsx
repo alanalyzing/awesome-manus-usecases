@@ -182,7 +182,14 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
                     {uc.viewCount} {t("gallery.views")}
                   </span>
                   {uc.submitterName && (
-                     <span>
+                     <span className="flex items-center gap-1.5">
+                       <span className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0 overflow-hidden">
+                         {uc.submitterAvatar ? (
+                           <img src={uc.submitterAvatar} alt="" className="h-full w-full object-cover" />
+                         ) : (
+                           uc.submitterName.charAt(0).toUpperCase()
+                         )}
+                       </span>
                        {t("detail.submittedBy")}{" "}
                        {uc.submitterUsername ? (
                          <Link href={`/profile/${uc.submitterUsername}`} className="font-semibold text-primary hover:underline">

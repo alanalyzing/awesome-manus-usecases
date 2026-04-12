@@ -206,6 +206,8 @@ describe("admin.contributorLeaderboard", () => {
     for (const entry of result) {
       expect(entry).toHaveProperty("userId");
       expect(entry).toHaveProperty("name");
+      expect(entry).toHaveProperty("username");
+      expect(entry).toHaveProperty("avatarUrl");
       expect(entry).toHaveProperty("approvedCount");
       expect(entry).toHaveProperty("totalUpvotes");
       expect(typeof entry.userId).toBe("number");

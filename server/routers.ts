@@ -325,6 +325,28 @@ export const appRouter = router({
         return updated;
       }),
 
+    // ─── Avatar Upload ──────────────────────────────────────────
+    uploadAvatar: protectedProcedure
+      .input(z.object({
+        fileBase64: z.string(),
+        contentType: z.string().refine(
+          ct => ["image/png", "image/jpeg", "image/webp", "image/gif"].includes(ct),
+          "Only PNG, JPG, WebP, and GIF files are allowed"
+        ),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        if (buffer.length > 10 * 1024 * 1024) {
+          throw new Error("File size exceeds 10MB limit");
+        }
+        const ext = input.contentType.split("/")[1] === "jpeg" ? "jpg" : input.contentType.split("/")[1];
+        const fileKey = `avatars/${ctx.user.id}/${nanoid()}.${ext}`;
+        const { url } = await storagePut(fileKey, buffer, input.contentType);
+        // Update profile with new avatar URL
+        await updateProfile(ctx.user.id, { avatarUrl: url });
+        return { url };
+      }),
+
     // ─── Follow System ──────────────────────────────────────────
     toggleFollow: protectedProcedure
       .input(z.object({ targetUserId: z.number() }))
