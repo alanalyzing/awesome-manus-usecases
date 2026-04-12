@@ -80,3 +80,8 @@
 - [x] Creative: "Trending This Week" section highlighting fastest-rising use cases
 - [x] Creative: Skeleton loading states for cards during data fetch
 - [x] Creative: Animated upvote button with spring bounce on tap
+- [x] AI Score: Add Complexity dimension (how technically ambitious, multi-capability the use case is)
+- [x] AI Score: Add Presentation dimension (how well documented, clear screenshots, compelling storytelling)
+- [x] AI Score: Update database schema with complexity and presentation columns
+- [x] AI Score: Update LLM prompt to evaluate all 5 dimensions
+- [x] AI Score: Update admin dashboard UI to display all 5 dimensions in score breakdown

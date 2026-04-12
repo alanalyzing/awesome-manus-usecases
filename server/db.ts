@@ -96,7 +96,7 @@ export type UseCaseWithDetails = UseCase & {
   categories: { id: number; name: string; slug: string; type: string }[];
   screenshots: { id: number; url: string; sortOrder: number }[];
   hasUpvoted?: boolean;
-  aiScore?: { overall: string; completeness: string; innovativeness: string; impact: string; reasoning: string | null } | null;
+  aiScore?: { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null } | null;
 };
 
 export async function getApprovedUseCases(opts: {
@@ -237,6 +237,8 @@ export async function getUseCaseBySlug(slug: string, visitorKey?: string): Promi
     completeness: aiScoreRows[0].completenessScore,
     innovativeness: aiScoreRows[0].innovativenessScore,
     impact: aiScoreRows[0].impactScore,
+    complexity: aiScoreRows[0].complexityScore,
+    presentation: aiScoreRows[0].presentationScore,
     reasoning: aiScoreRows[0].reasoning,
   } : null;
 
@@ -538,7 +540,7 @@ export async function getAdminUseCases(opts: {
   status?: "pending" | "approved" | "rejected";
   limit?: number;
   offset?: number;
-}): Promise<{ items: (UseCase & { submitterName: string | null; submitterEmail: string | null; categories: { id: number; name: string; slug: string; type: string }[]; screenshots: { id: number; url: string; sortOrder: number }[]; aiScore?: { overall: string; completeness: string; innovativeness: string; impact: string; reasoning: string | null } | null })[]; total: number }> {
+}): Promise<{ items: (UseCase & { submitterName: string | null; submitterEmail: string | null; categories: { id: number; name: string; slug: string; type: string }[]; screenshots: { id: number; url: string; sortOrder: number }[]; aiScore?: { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null } | null })[]; total: number }> {
   const db = await getDb();
   if (!db) return { items: [], total: 0 };
 
@@ -573,7 +575,7 @@ export async function getAdminUseCases(opts: {
 
   // Fetch AI scores
   const aiScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds));
-  const aiScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; reasoning: string | null }>();
+  const aiScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
   for (const s of aiScoreRows) {
     // Keep the latest score per use case
     if (!aiScoreMap.has(s.useCaseId)) {
@@ -582,6 +584,8 @@ export async function getAdminUseCases(opts: {
         completeness: s.completenessScore,
         innovativeness: s.innovativenessScore,
         impact: s.impactScore,
+        complexity: s.complexityScore,
+        presentation: s.presentationScore,
         reasoning: s.reasoning,
       });
     }
@@ -715,6 +719,8 @@ export async function saveAiScore(data: {
   completenessScore: string;
   innovativenessScore: string;
   impactScore: string;
+  complexityScore: string;
+  presentationScore: string;
   overallScore: string;
   reasoning: string;
 }): Promise<void> {

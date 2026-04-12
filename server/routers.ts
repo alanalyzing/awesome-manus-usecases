@@ -377,13 +377,15 @@ Description: ${uc.description}
 Session Replay URL: ${uc.sessionReplayUrl || "Not provided"}
 Deliverable URL: ${uc.deliverableUrl || "Not provided"}
 
-Score this use case on three criteria, each from 0.0 to 5.0 (one decimal place):
+Score this use case on five criteria, each from 0.0 to 5.0 (one decimal place):
 
-1. **Completeness** (0-5): How complete is the submission? Does it have a clear title, detailed description, working links, and sufficient context for others to understand the use case?
+1. **Completeness** (0-5): How complete is the submission? Does it have a clear title, detailed description, working links, and sufficient context for others to understand the use case end-to-end?
 2. **Innovativeness** (0-5): How creative or novel is this use case? Does it demonstrate a unique application of Manus, or is it a routine/common task?
-3. **Impact** (0-5): How much value does this use case create? Would it inspire others, demonstrate significant productivity gains, or solve an important problem?
+3. **Impact** (0-5): How much value does this use case create for its target user segment? Would it inspire others, demonstrate significant productivity gains, or solve an important problem?
+4. **Complexity** (0-5): How technically ambitious is this use case? Does it chain multiple Manus capabilities together (e.g., research + data analysis + visualization + report generation), or is it a single straightforward task? Higher scores for multi-step, cross-capability workflows.
+5. **Presentation** (0-5): How well is the use case documented and showcased? Is the description well-written and informative? Does the session replay or deliverable link work and tell a compelling story? Higher scores for clear, professional, and engaging submissions.
 
-Also compute an overall score as the weighted average: Completeness (30%) + Innovativeness (35%) + Impact (35%).
+Also compute an overall score as the weighted average: Completeness (20%) + Innovativeness (25%) + Impact (25%) + Complexity (15%) + Presentation (15%).
 
 Return your evaluation as JSON.`;
 
@@ -403,10 +405,12 @@ Return your evaluation as JSON.`;
                   completeness: { type: "number", description: "Score 0.0-5.0" },
                   innovativeness: { type: "number", description: "Score 0.0-5.0" },
                   impact: { type: "number", description: "Score 0.0-5.0" },
+                  complexity: { type: "number", description: "Score 0.0-5.0" },
+                  presentation: { type: "number", description: "Score 0.0-5.0" },
                   overall: { type: "number", description: "Weighted average score 0.0-5.0" },
                   reasoning: { type: "string", description: "Brief explanation of the scores" },
                 },
-                required: ["completeness", "innovativeness", "impact", "overall", "reasoning"],
+                required: ["completeness", "innovativeness", "impact", "complexity", "presentation", "overall", "reasoning"],
                 additionalProperties: false,
               },
             },
@@ -421,6 +425,8 @@ Return your evaluation as JSON.`;
           completenessScore: String(Math.min(5, Math.max(0, Number(parsed.completeness) || 0)).toFixed(1)),
           innovativenessScore: String(Math.min(5, Math.max(0, Number(parsed.innovativeness) || 0)).toFixed(1)),
           impactScore: String(Math.min(5, Math.max(0, Number(parsed.impact) || 0)).toFixed(1)),
+          complexityScore: String(Math.min(5, Math.max(0, Number(parsed.complexity) || 0)).toFixed(1)),
+          presentationScore: String(Math.min(5, Math.max(0, Number(parsed.presentation) || 0)).toFixed(1)),
           overallScore: String(Math.min(5, Math.max(0, Number(parsed.overall) || 0)).toFixed(1)),
           reasoning: parsed.reasoning || "No reasoning provided",
         };
@@ -440,6 +446,8 @@ Return your evaluation as JSON.`;
           completeness: scores.completenessScore,
           innovativeness: scores.innovativenessScore,
           impact: scores.impactScore,
+          complexity: scores.complexityScore,
+          presentation: scores.presentationScore,
           reasoning: scores.reasoning,
         };
       }),
@@ -454,6 +462,8 @@ Return your evaluation as JSON.`;
           completeness: score.completenessScore,
           innovativeness: score.innovativenessScore,
           impact: score.impactScore,
+          complexity: score.complexityScore,
+          presentation: score.presentationScore,
           reasoning: score.reasoning,
           scannedAt: score.scannedAt,
         };

@@ -121,6 +121,8 @@ export const aiScores = mysqlTable("ai_scores", {
   completenessScore: decimal("completenessScore", { precision: 3, scale: 1 }).notNull(),
   innovativenessScore: decimal("innovativenessScore", { precision: 3, scale: 1 }).notNull(),
   impactScore: decimal("impactScore", { precision: 3, scale: 1 }).notNull(),
+  complexityScore: decimal("complexityScore", { precision: 3, scale: 1 }).notNull(),
+  presentationScore: decimal("presentationScore", { precision: 3, scale: 1 }).notNull(),
   overallScore: decimal("overallScore", { precision: 3, scale: 1 }).notNull(),
   reasoning: text("reasoning"),
   scannedAt: timestamp("scannedAt").defaultNow().notNull(),
