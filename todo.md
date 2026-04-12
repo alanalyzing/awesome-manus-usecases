@@ -68,3 +68,15 @@
 - [x] Admin: Ability to trigger re-scan of AI evaluation
 - [x] Fix: Verify owner notification payload includes submitter email in submission flow
 - [x] Fix: Add activity log filters (action type) in Admin UI
+- [x] Branding: Rename site to "Awesome Manus Use Cases" across all pages and meta tags
+- [x] Branding: Upload official Manus glyph PNG and use as site logo/favicon
+- [x] Branding: Update VITE_APP_TITLE to "Awesome Manus Use Cases" (built-in secret, hardcoded in UI instead)
+- [x] Creative: Hero section with animated headline, stats counter, and CTA buttons
+- [x] Creative: Smooth card entrance animations with staggered reveal on scroll
+- [x] Creative: Infinite scroll replacing "Load More" button
+- [x] Creative: Social proof stats in hero (total use cases, categories, languages)
+- [x] Creative: Card hover micro-interactions (lift, shadow, thumbnail zoom, gradient overlay)
+- [x] Creative: Total count badge in sidebar "All Use Cases" button
+- [x] Creative: "Trending This Week" section highlighting fastest-rising use cases
+- [x] Creative: Skeleton loading states for cards during data fetch
+- [x] Creative: Animated upvote button with spring bounce on tap

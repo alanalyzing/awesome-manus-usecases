@@ -22,7 +22,7 @@ async function injectOgMeta(html: string, url: string): Promise<string> {
     const image = uc.screenshots?.[0]?.url || '';
 
     const ogTags = [
-      `<meta property="og:title" content="${title} — Manus Use Case Library" />`,
+      `<meta property="og:title" content="${title} — Awesome Manus Use Cases" />`,
       `<meta property="og:description" content="${desc}" />`,
       `<meta property="og:type" content="article" />`,
       `<meta property="og:url" content="/use-case/${encodeURIComponent(slug)}" />`,
@@ -32,7 +32,7 @@ async function injectOgMeta(html: string, url: string): Promise<string> {
       `<meta name="twitter:description" content="${desc}" />`,
       image ? `<meta name="twitter:image" content="${image}" />` : '',
       `<link rel="canonical" href="/use-case/${encodeURIComponent(slug)}" />`,
-      `<title>${title} — Manus Use Case Library</title>`,
+      `<title>${title} — Awesome Manus Use Cases</title>`,
     ].filter(Boolean).join('\n    ');
 
     // Replace existing static OG tags

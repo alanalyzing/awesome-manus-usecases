@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import {
   Search,
-  ChevronUp,
   Eye,
   Calendar,
   PanelLeftClose,
@@ -32,16 +31,122 @@ import {
   Shield,
   ArrowUp,
   Bell,
-  FileText,
+  TrendingUp,
+  Users,
+  Zap,
+  Heart,
+  Flame,
 } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { LOCALES, type Locale } from "@/lib/i18n";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { ManusLogo, MadeWithManusBadge } from "@/components/ManusLogo";
+import { ManusLogo, ManusGlyph, MadeWithManusBadge } from "@/components/ManusLogo";
 import { MobileSidebar } from "@/components/MobileSidebar";
 import { UseCaseModal } from "@/components/UseCaseModal";
+
+/** Trending This Week section — horizontal scrollable strip */
+function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void }) {
+  const { t } = useI18n();
+  const trendingQuery = trpc.useCases.trending.useQuery({ limit: 6 });
+  const items = trendingQuery.data ?? [];
+
+  if (trendingQuery.isLoading) {
+    return (
+      <div className="border-b bg-accent/20">
+        <div className="p-6 max-w-7xl mx-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <Flame size={16} className="text-orange-500" />
+            <h2 className="font-serif font-bold text-sm">Trending This Week</h2>
+          </div>
+          <div className="flex gap-4 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="w-64 shrink-0 bg-card rounded-lg border overflow-hidden">
+                <div className="aspect-[16/10] bg-muted animate-pulse" />
+                <div className="p-3 space-y-2">
+                  <div className="h-3.5 bg-muted rounded w-3/4 animate-pulse" />
+                  <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="border-b bg-accent/20">
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <Flame size={16} className="text-orange-500" />
+          <h2 className="font-serif font-bold text-sm">Trending This Week</h2>
+        </div>
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
+          {items.map((uc: any, index: number) => (
+            <motion.div
+              key={uc.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              className="w-64 shrink-0"
+            >
+              <div
+                className="group bg-card rounded-lg border hover:shadow-lg hover:border-primary/20 transition-all duration-300 overflow-hidden cursor-pointer"
+                onClick={() => onCardClick(uc.slug)}
+              >
+                <div className="aspect-[16/10] bg-muted overflow-hidden relative">
+                  {uc.screenshots?.[0] ? (
+                    <img
+                      src={uc.screenshots[0].url}
+                      alt={uc.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-accent/20">
+                      <ManusGlyph size={28} className="opacity-20" />
+                    </div>
+                  )}
+                  {uc.isHighlight && (
+                    <div className="absolute top-2 left-2">
+                      <Badge className="bg-manus-highlight text-white border-0 gap-1 text-[9px] shadow-md">
+                        <Sparkles size={9} />
+                        {t("detail.onlyManus")}
+                      </Badge>
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                    <Flame size={9} />
+                    #{index + 1}
+                  </div>
+                </div>
+                <div className="p-3">
+                  <h3 className="font-serif font-bold text-xs leading-snug line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+                    {uc.title}
+                  </h3>
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <ArrowUp size={10} />
+                      {uc.upvoteCount}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Eye size={10} />
+                      {uc.viewCount}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const SOCIAL_LINKS = [
   { name: "LinkedIn", url: "https://www.linkedin.com/company/maboroshiinc/" },
@@ -50,6 +155,30 @@ const SOCIAL_LINKS = [
   { name: "Instagram", url: "https://www.instagram.com/manus_im/" },
   { name: "TikTok", url: "https://www.tiktok.com/@manus_im" },
 ];
+
+/** Animated counter that counts up from 0 to target */
+function AnimatedCounter({ target, duration = 1200 }: { target: number; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    if (hasAnimated.current || target <= 0) return;
+    hasAnimated.current = true;
+    const start = performance.now();
+    const step = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration]);
+
+  return <span ref={ref}>{count.toLocaleString()}</span>;
+}
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -65,10 +194,19 @@ export default function Home() {
   const [sort, setSort] = useState<"popular" | "newest" | "views">("newest");
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
+  const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
   const [modalSlug, setModalSlug] = useState<string | null>(null);
+  const [showHero, setShowHero] = useState(true);
+
+  // Infinite scroll sentinel
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Queries
   const categoriesQuery = trpc.categories.list.useQuery();
+  // Global count (unfiltered) for sidebar badge
+  const globalCountQuery = trpc.useCases.list.useQuery({ limit: 1, offset: 0 });
+  const globalTotal = globalCountQuery.data?.total ?? 0;
+
   const useCasesQuery = trpc.useCases.list.useQuery({
     search: search || undefined,
     categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
@@ -77,6 +215,20 @@ export default function Home() {
     limit,
     offset,
   });
+
+  // Accumulate items for infinite scroll
+  useEffect(() => {
+    if (!useCasesQuery.data) return;
+    if (offset === 0) {
+      setAccumulatedItems(useCasesQuery.data.items);
+    } else {
+      setAccumulatedItems((prev) => {
+        const existingIds = new Set(prev.map((item: any) => item.id));
+        const newItems = useCasesQuery.data.items.filter((item: any) => !existingIds.has(item.id));
+        return [...prev, ...newItems];
+      });
+    }
+  }, [useCasesQuery.data, offset]);
 
   const toggleUpvote = trpc.useCases.toggleUpvote.useMutation({
     onSuccess: () => {
@@ -96,6 +248,8 @@ export default function Home() {
   const handleCategoryToggle = useCallback((catId: number) => {
     setHighlightOnly(false);
     setOffset(0);
+    setAccumulatedItems([]);
+    setShowHero(false);
     setSelectedCategories((prev) =>
       prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId]
     );
@@ -104,6 +258,8 @@ export default function Home() {
   const handleHighlightToggle = useCallback(() => {
     setSelectedCategories([]);
     setOffset(0);
+    setAccumulatedItems([]);
+    setShowHero(false);
     setHighlightOnly((prev) => !prev);
   }, []);
 
@@ -111,6 +267,8 @@ export default function Home() {
     setSelectedCategories([]);
     setHighlightOnly(false);
     setOffset(0);
+    setAccumulatedItems([]);
+    setShowHero(true);
   }, []);
 
   const handleUpvote = useCallback(
@@ -126,9 +284,37 @@ export default function Home() {
   });
   const unreadCount = unreadCountQuery.data ?? 0;
 
-  const items = useCasesQuery.data?.items ?? [];
+  const items = accumulatedItems;
   const total = useCasesQuery.data?.total ?? 0;
-  const hasMore = offset + limit < total;
+  const hasMore = items.length < total && !useCasesQuery.isFetching;
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!sentinelRef.current || !hasMore) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasMore && !useCasesQuery.isFetching) {
+          setOffset((prev) => prev + limit);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, useCasesQuery.isFetching, limit]);
+
+  // Hide hero when searching
+  useEffect(() => {
+    if (search) setShowHero(false);
+  }, [search]);
+
+  // Hero stats
+  const heroStats = useMemo(() => {
+    return {
+      total,
+      categories: (categoriesQuery.data ?? []).length,
+    };
+  }, [total, categoriesQuery.data]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -143,11 +329,8 @@ export default function Home() {
             <PanelLeftOpen size={18} />
           </button>
 
-          <Link href="/" className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center" onClick={() => setShowHero(true)}>
             <ManusLogo size="sm" />
-            <span className="text-muted-foreground font-sans font-normal text-sm hidden sm:inline">
-              {t("nav.useCaseLibrary")}
-            </span>
           </Link>
 
           <div className="flex-1" />
@@ -202,7 +385,6 @@ export default function Home() {
           {/* Auth */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
-              {/* Notifications Bell */}
               <Link href="/my-submissions">
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -210,7 +392,7 @@ export default function Home() {
                       <Bell size={16} />
                       {unreadCount > 0 && (
                         <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                          {unreadCount > 9 ? '9+' : unreadCount}
+                          {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
                     </button>
@@ -255,13 +437,16 @@ export default function Home() {
                   {/* All Use Cases */}
                   <button
                     onClick={handleShowAll}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-between ${
                       !highlightOnly && selectedCategories.length === 0
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "hover:bg-sidebar-accent/50"
                     }`}
                   >
-                    {t("sidebar.allUseCases")}
+                    <span>{t("sidebar.allUseCases")}</span>
+                    <span className="text-[10px] bg-muted/60 text-muted-foreground px-1.5 py-0.5 rounded-full tabular-nums">
+                      {globalTotal}
+                    </span>
                   </button>
 
                   {/* Only Possible with Manus */}
@@ -274,7 +459,7 @@ export default function Home() {
                     }`}
                   >
                     <Sparkles size={15} />
-                    {t("sidebar.highlights")}
+                    <span className="flex-1">{t("sidebar.highlights")}</span>
                   </button>
 
                   <Separator />
@@ -368,6 +553,117 @@ export default function Home() {
 
         {/* ─── Main Content ─── */}
         <main id="main-content" className="flex-1 overflow-auto" tabIndex={-1}>
+          {/* ─── Hero Section ─── */}
+          <AnimatePresence>
+            {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="relative overflow-hidden border-b bg-gradient-to-br from-background via-background to-accent/30">
+                  {/* Decorative background pattern */}
+                  <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{
+                    backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+                    backgroundSize: '24px 24px',
+                  }} />
+
+                  <div className="relative p-6 md:p-10 max-w-7xl mx-auto">
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
+                      {/* Left: Text content */}
+                      <div className="flex-1 space-y-4">
+                        <motion.div
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1, duration: 0.5 }}
+                        >
+                          <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
+                            Discover what people build
+                            <br />
+                            <span className="text-manus-highlight">with Manus</span>
+                          </h1>
+                        </motion.div>
+                        <motion.p
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2, duration: 0.5 }}
+                          className="text-muted-foreground text-sm md:text-base max-w-lg leading-relaxed"
+                        >
+                          A curated gallery of real-world use cases from the Manus community.
+                          Browse by industry, feature, or explore what's only possible with Manus.
+                        </motion.p>
+                        <motion.div
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3, duration: 0.5 }}
+                          className="flex gap-3 pt-1"
+                        >
+                          <Link href="/submit">
+                            <Button className="gap-2 shadow-sm">
+                              <Plus size={15} />
+                              Share your use case
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="outline"
+                            className="gap-2"
+                            onClick={handleHighlightToggle}
+                          >
+                            <Sparkles size={15} />
+                            <span className="hidden sm:inline">Only Possible with Manus</span>
+                            <span className="sm:hidden">Highlights</span>
+                          </Button>
+                        </motion.div>
+                      </div>
+
+                      {/* Right: Animated stats */}
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3, duration: 0.5 }}
+                        className="grid grid-cols-3 gap-4 md:gap-6"
+                      >
+                        <div className="text-center space-y-1">
+                          <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
+                            <Zap size={18} className="text-primary" />
+                          </div>
+                          <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                            <AnimatedCounter target={heroStats.total} />
+                          </div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Use Cases</div>
+                        </div>
+                        <div className="text-center space-y-1">
+                          <div className="w-10 h-10 mx-auto rounded-lg bg-manus-highlight/10 flex items-center justify-center mb-1">
+                            <TrendingUp size={18} className="text-manus-highlight" />
+                          </div>
+                          <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                            <AnimatedCounter target={heroStats.categories} />
+                          </div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Categories</div>
+                        </div>
+                        <div className="text-center space-y-1">
+                          <div className="w-10 h-10 mx-auto rounded-lg bg-accent flex items-center justify-center mb-1">
+                            <Users size={18} className="text-accent-foreground" />
+                          </div>
+                          <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                            <AnimatedCounter target={5} />
+                          </div>
+                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Languages</div>
+                        </div>
+                      </motion.div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ─── Trending This Week ─── */}
+          {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
+            <TrendingSection onCardClick={setModalSlug} />
+          )}
+
           <div className="p-6 max-w-7xl mx-auto">
             {/* Search & Sort Bar */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -376,7 +672,10 @@ export default function Home() {
                 <Input
                   placeholder={t("gallery.search")}
                   value={search}
-                  onChange={(e) => { setSearch(e.target.value); setOffset(0); }}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setOffset(0);
+                  }}
                   className="pl-9 bg-card"
                 />
               </div>
@@ -417,27 +716,38 @@ export default function Home() {
               </div>
             )}
 
+            {/* Result count */}
+            {!useCasesQuery.isLoading && items.length > 0 && (
+              <p className="text-xs text-muted-foreground mb-4">
+                Showing {items.length} of {total} use case{total !== 1 ? "s" : ""}
+              </p>
+            )}
+
             {/* Gallery Grid */}
             {useCasesQuery.isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="bg-card rounded-xl border animate-pulse">
-                    <div className="aspect-[16/10] bg-muted rounded-t-xl" />
+                  <div key={i} className="bg-card rounded-xl border overflow-hidden">
+                    <div className="aspect-[16/10] bg-muted animate-pulse" />
                     <div className="p-4 space-y-3">
-                      <div className="h-4 bg-muted rounded w-3/4" />
-                      <div className="h-3 bg-muted rounded w-full" />
-                      <div className="h-3 bg-muted rounded w-1/2" />
+                      <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+                      <div className="h-3 bg-muted rounded w-full animate-pulse" />
+                      <div className="flex gap-1.5">
+                        <div className="h-5 bg-muted rounded-full w-16 animate-pulse" />
+                        <div className="h-5 bg-muted rounded-full w-12 animate-pulse" />
+                      </div>
+                      <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : items.length === 0 ? (
               <div className="text-center py-20">
-                <div className="text-5xl mb-4 opacity-30">
-                  <Search size={48} className="mx-auto" />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
+                  <Search size={28} className="text-muted-foreground/40" />
                 </div>
                 <h3 className="font-serif text-xl font-bold mb-2">{t("gallery.noResults")}</h3>
-                <p className="text-muted-foreground mb-6">{t("gallery.noResultsDesc")}</p>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">{t("gallery.noResultsDesc")}</p>
                 <Link href="/submit">
                   <Button className="gap-2">
                     <Plus size={16} />
@@ -448,68 +758,67 @@ export default function Home() {
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {items.map((uc) => (
+                  {items.map((uc, index) => (
                     <motion.div
                       key={uc.id}
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.25 }}
+                      transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3) }}
                     >
-                      <div className="group bg-card rounded-xl border hover:shadow-lg transition-all duration-200 overflow-hidden">
+                      <div className="group bg-card rounded-xl border hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden cursor-pointer"
+                           onClick={() => setModalSlug(uc.slug)}>
                         {/* Thumbnail */}
-                        <button onClick={() => setModalSlug(uc.slug)} className="w-full text-left">
-                          <div className="aspect-[16/10] bg-muted overflow-hidden relative">
-                            {uc.screenshots[0] ? (
-                              <img
-                                src={uc.screenshots[0].url}
-                                alt={uc.title}
-                                className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-muted-foreground/30">
-                                <span className="font-serif text-2xl">M</span>
-                              </div>
-                            )}
-                            {uc.isHighlight && (
-                              <div className="absolute top-2 left-2">
-                                <Badge className="bg-manus-highlight text-white border-0 gap-1 text-[10px] shadow-sm">
-                                  <Sparkles size={10} />
-                                  {t("detail.onlyManus")}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                        </button>
+                        <div className="aspect-[16/10] bg-muted overflow-hidden relative">
+                          {uc.screenshots[0] ? (
+                            <img
+                              src={uc.screenshots[0].url}
+                              alt={uc.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-accent/20">
+                              <ManusGlyph size={40} className="opacity-20" />
+                            </div>
+                          )}
+                          {uc.isHighlight && (
+                            <div className="absolute top-2.5 left-2.5">
+                              <Badge className="bg-manus-highlight text-white border-0 gap-1 text-[10px] shadow-md backdrop-blur-sm">
+                                <Sparkles size={10} />
+                                {t("detail.onlyManus")}
+                              </Badge>
+                            </div>
+                          )}
+                          {/* Hover overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </div>
 
                         {/* Content */}
                         <div className="p-4">
-                          <button onClick={() => setModalSlug(uc.slug)} className="text-left w-full">
-                            <h3 className="font-serif font-bold text-sm leading-snug mb-1.5 line-clamp-2 group-hover:text-primary/80 transition-colors">
-                              {uc.title}
-                            </h3>
-                          </button>
-                          <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+                          <h3 className="font-serif font-bold text-sm leading-snug mb-1.5 line-clamp-2 group-hover:text-primary transition-colors duration-200">
+                            {uc.title}
+                          </h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
                             {uc.description}
                           </p>
 
                           {/* Tags */}
                           <div className="flex flex-wrap gap-1 mb-3">
-                            {uc.categories.slice(0, 3).map((cat) => (
-                              <Badge key={cat.id} variant="secondary" className="text-[10px] px-1.5 py-0">
+                            {uc.categories.slice(0, 3).map((cat: any) => (
+                              <Badge key={cat.id} variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
                                 {t(`cat.${cat.slug}` as any) || cat.name}
                               </Badge>
                             ))}
                             {uc.categories.length > 3 && (
-                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
                                 +{uc.categories.length - 3}
                               </Badge>
                             )}
                           </div>
 
                           {/* Footer */}
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+                            <div className="flex items-center gap-3 pt-2">
                               <span className="flex items-center gap-1">
                                 <Eye size={12} />
                                 {uc.viewCount}
@@ -520,15 +829,23 @@ export default function Home() {
                               </span>
                             </div>
                             <button
-                              onClick={(e) => { e.preventDefault(); handleUpvote(uc.id); }}
-                              className={`flex items-center gap-1 px-2 py-1 rounded-md transition-all ${
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUpvote(uc.id);
+                              }}
+                              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all duration-200 mt-2 ${
                                 uc.hasUpvoted
-                                  ? "bg-primary/10 text-primary font-medium"
-                                  : "hover:bg-accent"
+                                  ? "bg-primary/10 text-primary font-semibold scale-105"
+                                  : "hover:bg-accent hover:scale-105"
                               }`}
                             >
-                              <ArrowUp size={13} className={uc.hasUpvoted ? "text-primary" : ""} />
-                              {uc.upvoteCount}
+                              <motion.div
+                                whileTap={{ scale: 1.3, rotate: -10 }}
+                                transition={{ type: "spring", stiffness: 400 }}
+                              >
+                                <ArrowUp size={13} className={uc.hasUpvoted ? "text-primary" : ""} />
+                              </motion.div>
+                              <span className="tabular-nums">{uc.upvoteCount}</span>
                             </button>
                           </div>
                         </div>
@@ -537,16 +854,22 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* Load More */}
+                {/* Infinite scroll sentinel */}
                 {hasMore && (
-                  <div className="flex justify-center mt-8">
-                    <Button
-                      variant="outline"
-                      onClick={() => setOffset((prev) => prev + limit)}
-                      className="gap-2"
-                    >
-                      {t("gallery.loadMore")}
-                    </Button>
+                  <div ref={sentinelRef} className="flex justify-center py-8">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                      Loading more...
+                    </div>
+                  </div>
+                )}
+
+                {/* End of list */}
+                {!hasMore && items.length > 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-xs text-muted-foreground">
+                      You've seen all {total} use case{total !== 1 ? "s" : ""}
+                    </p>
                   </div>
                 )}
               </>
@@ -554,6 +877,7 @@ export default function Home() {
           </div>
         </main>
       </div>
+
       {/* Use Case Detail Modal */}
       <UseCaseModal slug={modalSlug} onClose={() => setModalSlug(null)} />
 

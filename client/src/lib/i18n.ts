@@ -111,7 +111,7 @@ type TranslationKeys = {
 
 const translations: Record<Locale, TranslationKeys> = {
   en: {
-    "nav.useCaseLibrary": "Use Case Library",
+    "nav.useCaseLibrary": "Awesome Manus Use Cases",
     "nav.submit": "Submit Use Case",
     "nav.admin": "Admin",
     "nav.login": "Sign In",
@@ -200,7 +200,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.loginRequiredDesc": "Please sign in with your Manus account to continue.",
   },
   zh: {
-    "nav.useCaseLibrary": "用例库",
+    "nav.useCaseLibrary": "Awesome Manus 用例",
     "nav.submit": "提交用例",
     "nav.admin": "管理后台",
     "nav.login": "登录",
@@ -289,7 +289,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.loginRequiredDesc": "请使用 Manus 账号登录以继续。",
   },
   ja: {
-    "nav.useCaseLibrary": "ユースケースライブラリ",
+    "nav.useCaseLibrary": "Awesome Manus ユースケース",
     "nav.submit": "ユースケースを投稿",
     "nav.admin": "管理画面",
     "nav.login": "ログイン",
@@ -378,7 +378,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.loginRequiredDesc": "続けるにはManusアカウントでログインしてください。",
   },
   ko: {
-    "nav.useCaseLibrary": "유스케이스 라이브러리",
+    "nav.useCaseLibrary": "Awesome Manus 유스케이스",
     "nav.submit": "유스케이스 제출",
     "nav.admin": "관리자",
     "nav.login": "로그인",
@@ -467,7 +467,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.loginRequiredDesc": "계속하려면 Manus 계정으로 로그인해 주세요.",
   },
   "pt-BR": {
-    "nav.useCaseLibrary": "Biblioteca de Casos de Uso",
+    "nav.useCaseLibrary": "Awesome Manus Use Cases",
     "nav.submit": "Enviar Caso de Uso",
     "nav.admin": "Admin",
     "nav.login": "Entrar",

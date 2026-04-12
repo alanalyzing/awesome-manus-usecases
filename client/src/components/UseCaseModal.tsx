@@ -24,6 +24,7 @@ import {
   X,
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
@@ -120,7 +121,12 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
                   : "bg-card hover:bg-accent border-border"
               }`}
             >
-              <ArrowUp size={14} />
+              <motion.div
+                whileTap={{ scale: 1.3, rotate: -10 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <ArrowUp size={14} />
+              </motion.div>
               {uc?.upvoteCount ?? 0}
             </button>
           </div>

@@ -14,6 +14,7 @@ import {
   getApprovedUseCases,
   getUseCaseBySlug,
   getRelatedUseCases,
+  getTrendingUseCases,
   createUseCase,
   toggleUpvote,
   getAdminUseCases,
@@ -99,6 +100,12 @@ export const appRouter = router({
       .input(z.object({ useCaseId: z.number(), categoryIds: z.array(z.number()) }))
       .query(async ({ input }) => {
         return getRelatedUseCases(input.useCaseId, input.categoryIds);
+      }),
+
+    trending: publicProcedure
+      .input(z.object({ limit: z.number().min(1).max(20).optional() }).optional())
+      .query(async ({ input }) => {
+        return getTrendingUseCases(input?.limit ?? 6);
       }),
 
     // ─── Upvote (Public — no login required) ────────────────────

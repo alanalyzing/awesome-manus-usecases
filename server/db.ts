@@ -302,6 +302,94 @@ export async function getRelatedUseCases(useCaseId: number, categoryIds: number[
   }));
 }
 
+// ─── Trending Helpers ───────────────────────────────────────────────
+
+/** Get trending use cases — approved use cases with the most upvotes in the last 7 days */
+export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // Get use case IDs with most recent upvotes
+  const trendingIds = await db
+    .select({
+      useCaseId: upvotes.useCaseId,
+      recentUpvotes: sql<number>`count(*)`,
+    })
+    .from(upvotes)
+    .where(sql`${upvotes.createdAt} >= ${sevenDaysAgo}`)
+    .groupBy(upvotes.useCaseId)
+    .orderBy(sql`count(*) DESC`)
+    .limit(limit * 2);
+
+  if (trendingIds.length === 0) {
+    // Fallback: return most popular approved use cases
+    const rows = await db.select().from(useCases)
+      .where(eq(useCases.status, "approved"))
+      .orderBy(desc(useCases.upvoteCount))
+      .limit(limit);
+    if (rows.length === 0) return [];
+    const ucIds = rows.map(r => r.id);
+    const submitterIds = Array.from(new Set(rows.map(r => r.submitterId)));
+    const submitters = submitterIds.length > 0
+      ? await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, submitterIds))
+      : [];
+    const submitterMap = new Map(submitters.map(s => [s.id, s.name]));
+    const ucCats = await db
+      .select({ useCaseId: useCaseCategories.useCaseId, categoryId: useCaseCategories.categoryId, name: categories.name, slug: categories.slug, type: categories.type })
+      .from(useCaseCategories)
+      .innerJoin(categories, eq(useCaseCategories.categoryId, categories.id))
+      .where(inArray(useCaseCategories.useCaseId, ucIds));
+    const catMap = new Map<number, { id: number; name: string; slug: string; type: string }[]>();
+    for (const c of ucCats) { if (!catMap.has(c.useCaseId)) catMap.set(c.useCaseId, []); catMap.get(c.useCaseId)!.push({ id: c.categoryId, name: c.name, slug: c.slug, type: c.type }); }
+    const screenshotRows = await db.select().from(screenshots).where(inArray(screenshots.useCaseId, ucIds)).orderBy(asc(screenshots.sortOrder));
+    const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
+    for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
+    return rows.map(uc => ({
+      ...uc,
+      submitterName: submitterMap.get(uc.submitterId) ?? null,
+      categories: catMap.get(uc.id) ?? [],
+      screenshots: ssMap.get(uc.id) ?? [],
+    }));
+  }
+
+  const candidateIds = trendingIds.map(r => r.useCaseId);
+  const rows = await db.select().from(useCases)
+    .where(and(inArray(useCases.id, candidateIds), eq(useCases.status, "approved")))
+    .limit(limit);
+  if (rows.length === 0) return [];
+
+  const ucIds = rows.map(r => r.id);
+  const submitterIds = Array.from(new Set(rows.map(r => r.submitterId)));
+  const submitters = submitterIds.length > 0
+    ? await db.select({ id: users.id, name: users.name }).from(users).where(inArray(users.id, submitterIds))
+    : [];
+  const submitterMap = new Map(submitters.map(s => [s.id, s.name]));
+  const ucCats = await db
+    .select({ useCaseId: useCaseCategories.useCaseId, categoryId: useCaseCategories.categoryId, name: categories.name, slug: categories.slug, type: categories.type })
+    .from(useCaseCategories)
+    .innerJoin(categories, eq(useCaseCategories.categoryId, categories.id))
+    .where(inArray(useCaseCategories.useCaseId, ucIds));
+  const catMap = new Map<number, { id: number; name: string; slug: string; type: string }[]>();
+  for (const c of ucCats) { if (!catMap.has(c.useCaseId)) catMap.set(c.useCaseId, []); catMap.get(c.useCaseId)!.push({ id: c.categoryId, name: c.name, slug: c.slug, type: c.type }); }
+  const screenshotRows = await db.select().from(screenshots).where(inArray(screenshots.useCaseId, ucIds)).orderBy(asc(screenshots.sortOrder));
+  const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
+  for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
+
+  // Sort by recent upvote count
+  const trendingMap = new Map(trendingIds.map(r => [r.useCaseId, r.recentUpvotes]));
+  return rows
+    .map(uc => ({
+      ...uc,
+      submitterName: submitterMap.get(uc.submitterId) ?? null,
+      categories: catMap.get(uc.id) ?? [],
+      screenshots: ssMap.get(uc.id) ?? [],
+      recentUpvotes: trendingMap.get(uc.id) ?? 0,
+    }))
+    .sort((a, b) => (b.recentUpvotes as number) - (a.recentUpvotes as number));
+}
+
 // ─── Submission Helpers ──────────────────────────────────────────────
 
 function generateSlug(title: string): string {
