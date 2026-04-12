@@ -427,7 +427,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* ─── Top Navigation ─── */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 items-center gap-4">
+        <div className="container flex h-14 items-center gap-2 sm:gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="lg:hidden p-2 hover:bg-accent rounded-md"
@@ -436,11 +436,9 @@ export default function Home() {
             <PanelLeftOpen size={18} />
           </button>
 
-          <Link href="/" className="flex items-center" onClick={() => setShowHero(true)}>
+          <Link href="/" className="flex items-center mr-auto" onClick={() => setShowHero(true)}>
             <ManusLogo size="sm" />
           </Link>
-
-          <div className="flex-1" />
 
           {/* Language Selector */}
           <Select value={locale} onValueChange={(v) => setLocale(v as Locale)}>
@@ -519,7 +517,24 @@ export default function Home() {
                   </Tooltip>
                 </Link>
               )}
-              <span className="text-xs text-muted-foreground hidden md:inline">{user?.name}</span>
+              {hasProfile && profileQuery.data?.username ? (
+                <Link href={`/profile/${profileQuery.data.username}`}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="p-1.5 hover:bg-accent rounded-full transition-colors">
+                        {profileQuery.data.avatarUrl ? (
+                          <img src={profileQuery.data.avatarUrl} alt={user?.name || ""} className="w-6 h-6 rounded-full object-cover" />
+                        ) : (
+                          <UserCircle size={18} className="text-muted-foreground" />
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>{user?.name}</TooltipContent>
+                  </Tooltip>
+                </Link>
+              ) : (
+                <span className="text-xs text-muted-foreground hidden md:inline">{user?.name}</span>
+              )}
             </div>
           ) : (
             <a href={getLoginUrl()}>

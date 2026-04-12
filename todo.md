@@ -145,3 +145,5 @@
 - [x] Feature: Configure Slack webhook URL for use case notifications
 - [x] Fix: Update 'Submit Yours' link in Learn More section to published URL https://manuslib-jnjq5dyo.manus.space/submit
 - [x] Fix: Mobile header text "Awesome Manus Use Cases" is too dense/large, reduce size or truncate on mobile
+- [x] Fix: Mobile header title should be left-aligned, not centered
+- [x] UX: Improve profile page discoverability — make it clear how users find their profile after creating it
