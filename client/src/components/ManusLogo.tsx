@@ -34,17 +34,18 @@ export function ManusLogo({ size = "md", className = "", showTitle = true }: Man
   const glyphSize = size === "sm" ? 20 : size === "md" ? 28 : 36;
   const textClass =
     size === "sm"
-      ? "text-base"
+      ? "text-sm sm:text-base"
       : size === "md"
-      ? "text-lg"
-      : "text-2xl";
+      ? "text-base sm:text-lg"
+      : "text-xl sm:text-2xl";
 
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <ManusGlyph size={glyphSize} />
       {showTitle && (
-        <span className={`font-serif font-bold tracking-tight ${textClass}`}>
-          Awesome Manus Use Cases
+        <span className={`font-serif font-bold tracking-tight leading-tight ${textClass}`}>
+          <span className="hidden sm:inline">Awesome Manus Use Cases</span>
+          <span className="sm:hidden">Manus Use Cases</span>
         </span>
       )}
     </span>

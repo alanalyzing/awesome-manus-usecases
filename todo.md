@@ -143,3 +143,5 @@
 - [x] Frontend: Display avatars on profile pages, gallery cards, modals, detail views, leaderboard widgets, and followers/following lists
 - [x] Tests: Avatar upload endpoint tests
 - [x] Feature: Configure Slack webhook URL for use case notifications
+- [x] Fix: Update 'Submit Yours' link in Learn More section to published URL https://manuslib-jnjq5dyo.manus.space/submit
+- [x] Fix: Mobile header text "Awesome Manus Use Cases" is too dense/large, reduce size or truncate on mobile
