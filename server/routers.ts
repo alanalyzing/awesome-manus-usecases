@@ -35,6 +35,9 @@ import {
   saveAiScore,
   getAiScore,
   getDb,
+  getUpvoteTrends,
+  getViewTrends,
+  getTrafficSummary,
 } from "./db";
 import { useCases } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
@@ -468,6 +471,22 @@ Return your evaluation as JSON.`;
           scannedAt: score.scannedAt,
         };
       }),
+
+    upvoteTrends: adminProcedure
+      .input(z.object({ days: z.number().min(7).max(365).optional() }).optional())
+      .query(async ({ input }) => {
+        return getUpvoteTrends(input?.days ?? 30);
+      }),
+
+    viewTrends: adminProcedure
+      .input(z.object({ days: z.number().min(7).max(365).optional() }).optional())
+      .query(async ({ input }) => {
+        return getViewTrends(input?.days ?? 30);
+      }),
+
+    trafficSummary: adminProcedure.query(async () => {
+      return getTrafficSummary();
+    }),
   }),
 });
 

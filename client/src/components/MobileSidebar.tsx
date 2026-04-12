@@ -79,8 +79,8 @@ export function MobileSidebar({
               onClick={() => { onHighlightToggle(); onClose(); }}
               className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                 highlightOnly
-                  ? "bg-manus-highlight/15 text-manus-highlight ring-1 ring-manus-highlight/30"
-                  : "hover:bg-manus-highlight/10 text-manus-highlight/80"
+                  ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+                  : "hover:bg-primary/5 text-primary/80"
               }`}
             >
               <Sparkles size={15} />

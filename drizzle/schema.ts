@@ -130,3 +130,13 @@ export const aiScores = mysqlTable("ai_scores", {
 });
 
 export type AiScore = typeof aiScores.$inferSelect;
+
+// ─── View Events (per-event view logging for accurate analytics) ────
+export const viewEvents = mysqlTable("view_events", {
+  id: int("id").autoincrement().primaryKey(),
+  useCaseId: int("useCaseId").notNull(),
+  visitorKey: varchar("visitorKey", { length: 128 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ViewEvent = typeof viewEvents.$inferSelect;

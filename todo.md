@@ -85,3 +85,11 @@
 - [x] AI Score: Update database schema with complexity and presentation columns
 - [x] AI Score: Update LLM prompt to evaluate all 5 dimensions
 - [x] AI Score: Update admin dashboard UI to display all 5 dimensions in score breakdown
+- [x] Admin: Upvotes trend chart showing upvote volume over time (daily for last 30 days)
+- [x] Admin: Traffic dashboard integration — show traffic overview with views, upvotes, contributors, and today's metrics
+- [x] Admin: Traffic metrics charts (daily upvote and view trends over time)
+- [x] Admin: Traffic summary cards (total views, total upvotes, published use cases, contributors, views today, upvotes today)
+- [x] Fix: Replace all green/red/yellow/orange/blue/purple accent colors with Manus brand palette (#34322D, #F8F8F8, #FFFFFF) — strictly monochromatic
+- [x] Fix: Add view_events table for accurate per-event view logging
+- [x] Fix: Update view trends to use view_events table instead of cumulative viewCount proxy
+- [x] Fix: Update viewsToday metric to count from view_events table

@@ -135,7 +135,7 @@ export default function UseCaseDetailPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Highlight badge */}
         {uc.isHighlight && (
-          <Badge className="bg-manus-highlight text-white border-0 gap-1 mb-4">
+          <Badge className="bg-primary text-primary-foreground border-0 gap-1 mb-4">
             <Sparkles size={12} />
             {t("detail.onlyManus")}
           </Badge>

@@ -10,8 +10,8 @@ export default function SubmitSuccessPage() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
       <div className="text-center max-w-md px-4">
         <div className="mb-6 flex justify-center">
-          <div className="w-16 h-16 rounded-full bg-manus-highlight/15 flex items-center justify-center">
-            <CheckCircle2 size={32} className="text-manus-highlight" />
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <CheckCircle2 size={32} className="text-primary" />
           </div>
         </div>
         <h1 className="font-serif text-2xl font-bold mb-3">{t("submit.success")}</h1>

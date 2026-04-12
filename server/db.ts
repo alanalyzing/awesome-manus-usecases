@@ -10,6 +10,7 @@ import {
   submitterNotifications, SubmitterNotification,
   adminActivityLog, AdminActivityLog,
   aiScores, AiScore,
+  viewEvents,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -212,7 +213,9 @@ export async function getUseCaseBySlug(slug: string, visitorKey?: string): Promi
   if (rows.length === 0) return null;
   const uc = rows[0];
 
+  // Increment cumulative counter AND log a discrete view event
   await db.update(useCases).set({ viewCount: sql`${useCases.viewCount} + 1` }).where(eq(useCases.id, uc.id));
+  await db.insert(viewEvents).values({ useCaseId: uc.id, visitorKey: visitorKey ?? null });
 
   const submitterRows = await db.select({ name: users.name }).from(users).where(eq(users.id, uc.submitterId)).limit(1);
 
@@ -812,4 +815,108 @@ export async function getAdminStats(): Promise<{
     totalViews: s?.totalViews ?? 0,
     topCategories: await getTopCategories(),
   };
+}
+
+// ─── Upvote Trends ──────────────────────────────────────────────────
+
+export async function getUpvoteTrends(days = 30): Promise<{ date: string; upvotes: number }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const rows: any[] = await db.execute(sql`
+    SELECT DATE(createdAt) as date, COUNT(*) as upvotes
+    FROM upvotes
+    WHERE createdAt >= DATE_SUB(CURDATE(), INTERVAL ${days} DAY)
+    GROUP BY DATE(createdAt)
+    ORDER BY date ASC
+  `);
+  const result = (rows as any)?.[0] ?? rows;
+  const map = new Map<string, number>();
+  for (const r of (Array.isArray(result) ? result : [])) {
+    const d = r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date);
+    map.set(d, Number(r.upvotes));
+  }
+  // Fill in missing days with 0
+  const output: { date: string; upvotes: number }[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    output.push({ date: key, upvotes: map.get(key) ?? 0 });
+  }
+  return output;
+}
+
+// ─── View Trends ────────────────────────────────────────────────────
+
+export async function getViewTrends(days = 30): Promise<{ date: string; views: number }[]> {
+  const db = await getDb();
+  if (!db) return [];
+  // Use the view_events table for accurate per-day view counts
+  const rows: any[] = await db.execute(sql`
+    SELECT DATE(createdAt) as date, COUNT(*) as views
+    FROM view_events
+    WHERE createdAt >= DATE_SUB(CURDATE(), INTERVAL ${days} DAY)
+    GROUP BY DATE(createdAt)
+    ORDER BY date ASC
+  `);
+  const result = (rows as any)?.[0] ?? rows;
+  const map = new Map<string, number>();
+  for (const r of (Array.isArray(result) ? result : [])) {
+    const d = r.date instanceof Date ? r.date.toISOString().split('T')[0] : String(r.date);
+    map.set(d, Number(r.views));
+  }
+  const output: { date: string; views: number }[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    output.push({ date: key, views: map.get(key) ?? 0 });
+  }
+  return output;
+}
+
+// ─── Traffic Summary ────────────────────────────────────────────────
+
+export async function getTrafficSummary(): Promise<{
+  totalViews: number;
+  totalUpvotes: number;
+  totalUseCases: number;
+  totalContributors: number;
+  viewsToday: number;
+  upvotesToday: number;
+}> {
+  const db = await getDb();
+  if (!db) return { totalViews: 0, totalUpvotes: 0, totalUseCases: 0, totalContributors: 0, viewsToday: 0, upvotesToday: 0 };
+
+  const [viewsResult]: any = await db.execute(sql`
+    SELECT COALESCE(SUM(viewCount), 0) as total FROM use_cases WHERE status = 'approved'
+  `);
+  const totalViews = Number((viewsResult as any)?.[0]?.total ?? 0);
+
+  const [upvotesResult]: any = await db.execute(sql`
+    SELECT COUNT(*) as total FROM upvotes
+  `);
+  const totalUpvotes = Number((upvotesResult as any)?.[0]?.total ?? 0);
+
+  const [useCasesResult]: any = await db.execute(sql`
+    SELECT COUNT(*) as total FROM use_cases WHERE status = 'approved'
+  `);
+  const totalUseCases = Number((useCasesResult as any)?.[0]?.total ?? 0);
+
+  const [contributorsResult]: any = await db.execute(sql`
+    SELECT COUNT(DISTINCT submitterId) as total FROM use_cases
+  `);
+  const totalContributors = Number((contributorsResult as any)?.[0]?.total ?? 0);
+
+  const [viewsTodayResult]: any = await db.execute(sql`
+    SELECT COUNT(*) as total FROM view_events WHERE DATE(createdAt) = CURDATE()
+  `);
+  const viewsToday = Number((viewsTodayResult as any)?.[0]?.total ?? 0);
+
+  const [upvotesTodayResult]: any = await db.execute(sql`
+    SELECT COUNT(*) as total FROM upvotes WHERE DATE(createdAt) = CURDATE()
+  `);
+  const upvotesToday = Number((upvotesTodayResult as any)?.[0]?.total ?? 0);
+
+  return { totalViews, totalUpvotes, totalUseCases, totalContributors, viewsToday, upvotesToday };
 }

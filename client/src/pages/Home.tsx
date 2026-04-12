@@ -57,7 +57,7 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
       <div className="border-b bg-accent/20">
         <div className="p-6 max-w-7xl mx-auto">
           <div className="flex items-center gap-2 mb-4">
-            <Flame size={16} className="text-orange-500" />
+            <Flame size={16} className="text-primary" />
             <h2 className="font-serif font-bold text-sm">Trending This Week</h2>
           </div>
           <div className="flex gap-4 overflow-hidden">
@@ -82,7 +82,7 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
     <div className="border-b bg-accent/20">
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
-          <Flame size={16} className="text-orange-500" />
+          <Flame size={16} className="text-primary" />
           <h2 className="font-serif font-bold text-sm">Trending This Week</h2>
         </div>
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin">
@@ -113,13 +113,13 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
                   )}
                   {uc.isHighlight && (
                     <div className="absolute top-2 left-2">
-                      <Badge className="bg-manus-highlight text-white border-0 gap-1 text-[9px] shadow-md">
+                      <Badge className="bg-primary text-primary-foreground border-0 gap-1 text-[9px] shadow-md">
                         <Sparkles size={9} />
                         {t("detail.onlyManus")}
                       </Badge>
                     </div>
                   )}
-                  <div className="absolute top-2 right-2 bg-orange-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                  <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                     <Flame size={9} />
                     #{index + 1}
                   </div>
@@ -454,8 +454,8 @@ export default function Home() {
                     onClick={handleHighlightToggle}
                     className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
                       highlightOnly
-                        ? "bg-manus-highlight/15 text-manus-highlight ring-1 ring-manus-highlight/30"
-                        : "hover:bg-manus-highlight/10 text-manus-highlight/80"
+                        ? "bg-primary/10 text-primary ring-1 ring-primary/20"
+                        : "hover:bg-primary/5 text-primary/80"
                     }`}
                   >
                     <Sparkles size={15} />
@@ -581,7 +581,7 @@ export default function Home() {
                           <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
                             Discover what people build
                             <br />
-                            <span className="text-manus-highlight">with Manus</span>
+                            <span className="text-primary/70">with Manus</span>
                           </h1>
                         </motion.div>
                         <motion.p
@@ -634,8 +634,8 @@ export default function Home() {
                           <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">Use Cases</div>
                         </div>
                         <div className="text-center space-y-1">
-                          <div className="w-10 h-10 mx-auto rounded-lg bg-manus-highlight/10 flex items-center justify-center mb-1">
-                            <TrendingUp size={18} className="text-manus-highlight" />
+                          <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
+                            <TrendingUp size={18} className="text-primary" />
                           </div>
                           <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
                             <AnimatedCounter target={heroStats.categories} />
@@ -695,7 +695,7 @@ export default function Home() {
             {(selectedCategories.length > 0 || highlightOnly) && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {highlightOnly && (
-                  <Badge variant="secondary" className="gap-1 bg-manus-highlight/15 text-manus-highlight border-manus-highlight/30">
+                  <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
                     <Sparkles size={12} />
                     {t("sidebar.highlights")}
                     <button onClick={handleHighlightToggle} className="ml-1 hover:opacity-70">&times;</button>
@@ -783,7 +783,7 @@ export default function Home() {
                           )}
                           {uc.isHighlight && (
                             <div className="absolute top-2.5 left-2.5">
-                              <Badge className="bg-manus-highlight text-white border-0 gap-1 text-[10px] shadow-md backdrop-blur-sm">
+                              <Badge className="bg-primary text-primary-foreground border-0 gap-1 text-[10px] shadow-md backdrop-blur-sm">
                                 <Sparkles size={10} />
                                 {t("detail.onlyManus")}
                               </Badge>

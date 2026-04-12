@@ -68,17 +68,17 @@ export default function MySubmissions() {
 
   const statusIcon = (status: string) => {
     switch (status) {
-      case "approved": return <CheckCircle2 size={14} className="text-green-500" />;
-      case "rejected": return <XCircle size={14} className="text-red-500" />;
-      default: return <Clock size={14} className="text-yellow-500" />;
+      case "approved": return <CheckCircle2 size={14} className="text-primary" />;
+      case "rejected": return <XCircle size={14} className="text-muted-foreground" />;
+      default: return <Clock size={14} className="text-muted-foreground/60" />;
     }
   };
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case "approved": return <Badge className="bg-green-500/10 text-green-600 border-green-500/20">Approved</Badge>;
-      case "rejected": return <Badge className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>;
-      default: return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">Pending Review</Badge>;
+      case "approved": return <Badge className="bg-primary/10 text-primary border-primary/20">Approved</Badge>;
+      case "rejected": return <Badge className="bg-muted text-muted-foreground border-border">Rejected</Badge>;
+      default: return <Badge className="bg-muted text-muted-foreground/80 border-border">Pending Review</Badge>;
     }
   };
 
@@ -160,7 +160,7 @@ export default function MySubmissions() {
                       </div>
                       {/* Rejection reason */}
                       {uc.status === "rejected" && uc.rejectionReason && (
-                        <div className="mt-2 p-2 bg-red-500/5 border border-red-500/10 rounded text-xs text-red-600">
+                        <div className="mt-2 p-2 bg-muted border border-border rounded text-xs text-muted-foreground">
                           <strong>Reason:</strong> {uc.rejectionReason}
                         </div>
                       )}
@@ -191,9 +191,9 @@ export default function MySubmissions() {
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5">
                         {notif.type === "approved" ? (
-                          <CheckCircle2 size={16} className="text-green-500" />
+                          <CheckCircle2 size={16} className="text-primary" />
                         ) : (
-                          <XCircle size={16} className="text-red-500" />
+                          <XCircle size={16} className="text-muted-foreground" />
                         )}
                       </div>
                       <div className="flex-1">

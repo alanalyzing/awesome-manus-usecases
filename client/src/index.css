@@ -49,7 +49,6 @@
   --color-manus-black: oklch(0.27 0.01 70);
   --color-manus-gray: oklch(0.98 0 0);
   --color-manus-white: oklch(1 0 0);
-  --color-manus-highlight: oklch(0.65 0.15 145);
 }
 
 /* ─── Light Mode (Manus Brand: #F8F8F8 bg, #34322D text) ─── */
@@ -74,11 +73,11 @@
   --border: oklch(0.91 0.003 70);
   --input: oklch(0.91 0.003 70);
   --ring: oklch(0.27 0.01 70);
-  --chart-1: oklch(0.65 0.15 145);
-  --chart-2: oklch(0.55 0.12 250);
-  --chart-3: oklch(0.6 0.15 30);
-  --chart-4: oklch(0.7 0.1 80);
-  --chart-5: oklch(0.5 0.15 300);
+  --chart-1: oklch(0.27 0.01 70);
+  --chart-2: oklch(0.5 0.01 70);
+  --chart-3: oklch(0.65 0.005 70);
+  --chart-4: oklch(0.78 0.003 70);
+  --chart-5: oklch(0.88 0.002 70);
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.27 0.01 70);
   --sidebar-primary: oklch(0.27 0.01 70);
@@ -110,11 +109,11 @@
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(1 0 0 / 40%);
-  --chart-1: oklch(0.7 0.15 145);
-  --chart-2: oklch(0.65 0.12 250);
-  --chart-3: oklch(0.65 0.15 30);
-  --chart-4: oklch(0.75 0.1 80);
-  --chart-5: oklch(0.6 0.15 300);
+  --chart-1: oklch(0.85 0.005 70);
+  --chart-2: oklch(0.55 0.01 70);
+  --chart-3: oklch(0.7 0.005 70);
+  --chart-4: oklch(0.82 0.003 70);
+  --chart-5: oklch(0.92 0.002 70);
   --sidebar: oklch(0.24 0.01 70);
   --sidebar-foreground: oklch(0.95 0.003 70);
   --sidebar-primary: oklch(1 0 0);

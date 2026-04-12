@@ -75,6 +75,9 @@ export default function AdminPage() {
   );
   const categoriesQuery = trpc.categories.list.useQuery();
   const trendsQuery = trpc.admin.submissionTrends.useQuery({ days: 30 }, { enabled: isAdmin });
+  const upvoteTrendsQuery = trpc.admin.upvoteTrends.useQuery({ days: 30 }, { enabled: isAdmin });
+  const viewTrendsQuery = trpc.admin.viewTrends.useQuery({ days: 30 }, { enabled: isAdmin });
+  const trafficQuery = trpc.admin.trafficSummary.useQuery(undefined, { enabled: isAdmin });
   const usersQuery = trpc.admin.listUsers.useQuery(undefined, { enabled: isAdmin });
   const activityQuery = trpc.admin.activityLog.useQuery(
     { limit: 50, action: activityFilter },
@@ -270,12 +273,12 @@ export default function AdminPage() {
                   <div className="text-xs text-muted-foreground mb-1">{t("admin.totalSubmissions")}</div>
                   <div className="text-2xl font-bold font-serif">{stats.totalSubmissions}</div>
                   <div className="flex gap-2 mt-2 text-xs">
-                    <span className="text-yellow-600">{stats.pendingCount} pending</span>
+                    <span className="text-muted-foreground">{stats.pendingCount} pending</span>
                   </div>
                 </div>
                 <div className="bg-card rounded-xl border p-4">
                   <div className="text-xs text-muted-foreground mb-1">{t("admin.approved")}</div>
-                  <div className="text-2xl font-bold font-serif text-green-600">{stats.approvedCount}</div>
+                  <div className="text-2xl font-bold font-serif">{stats.approvedCount}</div>
                   <div className="text-xs text-muted-foreground mt-2">
                     {stats.totalSubmissions > 0
                       ? `${Math.round((stats.approvedCount / stats.totalSubmissions) * 100)}% rate`
@@ -340,7 +343,7 @@ export default function AdminPage() {
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <h3 className="font-serif font-bold text-base truncate">{uc.title}</h3>
                               {uc.isHighlight && (
-                                <Badge className="bg-manus-highlight text-white border-0 gap-1 text-[10px] shrink-0">
+                                <Badge className="bg-primary text-primary-foreground border-0 gap-1 text-[10px] shrink-0">
                                   <Sparkles size={10} />
                                 </Badge>
                               )}
@@ -348,10 +351,10 @@ export default function AdminPage() {
                                 variant="secondary"
                                 className={`text-[10px] shrink-0 ${
                                   uc.status === "pending"
-                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                    ? "bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground"
                                     : uc.status === "approved"
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                                    ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground"
+                                    : "bg-muted/60 text-muted-foreground/70 dark:bg-muted/60 dark:text-muted-foreground/70"
                                 }`}
                               >
                                 {uc.status}
@@ -450,7 +453,7 @@ export default function AdminPage() {
                               <>
                                 <Button
                                   size="sm"
-                                  className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
+                                  className="gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                                   onClick={() =>
                                     handleApproveClick(uc.id, uc.categories.map((c) => c.id), uc.isHighlight)
                                   }
@@ -506,9 +509,8 @@ export default function AdminPage() {
                 </div>
                 <div className="bg-card rounded-xl border p-4">
                   <div className="text-xs text-muted-foreground mb-1">Approval Rate</div>
-                  <div className="text-2xl font-bold font-serif text-green-600">
-                    {stats.totalSubmissions > 0 ? `${Math.round((stats.approvedCount / stats.totalSubmissions) * 100)}%` : "—"}
-                  </div>
+                  <div className="text-2xl font-bold font-serif">
+                    {stats.totalSubmissions > 0 ? `${Math.round((stats.approvedCount / stats.totalSubmissions) * 100)}%` : "\u2014"}              </div>
                 </div>
                 <div className="bg-card rounded-xl border p-4">
                   <div className="text-xs text-muted-foreground mb-1">Total Upvotes</div>
@@ -560,17 +562,19 @@ export default function AdminPage() {
                     <Area
                       type="monotone"
                       dataKey="approvals"
-                      stroke="#22c55e"
-                      fill="rgba(34, 197, 94, 0.1)"
+                      stroke="hsl(var(--primary) / 0.5)"
+                      fill="hsl(var(--primary) / 0.05)"
                       strokeWidth={2}
+                      strokeDasharray="5 5"
                       name="Approvals"
                     />
                     <Area
                       type="monotone"
                       dataKey="rejections"
-                      stroke="#ef4444"
-                      fill="rgba(239, 68, 68, 0.1)"
-                      strokeWidth={2}
+                      stroke="hsl(var(--muted-foreground))"
+                      fill="hsl(var(--muted) / 0.3)"
+                      strokeWidth={1.5}
+                      strokeDasharray="3 3"
                       name="Rejections"
                     />
                   </AreaChart>
@@ -578,6 +582,132 @@ export default function AdminPage() {
               ) : (
                 <div className="h-[280px] flex items-center justify-center text-muted-foreground text-sm">
                   No trend data available yet
+                </div>
+              )}
+            </div>
+
+            {/* Traffic Summary */}
+            {trafficQuery.data && (
+              <div className="bg-card rounded-xl border p-5">
+                <h3 className="font-serif font-bold text-sm mb-4 flex items-center gap-2">
+                  <Eye size={16} />
+                  Traffic Overview
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="bg-accent/30 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground">Total Views</div>
+                    <div className="text-xl font-bold font-serif">{trafficQuery.data.totalViews.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-accent/30 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground">Total Upvotes</div>
+                    <div className="text-xl font-bold font-serif">{trafficQuery.data.totalUpvotes.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-accent/30 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground">Published Use Cases</div>
+                    <div className="text-xl font-bold font-serif">{trafficQuery.data.totalUseCases}</div>
+                  </div>
+                  <div className="bg-accent/30 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground">Contributors</div>
+                    <div className="text-xl font-bold font-serif">{trafficQuery.data.totalContributors}</div>
+                  </div>
+                  <div className="bg-accent/30 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground">Views Today</div>
+                    <div className="text-xl font-bold font-serif">{trafficQuery.data.viewsToday.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-accent/30 rounded-lg p-3">
+                    <div className="text-xs text-muted-foreground">Upvotes Today</div>
+                    <div className="text-xl font-bold font-serif">{trafficQuery.data.upvotesToday.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Upvote Trends Chart */}
+            <div className="bg-card rounded-xl border p-5">
+              <h3 className="font-serif font-bold text-sm mb-4 flex items-center gap-2">
+                <ArrowUp size={16} />
+                Upvote Trends (Last 30 Days)
+              </h3>
+              {(upvoteTrendsQuery.data?.length ?? 0) > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={upvoteTrendsQuery.data}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 11 }}
+                      className="fill-muted-foreground"
+                      tickFormatter={(val) => {
+                        const d = new Date(val);
+                        return `${d.getMonth() + 1}/${d.getDate()}`;
+                      }}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                    <RechartsTooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="upvotes"
+                      stroke="hsl(var(--primary))"
+                      fill="hsl(var(--primary) / 0.1)"
+                      strokeWidth={2}
+                      name="Upvotes"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
+                  No upvote data available yet
+                </div>
+              )}
+            </div>
+
+            {/* View Trends Chart */}
+            <div className="bg-card rounded-xl border p-5">
+              <h3 className="font-serif font-bold text-sm mb-4 flex items-center gap-2">
+                <Eye size={16} />
+                View Trends (Last 30 Days)
+              </h3>
+              {(viewTrendsQuery.data?.length ?? 0) > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <AreaChart data={viewTrendsQuery.data}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 11 }}
+                      className="fill-muted-foreground"
+                      tickFormatter={(val) => {
+                        const d = new Date(val);
+                        return `${d.getMonth() + 1}/${d.getDate()}`;
+                      }}
+                    />
+                    <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                    <RechartsTooltip
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--card))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        fontSize: "12px",
+                      }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="views"
+                      stroke="hsl(var(--primary) / 0.7)"
+                      fill="hsl(var(--primary) / 0.05)"
+                      strokeWidth={2}
+                      name="Views"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[220px] flex items-center justify-center text-muted-foreground text-sm">
+                  No view data available yet
                 </div>
               )}
             </div>
@@ -753,11 +883,11 @@ export default function AdminPage() {
                 {activities.map((act) => (
                   <div key={act.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="mt-0.5">
-                      {act.action === "approve" && <CheckCircle2 size={14} className="text-green-500" />}
-                      {act.action === "reject" && <XCircle size={14} className="text-red-500" />}
-                      {act.action === "edit" && <FileText size={14} className="text-blue-500" />}
-                      {act.action === "promote_admin" && <UserPlus size={14} className="text-purple-500" />}
-                      {act.action === "demote_admin" && <UserMinus size={14} className="text-orange-500" />}
+                      {act.action === "approve" && <CheckCircle2 size={14} className="text-primary" />}
+                      {act.action === "reject" && <XCircle size={14} className="text-muted-foreground" />}
+                      {act.action === "edit" && <FileText size={14} className="text-foreground/70" />}
+                      {act.action === "promote_admin" && <UserPlus size={14} className="text-foreground/70" />}
+                      {act.action === "demote_admin" && <UserMinus size={14} className="text-muted-foreground" />}
                       {act.action === "ai_scan" && <Brain size={14} className="text-primary" />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -811,7 +941,7 @@ export default function AdminPage() {
                 onCheckedChange={(checked) => setHighlightToggle(checked === true)}
               />
               <Label htmlFor="highlight" className="flex items-center gap-1.5 text-sm">
-                <Sparkles size={14} className="text-manus-highlight" />
+                <Sparkles size={14} className="text-primary" />
                 {t("admin.highlight")}
               </Label>
             </div>
@@ -847,7 +977,7 @@ export default function AdminPage() {
             <Button
               onClick={confirmApprove}
               disabled={approveMutation.isPending}
-              className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+              className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {approveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
               {t("admin.approve")}
