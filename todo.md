@@ -104,3 +104,9 @@
 - [x] Bug: Sidebar category items retain highlight/shade after being clicked even when no longer the active filter — only the currently selected category should be highlighted
 - [x] Feature: Email notifications for contributors — owner notification on approve/reject with submitter details; in-app notifications already existed
 - [x] Feature: About page — introduce what the portal does, what to expect, that it's built with Manus; linked from sidebar Learn More section
+- [x] Feature: Slack webhook integration — push new use case submissions to a Slack channel via incoming webhook
+- [x] Add SLACK_WEBHOOK_URL environment variable/secret
+- [x] Create server-side Slack notification helper with rich message formatting
+- [x] Wire Slack notification into the use case submission creation flow (non-blocking)
+- [x] Write tests for Slack notification helper
+- [ ] QA: Comprehensive QA of entire site including mobile version — test all pages, forms, interactions, and responsive layouts

@@ -41,8 +41,9 @@ import {
   getContributorLeaderboard,
   getPendingWithoutAiScore,
 } from "./db";
-import { useCases, users } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
+import { eq, inArray } from "drizzle-orm";
+import { notifySlackNewSubmission, notifySlackStatusChange } from "./slack";
 
 /** Derive a stable visitor key from IP + User-Agent for anonymous upvote dedup */
 function getVisitorKey(req: { ip?: string; headers: Record<string, string | string[] | undefined> }): string {
@@ -159,6 +160,31 @@ export const appRouter = router({
           console.warn("[Notification] Failed to notify owner:", e);
         }
 
+        // Notify Slack channel (non-blocking)
+        try {
+          const db = await getDb();
+          let categoryNames: string[] = [];
+          if (db && input.categoryIds.length > 0) {
+            const cats = await db.select({ name: categories.name })
+              .from(categories)
+              .where(inArray(categories.id, input.categoryIds));
+            categoryNames = cats.map(c => c.name);
+          }
+          notifySlackNewSubmission({
+            title: input.title,
+            description: input.description,
+            submitterName: ctx.user.name || "Anonymous",
+            submitterEmail: ctx.user.email || "no email",
+            language: input.language,
+            categoryNames,
+            sessionReplayUrl: input.sessionReplayUrl || undefined,
+            deliverableUrl: input.deliverableUrl || undefined,
+            screenshotCount: input.screenshotUrls.length,
+          }).catch(err => console.warn("[Slack] Failed:", err));
+        } catch (e) {
+          console.warn("[Slack] Failed to prepare notification:", e);
+        }
+
         return { success: true, slug: useCase.slug };
       }),
 
@@ -269,6 +295,13 @@ export const appRouter = router({
               title: `Use Case Approved: ${uc[0].title}`,
               content: `Admin ${ctx.user.name || "Unknown"} approved the use case "${uc[0].title}" submitted by ${submitterName} (${submitterEmail}).\n\nThe use case is now live in the gallery.`,
             }).catch(() => {}); // Non-blocking
+
+            // Slack notification
+            notifySlackStatusChange({
+              title: uc[0].title,
+              status: "approved",
+              adminName: ctx.user.name || "Unknown",
+            }).catch(() => {});
           }
         }
 
@@ -313,6 +346,14 @@ export const appRouter = router({
               title: `Use Case Rejected: ${uc[0].title}`,
               content: `Admin ${ctx.user.name || "Unknown"} rejected the use case "${uc[0].title}" submitted by ${submitterName} (${submitterEmail}).\n\nReason: ${input.reason}`,
             }).catch(() => {}); // Non-blocking
+
+            // Slack notification
+            notifySlackStatusChange({
+              title: uc[0].title,
+              status: "rejected",
+              adminName: ctx.user.name || "Unknown",
+              reason: input.reason,
+            }).catch(() => {});
           }
         }
 
