@@ -362,12 +362,29 @@ export default function ProfileSetup() {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Input
-                    value={handle.handle}
-                    onChange={(e) => updateSocialHandle(index, "handle", e.target.value)}
-                    placeholder={handle.platform === "other" ? "https://..." : `@username`}
-                    className="flex-1"
-                  />
+                  <div className="flex-1 flex items-center">
+                    {handle.platform === "linkedin" && (
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-2 rounded-l-md border border-r-0 whitespace-nowrap">
+                        linkedin.com/in/
+                      </span>
+                    )}
+                    {handle.platform === "x" && (
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-2 rounded-l-md border border-r-0 whitespace-nowrap">
+                        x.com/
+                      </span>
+                    )}
+                    {handle.platform === "instagram" && (
+                      <span className="text-xs text-muted-foreground bg-muted px-2 py-2 rounded-l-md border border-r-0 whitespace-nowrap">
+                        instagram.com/
+                      </span>
+                    )}
+                    <Input
+                      value={handle.handle}
+                      onChange={(e) => updateSocialHandle(index, "handle", e.target.value)}
+                      placeholder={handle.platform === "other" ? "https://..." : "username"}
+                      className={handle.platform !== "other" ? "rounded-l-none border-l-0" : ""}
+                    />
+                  </div>
                   {socialHandles.length > 1 && (
                     <Button
                       type="button"

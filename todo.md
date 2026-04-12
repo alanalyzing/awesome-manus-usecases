@@ -147,3 +147,4 @@
 - [x] Fix: Mobile header text "Awesome Manus Use Cases" is too dense/large, reduce size or truncate on mobile
 - [x] Fix: Mobile header title should be left-aligned, not centered
 - [x] UX: Improve profile page discoverability — make it clear how users find their profile after creating it
+- [x] UX: Add URL prefixes (linkedin.com/in/, x.com/, instagram.com/) to social handle inputs so users know to only enter the handle part
