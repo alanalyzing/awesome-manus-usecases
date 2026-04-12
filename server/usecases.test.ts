@@ -198,3 +198,59 @@ describe("auth.logout", () => {
     expect(result).toEqual({ success: true });
   });
 });
+
+describe("admin.contributorLeaderboard", () => {
+  it("returns an array of leaderboard entries (public endpoint)", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.admin.contributorLeaderboard({ limit: 5 });
+    expect(Array.isArray(result)).toBe(true);
+    for (const entry of result) {
+      expect(entry).toHaveProperty("userId");
+      expect(entry).toHaveProperty("name");
+      expect(entry).toHaveProperty("approvedCount");
+      expect(entry).toHaveProperty("totalUpvotes");
+      expect(typeof entry.userId).toBe("number");
+      expect(typeof entry.approvedCount).toBe("number");
+      expect(typeof entry.totalUpvotes).toBe("number");
+    }
+  });
+
+  it("respects the limit parameter", async () => {
+    const ctx = createPublicContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.admin.contributorLeaderboard({ limit: 2 });
+    expect(result.length).toBeLessThanOrEqual(2);
+  });
+});
+
+describe("admin.bulkAiScan", () => {
+  it("requires admin role", async () => {
+    const ctx = createAuthContext("user");
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.admin.bulkAiScan()).rejects.toThrow();
+  });
+});
+
+describe("admin.exportAnalytics", () => {
+  it("requires admin role", async () => {
+    const ctx = createAuthContext("user");
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.admin.exportAnalytics({ days: 30 })).rejects.toThrow();
+  });
+
+  it("returns CSV string and summary for admin users", async () => {
+    const ctx = createAuthContext("admin");
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.admin.exportAnalytics({ days: 30 });
+    expect(result).toHaveProperty("csv");
+    expect(result).toHaveProperty("summary");
+    expect(typeof result.csv).toBe("string");
+    // CSV should have a header row
+    expect(result.csv).toContain("Date,Submissions,Approvals,Upvotes,Views");
+    expect(result.summary).toHaveProperty("totalViews");
+    expect(result.summary).toHaveProperty("totalUpvotes");
+    expect(result.summary).toHaveProperty("totalUseCases");
+    expect(result.summary).toHaveProperty("totalContributors");
+  });
+});

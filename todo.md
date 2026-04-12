@@ -93,3 +93,6 @@
 - [x] Fix: Add view_events table for accurate per-event view logging
 - [x] Fix: Update view trends to use view_events table instead of cumulative viewCount proxy
 - [x] Fix: Update viewsToday metric to count from view_events table
+- [x] Feature: Bulk AI scan — "Scan All Pending" button in admin moderation queue to batch-evaluate all unscored submissions
+- [x] Feature: Contributor leaderboard — sidebar widget ranking top submitters by approved use cases and total upvotes
+- [x] Feature: CSV export — download button on admin Analytics tab to export trend data as CSV

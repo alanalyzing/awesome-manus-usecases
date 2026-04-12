@@ -920,3 +920,56 @@ export async function getTrafficSummary(): Promise<{
 
   return { totalViews, totalUpvotes, totalUseCases, totalContributors, viewsToday, upvotesToday };
 }
+
+// ─── Contributor Leaderboard ───────────────────────────────────────
+
+export interface LeaderboardEntry {
+  userId: number;
+  name: string | null;
+  approvedCount: number;
+  totalUpvotes: number;
+}
+
+export async function getContributorLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows: any[] = await db.execute(sql`
+    SELECT
+      u.id as userId,
+      u.name,
+      COUNT(DISTINCT uc.id) as approvedCount,
+      COALESCE(SUM(uc.upvoteCount), 0) as totalUpvotes
+    FROM users u
+    INNER JOIN use_cases uc ON uc.submitterId = u.id AND uc.status = 'approved'
+    GROUP BY u.id, u.name
+    ORDER BY approvedCount DESC, totalUpvotes DESC
+    LIMIT ${limit}
+  `);
+
+  const result = (rows as any)?.[0] ?? rows;
+  return (Array.isArray(result) ? result : []).map((r: any) => ({
+    userId: Number(r.userId),
+    name: r.name ?? null,
+    approvedCount: Number(r.approvedCount),
+    totalUpvotes: Number(r.totalUpvotes),
+  }));
+}
+
+// ─── Pending Use Cases Without AI Score ────────────────────────────
+
+export async function getPendingWithoutAiScore(): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows: any[] = await db.execute(sql`
+    SELECT uc.id
+    FROM use_cases uc
+    LEFT JOIN ai_scores ai ON ai.useCaseId = uc.id
+    WHERE uc.status = 'pending' AND ai.id IS NULL
+    ORDER BY uc.createdAt ASC
+  `);
+
+  const result = (rows as any)?.[0] ?? rows;
+  return (Array.isArray(result) ? result : []).map((r: any) => Number(r.id));
+}

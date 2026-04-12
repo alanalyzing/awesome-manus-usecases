@@ -38,6 +38,8 @@ import {
   getUpvoteTrends,
   getViewTrends,
   getTrafficSummary,
+  getContributorLeaderboard,
+  getPendingWithoutAiScore,
 } from "./db";
 import { useCases } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
@@ -487,7 +489,156 @@ Return your evaluation as JSON.`;
     trafficSummary: adminProcedure.query(async () => {
       return getTrafficSummary();
     }),
+
+    // ─── Contributor Leaderboard ────────────────────────────────
+    contributorLeaderboard: publicProcedure
+      .input(z.object({ limit: z.number().min(1).max(50).optional() }).optional())
+      .query(async ({ input }) => {
+        return getContributorLeaderboard(input?.limit ?? 10);
+      }),
+
+    // ─── Bulk AI Scan ───────────────────────────────────────────
+    bulkAiScan: adminProcedure.mutation(async ({ ctx }) => {
+      const pendingIds = await getPendingWithoutAiScore();
+      if (pendingIds.length === 0) return { scanned: 0, total: 0, results: [] };
+
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const results: { id: number; overall: string; success: boolean }[] = [];
+
+      for (const ucId of pendingIds) {
+        try {
+          const ucRows = await db.select().from(useCases).where(eq(useCases.id, ucId)).limit(1);
+          if (ucRows.length === 0) { results.push({ id: ucId, overall: "0", success: false }); continue; }
+          const uc = ucRows[0];
+
+          const prompt = `You are an expert evaluator for a use case library. Evaluate the following use case submission for a product called "Manus" (an AI agent platform).
+
+Use Case Title: ${uc.title}
+Description: ${uc.description}
+Session Replay URL: ${uc.sessionReplayUrl || "Not provided"}
+Deliverable URL: ${uc.deliverableUrl || "Not provided"}
+
+Score this use case on five criteria, each from 0.0 to 5.0 (one decimal place):
+
+1. **Completeness** (0-5): How complete is the submission?
+2. **Innovativeness** (0-5): How creative or novel is this use case?
+3. **Impact** (0-5): How much value does this use case create?
+4. **Complexity** (0-5): How technically ambitious is this use case?
+5. **Presentation** (0-5): How well is the use case documented?
+
+Also compute an overall score as the weighted average: Completeness (20%) + Innovativeness (25%) + Impact (25%) + Complexity (15%) + Presentation (15%).
+
+Return your evaluation as JSON.`;
+
+          const result = await invokeLLM({
+            messages: [
+              { role: "system", content: "You are an expert evaluator. Return only valid JSON." },
+              { role: "user", content: prompt },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "ai_evaluation",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    completeness: { type: "number", description: "Score 0.0-5.0" },
+                    innovativeness: { type: "number", description: "Score 0.0-5.0" },
+                    impact: { type: "number", description: "Score 0.0-5.0" },
+                    complexity: { type: "number", description: "Score 0.0-5.0" },
+                    presentation: { type: "number", description: "Score 0.0-5.0" },
+                    overall: { type: "number", description: "Weighted average score 0.0-5.0" },
+                    reasoning: { type: "string", description: "Brief explanation of the scores" },
+                  },
+                  required: ["completeness", "innovativeness", "impact", "complexity", "presentation", "overall", "reasoning"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+
+          const content = result.choices[0]?.message?.content;
+          const parsed = JSON.parse(typeof content === "string" ? content : "{}");
+
+          const scores = {
+            useCaseId: ucId,
+            completenessScore: String(Math.min(5, Math.max(0, Number(parsed.completeness) || 0)).toFixed(1)),
+            innovativenessScore: String(Math.min(5, Math.max(0, Number(parsed.innovativeness) || 0)).toFixed(1)),
+            impactScore: String(Math.min(5, Math.max(0, Number(parsed.impact) || 0)).toFixed(1)),
+            complexityScore: String(Math.min(5, Math.max(0, Number(parsed.complexity) || 0)).toFixed(1)),
+            presentationScore: String(Math.min(5, Math.max(0, Number(parsed.presentation) || 0)).toFixed(1)),
+            overallScore: String(Math.min(5, Math.max(0, Number(parsed.overall) || 0)).toFixed(1)),
+            reasoning: parsed.reasoning || "No reasoning provided",
+          };
+
+          await saveAiScore(scores);
+          results.push({ id: ucId, overall: scores.overallScore, success: true });
+
+          await logAdminAction({
+            adminId: ctx.user.id,
+            action: "ai_scan",
+            targetType: "use_case",
+            targetId: ucId,
+            details: JSON.stringify(scores),
+          });
+        } catch (e) {
+          console.warn(`[BulkAiScan] Failed for use case ${ucId}:`, e);
+          results.push({ id: ucId, overall: "0", success: false });
+        }
+      }
+
+      return { scanned: results.filter(r => r.success).length, total: pendingIds.length, results };
+    }),
+
+    // ─── CSV Export ──────────────────────────────────────────────
+    exportAnalytics: adminProcedure
+      .input(z.object({ days: z.number().min(7).max(365).optional() }).optional())
+      .query(async ({ input }) => {
+        const days = input?.days ?? 30;
+        const [submissions, upvoteTrends, viewTrends, traffic] = await Promise.all([
+          getSubmissionTrends(days),
+          getUpvoteTrends(days),
+          getViewTrends(days),
+          getTrafficSummary(),
+        ]);
+
+        // Build a date-keyed map combining all metrics
+        const dateMap = new Map<string, { submissions: number; approvals: number; upvotes: number; views: number }>();
+        for (const s of submissions) {
+          dateMap.set(s.date, { submissions: s.submissions, approvals: s.approvals, upvotes: 0, views: 0 });
+        }
+        for (const u of upvoteTrends) {
+          const existing = dateMap.get(u.date) ?? { submissions: 0, approvals: 0, upvotes: 0, views: 0 };
+          existing.upvotes = u.upvotes;
+          dateMap.set(u.date, existing);
+        }
+        for (const v of viewTrends) {
+          const existing = dateMap.get(v.date) ?? { submissions: 0, approvals: 0, upvotes: 0, views: 0 };
+          existing.views = v.views;
+          dateMap.set(v.date, existing);
+        }
+
+        const rows = Array.from(dateMap.entries())
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([date, data]) => `${date},${data.submissions},${data.approvals},${data.upvotes},${data.views}`);
+
+        const csv = ["Date,Submissions,Approvals,Upvotes,Views", ...rows].join("\n");
+
+        return {
+          csv,
+          summary: {
+            totalViews: traffic.totalViews,
+            totalUpvotes: traffic.totalUpvotes,
+            totalUseCases: traffic.totalUseCases,
+            totalContributors: traffic.totalContributors,
+          },
+        };
+      }),
   }),
+
 });
 
 export type AppRouter = typeof appRouter;

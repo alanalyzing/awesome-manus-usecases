@@ -36,6 +36,8 @@ import {
   UserPlus,
   UserMinus,
   Star,
+  Download,
+  Zap,
 } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { Link } from "wouter";
@@ -67,6 +69,7 @@ export default function AdminPage() {
   const [activityFilter, setActivityFilter] = useState<string | undefined>(undefined);
 
   const isAdmin = user?.role === "admin";
+  const trpcUtils = trpc.useUtils();
 
   const statsQuery = trpc.admin.stats.useQuery(undefined, { enabled: isAdmin });
   const submissionsQuery = trpc.admin.submissions.useQuery(
@@ -139,6 +142,51 @@ export default function AdminPage() {
       setScanningIds((prev) => { const next = new Set(prev); next.delete(variables.useCaseId); return next; });
     },
   });
+
+  const [bulkScanning, setBulkScanning] = useState(false);
+  const bulkAiScanMutation = trpc.admin.bulkAiScan.useMutation({
+    onSuccess: (data) => {
+      setBulkScanning(false);
+      if (data.scanned === 0) {
+        toast.info("No pending submissions need scanning");
+      } else {
+        toast.success(`Scanned ${data.scanned} of ${data.total} pending submissions`);
+      }
+      submissionsQuery.refetch();
+      activityQuery.refetch();
+    },
+    onError: (err) => {
+      setBulkScanning(false);
+      toast.error("Bulk scan failed: " + err.message);
+    },
+  });
+
+  const handleBulkAiScan = useCallback(() => {
+    setBulkScanning(true);
+    bulkAiScanMutation.mutate();
+  }, [bulkAiScanMutation]);
+
+  const [csvExporting, setCsvExporting] = useState(false);
+  const handleCsvExport = useCallback(async () => {
+    setCsvExporting(true);
+    try {
+      const result = await trpcUtils.admin.exportAnalytics.fetch({ days: 30 });
+      const blob = new Blob([result.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `analytics-export-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("CSV exported successfully");
+    } catch (err: any) {
+      toast.error("Export failed: " + (err.message || "Unknown error"));
+    } finally {
+      setCsvExporting(false);
+    }
+  }, []);
 
   const handleApproveClick = useCallback(
     (id: number, currentCatIds: number[], isHighlight: boolean) => {
@@ -295,6 +343,25 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {/* Bulk AI Scan Button */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif font-bold text-sm">Moderation Queue</h2>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                onClick={handleBulkAiScan}
+                disabled={bulkScanning}
+              >
+                {bulkScanning ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <Zap size={13} />
+                )}
+                {bulkScanning ? "Scanning..." : "Scan All Pending"}
+              </Button>
+            </div>
 
             {/* Moderation Queue */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -500,6 +567,25 @@ export default function AdminPage() {
             ═══════════════════════════════════════════════════════════════ */}
         {adminTab === "analytics" && (
           <div className="space-y-8">
+            {/* Export Button */}
+            <div className="flex items-center justify-between">
+              <h2 className="font-serif font-bold text-sm">Analytics Overview</h2>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs"
+                onClick={handleCsvExport}
+                disabled={csvExporting}
+              >
+                {csvExporting ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <Download size={13} />
+                )}
+                {csvExporting ? "Exporting..." : "Export CSV"}
+              </Button>
+            </div>
+
             {/* Stats Summary */}
             {stats && (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

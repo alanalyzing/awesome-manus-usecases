@@ -1,8 +1,9 @@
 import { useI18n } from "@/lib/i18n";
+import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, ExternalLink, X } from "lucide-react";
+import { Sparkles, ExternalLink, X, Trophy, ArrowUp } from "lucide-react";
 import { MadeWithManusBadge } from "./ManusLogo";
 
 const SOCIAL_LINKS = [
@@ -29,6 +30,71 @@ interface MobileSidebarProps {
   onCategoryToggle: (id: number) => void;
   onHighlightToggle: () => void;
   onShowAll: () => void;
+}
+
+function MobileLeaderboard() {
+  const leaderboardQuery = trpc.admin.contributorLeaderboard.useQuery({ limit: 5 });
+  const entries = leaderboardQuery.data ?? [];
+
+  if (leaderboardQuery.isLoading) {
+    return (
+      <div>
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
+          <Trophy size={12} />
+          Top Contributors
+        </h3>
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-2 px-2 py-1.5">
+              <div className="w-5 h-5 rounded-full bg-muted animate-pulse" />
+              <div className="flex-1">
+                <div className="h-3 bg-muted rounded w-20 animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (entries.length === 0) return null;
+
+  return (
+    <div>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
+        <Trophy size={12} />
+        Top Contributors
+      </h3>
+      <div className="space-y-0.5">
+        {entries.map((entry: any, index: number) => (
+          <div
+            key={entry.userId}
+            className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-sidebar-accent/50 transition-colors"
+          >
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+              index === 0
+                ? "bg-primary/15 text-primary"
+                : index === 1
+                ? "bg-primary/10 text-primary/80"
+                : "bg-muted text-muted-foreground"
+            }`}>
+              {index + 1}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-medium truncate">{entry.name || "Anonymous"}</div>
+            </div>
+            <div className="flex items-center gap-2 text-[10px] text-muted-foreground shrink-0">
+              <span className="tabular-nums">{entry.approvedCount}</span>
+              <span className="flex items-center gap-0.5 tabular-nums">
+                <ArrowUp size={9} />
+                {entry.totalUpvotes}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export function MobileSidebar({
@@ -134,6 +200,11 @@ export function MobileSidebar({
                 ))}
               </div>
             </div>
+
+            <Separator />
+
+            {/* Contributor Leaderboard */}
+            <MobileLeaderboard />
 
             <Separator />
 
