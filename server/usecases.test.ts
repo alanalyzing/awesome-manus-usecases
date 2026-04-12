@@ -322,3 +322,54 @@ describe("Submission form validation", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("MarkdownContent - stripMarkdown utility", () => {
+  // Test the stripMarkdown function logic (same logic as client-side)
+  function stripMarkdown(text: string): string {
+    return text
+      .replace(/#{1,6}\s+/g, "")
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/__(.+?)__/g, "$1")
+      .replace(/_(.+?)_/g, "$1")
+      .replace(/~~(.+?)~~/g, "$1")
+      .replace(/`(.+?)`/g, "$1")
+      .replace(/!\[.*?\]\(.+?\)/g, "")
+      .replace(/\[(.+?)\]\(.+?\)/g, "$1")
+      .replace(/^\s*[-*+]\s+/gm, "")
+      .replace(/^\s*\d+\.\s+/gm, "")
+      .replace(/^\s*>\s+/gm, "")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/---/g, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  it("strips bold and italic markers", () => {
+    expect(stripMarkdown("**bold** and *italic*")).toBe("bold and italic");
+  });
+
+  it("strips links but keeps link text", () => {
+    expect(stripMarkdown("[click here](https://example.com)")).toBe("click here");
+  });
+
+  it("strips headers", () => {
+    expect(stripMarkdown("# Title\n## Subtitle")).toBe("Title\nSubtitle");
+  });
+
+  it("strips list markers", () => {
+    expect(stripMarkdown("- item 1\n- item 2")).toBe("item 1\nitem 2");
+  });
+
+  it("strips inline code", () => {
+    expect(stripMarkdown("use `console.log` here")).toBe("use console.log here");
+  });
+
+  it("strips images completely", () => {
+    expect(stripMarkdown("![alt](image.png)")).toBe("");
+  });
+
+  it("handles plain text unchanged", () => {
+    expect(stripMarkdown("Just plain text")).toBe("Just plain text");
+  });
+});

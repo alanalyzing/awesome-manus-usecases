@@ -3,8 +3,13 @@ import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, ExternalLink, X, Trophy, ArrowUp } from "lucide-react";
+import { Sparkles, ExternalLink, X, Trophy, ArrowUp, BookOpen } from "lucide-react";
 import { MadeWithManusBadge } from "./ManusLogo";
+
+const LEARN_MORE_LINKS = [
+  { name: "Team Plan", url: "https://manus.im/team" },
+  { name: "Trust Center", url: "https://trust.manus.im/" },
+];
 
 const SOCIAL_LINKS = [
   { name: "LinkedIn", url: "https://www.linkedin.com/company/maboroshiinc/" },
@@ -205,6 +210,29 @@ export function MobileSidebar({
 
             {/* Contributor Leaderboard */}
             <MobileLeaderboard />
+
+            <Separator />
+
+            {/* Learn More */}
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                Learn More
+              </h3>
+              <div className="space-y-0.5">
+                {LEARN_MORE_LINKS.map((link) => (
+                  <a
+                    key={link.name}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
+                  >
+                    <BookOpen size={13} />
+                    {link.name}
+                  </a>
+                ))}
+              </div>
+            </div>
 
             <Separator />
 

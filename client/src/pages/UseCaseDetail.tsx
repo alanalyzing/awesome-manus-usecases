@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState, useCallback } from "react";
+import { MarkdownContent } from "@/components/MarkdownContent";
 import { motion } from "framer-motion";
 import { Link, useParams, useLocation } from "wouter";
 import { toast } from "sonner";
@@ -215,8 +216,8 @@ export default function UseCaseDetailPage() {
         )}
 
         {/* Description */}
-        <div className="prose prose-sm max-w-none mb-8 text-foreground/90 leading-relaxed whitespace-pre-wrap">
-          {uc.description}
+        <div className="max-w-none mb-8 text-foreground/90 leading-relaxed">
+          <MarkdownContent content={uc.description ?? ""} />
         </div>
 
         {/* Action Links */}

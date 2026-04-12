@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { stripMarkdown } from "@/components/MarkdownContent";
 import { getLoginUrl } from "@/const";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -37,6 +38,7 @@ import {
   Heart,
   Flame,
   Trophy,
+  BookOpen,
 } from "lucide-react";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
@@ -148,6 +150,11 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
     </div>
   );
 }
+
+const LEARN_MORE_LINKS = [
+  { name: "Team Plan", url: "https://manus.im/team" },
+  { name: "Trust Center", url: "https://trust.manus.im/" },
+];
 
 const SOCIAL_LINKS = [
   { name: "LinkedIn", url: "https://www.linkedin.com/company/maboroshiinc/" },
@@ -318,7 +325,7 @@ export default function Home() {
     setAccumulatedItems([]);
     setShowHero(false);
     setSelectedCategories((prev) =>
-      prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId]
+      prev.includes(catId) ? [] : [catId]
     );
   }, []);
 
@@ -581,6 +588,29 @@ export default function Home() {
 
                   {/* Contributor Leaderboard */}
                   <LeaderboardWidget />
+
+                  <Separator />
+
+                  {/* Learn More */}
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1">
+                      Learn More
+                    </h3>
+                    <div className="space-y-0.5">
+                      {LEARN_MORE_LINKS.map((link) => (
+                        <a
+                          key={link.name}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
+                        >
+                          <BookOpen size={13} />
+                          {link.name}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
 
                   <Separator />
 
@@ -871,7 +901,7 @@ export default function Home() {
                             {uc.title}
                           </h3>
                           <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
-                            {uc.description}
+                            {stripMarkdown(uc.description ?? "")}
                           </p>
 
                           {/* Tags */}

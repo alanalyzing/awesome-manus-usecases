@@ -289,6 +289,9 @@ export default function SubmitPage() {
               {t("submit.descHint")}
               <span className="float-right">{description.length}/5000</span>
             </p>
+            <p className="text-xs text-muted-foreground/60 mt-1">
+              Supports Markdown: **bold**, *italic*, [links](url), lists, and more
+            </p>
           </div>
 
           {/* Job Function Categories */}

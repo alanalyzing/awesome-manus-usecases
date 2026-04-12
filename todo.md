@@ -99,3 +99,6 @@
 - [x] Remove all seed data from the database (use cases, screenshots, upvotes, view events, activity log entries for seed data)
 - [x] Feature: Social sharing & Open Graph meta tags — OG image, title, description for individual use case pages so they preview well on LinkedIn, X/Twitter, Slack
 - [x] Feature: Submission guidelines / template — guided submission form with field hints, character limits, example prompts, and step-by-step instructions
+- [x] Feature: Rich text / Markdown support in descriptions — allow submitters to use basic formatting (bold, lists, links) and render Markdown in use case detail pages and gallery cards
+- [x] Feature: Learn More section in left sidebar — add Team Plan (https://manus.im/team) and Trust Center (https://trust.manus.im/) links
+- [x] Bug: Sidebar category items retain highlight/shade after being clicked even when no longer the active filter — only the currently selected category should be highlighted
