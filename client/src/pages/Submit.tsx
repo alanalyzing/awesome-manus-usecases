@@ -182,8 +182,8 @@ export default function SubmitPage() {
         toast.error("Please upload at least one screenshot");
         return;
       }
-      if (!consent) {
-        toast.error("Please accept the consent checkbox to continue");
+      if (!sessionReplayUrl.trim()) {
+        toast.error("Session Replay URL is required");
         return;
       }
 
@@ -398,9 +398,7 @@ export default function SubmitPage() {
           <div className="space-y-2">
             <Label htmlFor="sessionReplay">
               {t("submit.sessionReplayUrl")}
-              <Badge variant="secondary" className="ml-2 text-[10px] font-normal">
-                Recommended
-              </Badge>
+              <span className="ml-1 text-destructive">*</span>
             </Label>
             <Input
               id="sessionReplay"

@@ -152,3 +152,6 @@
 - [x] Backend: Leaderboard query supports sortBy parameter (usecases or likes)
 - [x] Frontend: Leaderboard page with toggle for sorting by use cases vs likes, medal ranks, avatars
 - [x] Navigation: 'View full leaderboard' link in desktop sidebar and mobile sidebar widgets
+- [x] Fix: Rewrite interview consent checkbox to be more casual: "I'm open to being contacted for an interview about this use case"
+- [x] Fix: Make Session Replay URL a required field (remove "Recommended" badge, add validation)
+- [x] Fix: Rename feature category "Apps" to "Desktop & Mobile Apps" in all i18n translations
