@@ -226,3 +226,5 @@
 - [x] Feature: Chrome Extension — add Select All / Deselect All button in browse tab
 - [x] Feature: Chrome Extension — redesign with sleek glassmorphism UI
 - [x] Feature: Chrome Extension — generate polished Manus-branded extension icon (golden briefcase with Manus hand logo)
+- [x] Fix: Remove screenshot thumbnails from Chrome extension list items — too small and visually broken in popup
+- [x] Fix: Chrome extension icon — transparent background, golden briefcase, more prominent Manus logo
