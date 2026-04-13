@@ -184,3 +184,6 @@
 - [x] Feature: Limit username changes to 5 times max per user
 - [x] Feature: Show remaining username changes count on profile setup page
 - [x] Bug: Left sidebar not reaching the bottom of the page (height issue)
+- [x] Feature: Add public REST API endpoint for use case submission (POST /api/submit with JSON body, Bearer token auth)
+- [x] Feature: Allow submission via API without browser UI for Manus agent compatibility
+- [x] Feature: Add GET /api/categories endpoint for discovering valid category slugs

@@ -1489,3 +1489,38 @@ export async function addScreenshotToUseCase(useCaseId: number, url: string, fil
 
   return { id: (result as any).insertId, url };
 }
+
+// ─── Category Lookup by Slugs (for API) ──────────────────────────────
+export async function getCategoryIdsBySlugs(slugs: string[]): Promise<{ id: number; slug: string }[]> {
+  const db = await getDb();
+  if (!db || slugs.length === 0) return [];
+  const rows = await db.select({ id: categories.id, slug: categories.slug })
+    .from(categories)
+    .where(inArray(categories.slug, slugs));
+  return rows;
+}
+
+// ─── Get or Create API Submitter User ──────────────────────────────
+export async function getOrCreateApiSubmitter(data: { name: string; email?: string }): Promise<{ id: number; name: string | null }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const openId = `api-submitter-${(data.email || "anonymous").toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+
+  // Try to find existing
+  const existing = await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.openId, openId)).limit(1);
+  if (existing.length > 0) return existing[0];
+
+  // Create new
+  await db.insert(users).values({
+    openId,
+    name: data.name,
+    email: data.email || null,
+    role: "user",
+    lastSignedIn: new Date(),
+  });
+
+  const created = await db.select({ id: users.id, name: users.name }).from(users).where(eq(users.openId, openId)).limit(1);
+  if (created.length === 0) throw new Error("Failed to create API submitter user");
+  return created[0];
+}

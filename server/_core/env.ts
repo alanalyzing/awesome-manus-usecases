@@ -9,4 +9,5 @@ export const ENV = {
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   slackWebhookUrl: process.env.SLACK_WEBHOOK_URL ?? "",
   adminEmails: (process.env.ADMIN_EMAILS ?? "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean),
+  apiSubmitKey: process.env.API_SUBMIT_KEY ?? "",
 };
