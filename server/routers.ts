@@ -908,6 +908,63 @@ Return your evaluation as JSON.`;
         return { success: true };
       }),
 
+    // ─── AI Rewrite Title & Description ─────────────────────────
+    aiRewrite: adminProcedure
+      .input(z.object({
+        useCaseId: z.number(),
+        field: z.enum(["title", "description", "both"]),
+        currentTitle: z.string().optional(),
+        currentDescription: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        const ucRows = await db.select().from(useCases).where(eq(useCases.id, input.useCaseId)).limit(1);
+        if (ucRows.length === 0) throw new Error("Use case not found");
+        const uc = ucRows[0];
+
+        const systemPrompt = "Review this use case replay session and write a short title and 2-sentence description for it. The title should follow the format \"Category: What it does\" and be concise. The description should be industry and brand agnostic, describing what the use case does at a high level without referencing specific companies, products, or sectors. Structure the description by answering: what problem did it solve, how did Manus help, and what was the outcome. Do not use em dashes.";
+
+        const userMessage = `Here are the details of the use case submission:
+
+Title: ${input.currentTitle || uc.title}
+Description: ${input.currentDescription || uc.description}
+Session Replay URL: ${uc.sessionReplayUrl || "Not provided"}
+Deliverable URL: ${uc.deliverableUrl || "Not provided"}
+
+Return the title on the first line, then a blank line, then the 2-sentence description. No quotes, no labels, no markdown.`;
+
+        const result = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+          ],
+        });
+
+        const rawContent = result.choices[0]?.message?.content ?? "";
+        const content = (typeof rawContent === "string" ? rawContent : "").trim();
+        if (!content) throw new Error("AI returned empty response");
+
+        // Parse: first line is title, rest (after blank line) is description
+        const lines = content.split("\n");
+        const newTitle = lines[0]?.trim() || "";
+        const newDescription = lines.slice(1).join("\n").trim() || "";
+
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "ai_rewrite",
+          targetType: "use_case",
+          targetId: input.useCaseId,
+          details: JSON.stringify({ field: input.field, titleLength: newTitle.length, descLength: newDescription.length }),
+        });
+
+        return {
+          title: newTitle,
+          description: newDescription,
+        };
+      }),
+
     // ─── AI Summary Generation ──────────────────────────────────
     generateSummary: adminProcedure
       .input(z.object({ useCaseId: z.number() }))

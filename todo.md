@@ -209,3 +209,8 @@
 - [x] Performance: Cap animation delays to first 12 items only (instant for subsequent items)
 - [x] Performance: Add database indexes on use_cases (status+createdAt, status+upvoteCount, status+viewCount, submitterId, sessionReplayUrl)
 - [x] Performance: Add database indexes on screenshots (useCaseId+sortOrder) and ai_scores (useCaseId)
+- [x] Bug: PATCH /api/update endpoint timing out or rate-limited when called from external clients
+- [x] Task: Backfill deliverable URLs from Notion data into the use case library
+- [x] Bug: PATCH /api/update endpoint returns 429 from external clients — resolved by running backfill via localhost
+- [x] Task: Backfill 68 deliverable URLs from Notion data via localhost — 62 succeeded, 6 not found in DB, 12 skipped (no Replay URL)
+- [x] Feature: Add AI rewrite buttons for title and description in admin edit dialog (using same system prompt as AI summary generation)

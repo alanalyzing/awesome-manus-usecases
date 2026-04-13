@@ -13,7 +13,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trash2, Plus, Save, Loader2, ImagePlus, X } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Trash2, Plus, Save, Loader2, ImagePlus, X, Sparkles, RotateCcw } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 
@@ -46,6 +52,10 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
   const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // AI rewrite state - store previous values for undo
+  const [prevTitle, setPrevTitle] = useState<string | null>(null);
+  const [prevDescription, setPrevDescription] = useState<string | null>(null);
+
   const uc = useCaseQuery.data;
   const screenshots = uc?.screenshots ?? [];
   const allCategories = categoriesQuery.data ?? [];
@@ -59,6 +69,9 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
       setDeliverableUrl(uc.deliverableUrl ?? "");
       setSelectedCategoryIds(uc.categories.map((c: any) => c.id));
       setIsHighlight(uc.isHighlight ?? false);
+      // Reset undo state when loading new use case
+      setPrevTitle(null);
+      setPrevDescription(null);
     }
   }, [uc]);
 
@@ -72,6 +85,26 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
       onSaved?.();
     },
     onError: (err) => toast.error(err.message),
+  });
+
+  const aiRewriteMutation = trpc.admin.aiRewrite.useMutation({
+    onSuccess: (data, variables) => {
+      const field = variables.field;
+      if (field === "title" || field === "both") {
+        setPrevTitle(title);
+        setTitle(data.title);
+      }
+      if (field === "description" || field === "both") {
+        setPrevDescription(description);
+        setDescription(data.description);
+      }
+      toast.success(
+        field === "both"
+          ? "Title and description rewritten by AI"
+          : `${field.charAt(0).toUpperCase() + field.slice(1)} rewritten by AI`
+      );
+    },
+    onError: (err) => toast.error(`AI rewrite failed: ${err.message}`),
   });
 
   const addScreenshotMutation = trpc.admin.addScreenshot.useMutation({
@@ -91,6 +124,32 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     onError: (err) => toast.error(err.message),
   });
 
+  const handleAiRewrite = useCallback((field: "title" | "description" | "both") => {
+    if (!uc?.id) return;
+    aiRewriteMutation.mutate({
+      useCaseId: uc.id,
+      field,
+      currentTitle: title,
+      currentDescription: description,
+    });
+  }, [uc?.id, title, description, aiRewriteMutation]);
+
+  const handleUndoTitle = useCallback(() => {
+    if (prevTitle !== null) {
+      setTitle(prevTitle);
+      setPrevTitle(null);
+      toast.info("Title reverted");
+    }
+  }, [prevTitle]);
+
+  const handleUndoDescription = useCallback(() => {
+    if (prevDescription !== null) {
+      setDescription(prevDescription);
+      setPrevDescription(null);
+      toast.info("Description reverted");
+    }
+  }, [prevDescription]);
+
   const handleSave = useCallback(() => {
     if (!uc?.id) return;
     updateMutation.mutate({
@@ -108,7 +167,6 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     if (!uc?.id || !screenshotUrl.trim()) return;
     try {
       setUploadingScreenshot(true);
-      // Fetch the image and convert to base64
       const resp = await fetch(screenshotUrl.trim());
       const blob = await resp.blob();
       const buffer = await blob.arrayBuffer();
@@ -183,6 +241,7 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
   }, []);
 
   const isSaving = updateMutation.isPending;
+  const isRewriting = aiRewriteMutation.isPending;
 
   return (
     <Dialog open={!!slug} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -199,26 +258,135 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
               </div>
             ) : uc ? (
               <>
+                {/* AI Rewrite All button */}
+                <div className="flex items-center justify-between rounded-lg border border-dashed border-primary/30 bg-primary/5 px-4 py-2.5">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Sparkles size={14} className="text-primary" />
+                    <span>AI can rewrite the title and description for you</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 border-primary/30 hover:bg-primary/10"
+                    onClick={() => handleAiRewrite("both")}
+                    disabled={isRewriting}
+                  >
+                    {isRewriting ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Sparkles size={14} />
+                    )}
+                    Rewrite Both
+                  </Button>
+                </div>
+
                 {/* Title */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-title" className="text-sm font-medium">Title</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="edit-title" className="text-sm font-medium">Title</Label>
+                    <div className="flex items-center gap-1">
+                      {prevTitle !== null && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                                onClick={handleUndoTitle}
+                              >
+                                <RotateCcw size={12} />
+                                Undo
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Revert to previous title</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1.5 text-xs gap-1 text-muted-foreground hover:text-primary"
+                              onClick={() => handleAiRewrite("title")}
+                              disabled={isRewriting}
+                            >
+                              {isRewriting ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <Sparkles size={12} />
+                              )}
+                              AI Rewrite
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Rewrite title using AI</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
                   <Input
                     id="edit-title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Use case title"
+                    className={prevTitle !== null ? "border-primary/40 bg-primary/5" : ""}
                   />
                 </div>
 
                 {/* Description */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="edit-desc" className="text-sm font-medium">Description</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="edit-desc" className="text-sm font-medium">Description</Label>
+                    <div className="flex items-center gap-1">
+                      {prevDescription !== null && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                                onClick={handleUndoDescription}
+                              >
+                                <RotateCcw size={12} />
+                                Undo
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Revert to previous description</TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-1.5 text-xs gap-1 text-muted-foreground hover:text-primary"
+                              onClick={() => handleAiRewrite("description")}
+                              disabled={isRewriting}
+                            >
+                              {isRewriting ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <Sparkles size={12} />
+                              )}
+                              AI Rewrite
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Rewrite description using AI</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </div>
                   <Textarea
                     id="edit-desc"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Use case description (Markdown supported)"
-                    className="min-h-[120px]"
+                    className={`min-h-[120px] ${prevDescription !== null ? "border-primary/40 bg-primary/5" : ""}`}
                   />
                 </div>
 
