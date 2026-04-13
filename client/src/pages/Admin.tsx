@@ -42,6 +42,7 @@ import {
   Pencil,
   Clipboard,
   ImagePlus,
+  BookOpen,
 } from "lucide-react";
 import { useState, useCallback, useMemo, useRef } from "react";
 import { Link } from "wouter";
@@ -57,12 +58,13 @@ import {
   BarChart,
   Bar,
 } from "recharts";
+import { AdminCollections } from "@/components/AdminCollections";
 
 export default function AdminPage() {
   const { user, isAuthenticated, loading } = useAuth();
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState("pending");
-  const [adminTab, setAdminTab] = useState<"moderation" | "analytics" | "users" | "activity">("moderation");
+  const [adminTab, setAdminTab] = useState<"moderation" | "analytics" | "users" | "activity" | "collections">("moderation");
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -483,7 +485,7 @@ export default function AdminPage() {
           <div className="flex-1" />
           {/* Admin section tabs */}
           <div className="flex gap-1">
-            {(["moderation", "analytics", "users", "activity"] as const).map((tab) => (
+            {(["moderation", "analytics", "users", "activity", "collections"] as const).map((tab) => (
               <Button
                 key={tab}
                 variant={adminTab === tab ? "default" : "ghost"}
@@ -495,6 +497,7 @@ export default function AdminPage() {
                 {tab === "analytics" && <TrendingUp size={13} />}
                 {tab === "users" && <Users size={13} />}
                 {tab === "activity" && <Activity size={13} />}
+                {tab === "collections" && <BookOpen size={13} />}
                 <span className="hidden sm:inline capitalize">{tab}</span>
               </Button>
             ))}
@@ -1269,6 +1272,10 @@ export default function AdminPage() {
         {/* ═══════════════════════════════════════════════════════════════
             ACTIVITY LOG TAB
             ═══════════════════════════════════════════════════════════════ */}
+        {adminTab === "collections" && (
+          <AdminCollections />
+        )}
+
         {adminTab === "activity" && (
           <div className="bg-card rounded-xl border p-5">
             <div className="flex items-center justify-between mb-4">

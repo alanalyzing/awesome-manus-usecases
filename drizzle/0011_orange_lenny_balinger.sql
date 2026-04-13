@@ -1,0 +1,1 @@
+ALTER TABLE `screenshots` ADD `blurhash` varchar(100);

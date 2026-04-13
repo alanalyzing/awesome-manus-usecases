@@ -71,6 +71,7 @@ export const screenshots = mysqlTable("screenshots", {
   useCaseId: int("useCaseId").notNull(),
   url: text("url").notNull(),
   fileKey: varchar("fileKey", { length: 512 }).notNull(),
+  blurhash: varchar("blurhash", { length: 100 }),
   sortOrder: int("sortOrder").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -187,3 +188,48 @@ export const userSocialHandles = mysqlTable("user_social_handles", {
 
 export type UserSocialHandle = typeof userSocialHandles.$inferSelect;
 export type InsertUserSocialHandle = typeof userSocialHandles.$inferInsert;
+
+// ─── Curated Collections ──────────────────────────────────────────
+export const collections = mysqlTable("collections", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 200 }).notNull(),
+  slug: varchar("slug", { length: 250 }).notNull().unique(),
+  description: text("description"),
+  coverImageUrl: text("coverImageUrl"),
+  isPublished: boolean("isPublished").default(false).notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  createdBy: int("createdBy").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Collection = typeof collections.$inferSelect;
+export type InsertCollection = typeof collections.$inferInsert;
+
+// ─── Collection ↔ Use Case (many-to-many) ─────────────────────────
+export const collectionUseCases = mysqlTable("collection_use_cases", {
+  id: int("id").autoincrement().primaryKey(),
+  collectionId: int("collectionId").notNull(),
+  useCaseId: int("useCaseId").notNull(),
+  sortOrder: int("sortOrder").default(0).notNull(),
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
+}, (table) => [
+  uniqueIndex("coll_uc_unique").on(table.collectionId, table.useCaseId),
+]);
+
+export type CollectionUseCase = typeof collectionUseCases.$inferSelect;
+
+// ─── Featured Use Case (singleton-ish, one active at a time) ──────
+export const featuredUseCase = mysqlTable("featured_use_case", {
+  id: int("id").autoincrement().primaryKey(),
+  useCaseId: int("useCaseId").notNull(),
+  editorialBlurb: text("editorialBlurb"),
+  isActive: boolean("isActive").default(true).notNull(),
+  featuredBy: int("featuredBy").notNull(),
+  startDate: timestamp("startDate").defaultNow().notNull(),
+  endDate: timestamp("endDate"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type FeaturedUseCase = typeof featuredUseCase.$inferSelect;
+export type InsertFeaturedUseCase = typeof featuredUseCase.$inferInsert;

@@ -47,6 +47,7 @@
     "@trpc/react-query": "^11.6.0",
     "@trpc/server": "^11.6.0",
     "axios": "^1.12.0",
+    "blurhash": "^2.0.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -71,6 +72,7 @@
     "react-resizable-panels": "^3.0.6",
     "recharts": "^2.15.2",
     "remark-gfm": "^4.0.1",
+    "sharp": "^0.34.5",
     "sonner": "^2.0.7",
     "streamdown": "^1.4.0",
     "superjson": "^1.13.3",
@@ -112,6 +114,9 @@
     },
     "overrides": {
       "tailwindcss>nanoid": "3.3.7"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "sharp"
+    ]
   }
 }

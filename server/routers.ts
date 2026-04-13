@@ -59,10 +59,22 @@ import {
   addScreenshotToUseCase,
   bulkApproveAllPending,
   deleteScreenshot,
+  createCollection,
+  updateCollection,
+  deleteCollection,
+  getCollectionBySlug,
+  getAllCollections,
+  addUseCaseToCollection,
+  removeUseCaseFromCollection,
+  getCollectionUseCaseIds,
+  setFeaturedUseCase,
+  getActiveFeaturedUseCase,
+  removeFeaturedUseCase,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
 import { notifySlackNewSubmission, notifySlackStatusChange } from "./slack";
+import { backfillBlurhashes, generateAndStoreBlurhash } from "./blurhash";
 
 /** Derive a stable visitor key from IP + User-Agent for anonymous upvote dedup */
 function getVisitorKey(req: { ip?: string; headers: Record<string, string | string[] | undefined> }): string {
@@ -129,6 +141,23 @@ export const appRouter = router({
       .input(z.object({ limit: z.number().min(1).max(20).optional() }).optional())
       .query(async ({ input }) => {
         return getTrendingUseCases(input?.limit ?? 6);
+      }),
+
+    featured: publicProcedure.query(async () => {
+      return getActiveFeaturedUseCase();
+    }),
+
+    // ─── Collections (Public Read) ──────────────────────────────
+    collections: publicProcedure
+      .input(z.object({ publishedOnly: z.boolean().optional() }).optional())
+      .query(async ({ input }) => {
+        return getAllCollections({ publishedOnly: input?.publishedOnly ?? true });
+      }),
+
+    collectionBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        return getCollectionBySlug(input.slug);
       }),
 
     // ─── Upvote (Protected — login required) ────────────────────
@@ -1190,6 +1219,101 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
             totalContributors: traffic.totalContributors,
           },
         };
+      }),
+
+    // ─── Collections Management (Admin) ────────────────────────
+    createCollection: adminProcedure
+      .input(z.object({
+        title: z.string().min(1).max(200),
+        description: z.string().max(1000).optional(),
+        coverImageUrl: z.string().url().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const slug = input.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + nanoid(6);
+        return createCollection({ ...input, slug, createdBy: ctx.user.id });
+      }),
+
+    updateCollection: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().min(1).max(200).optional(),
+        description: z.string().max(1000).optional(),
+        coverImageUrl: z.string().url().optional().nullable(),
+        isPublished: z.boolean().optional(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return updateCollection(id, data as any);
+      }),
+
+    deleteCollection: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await deleteCollection(input.id);
+        return { success: true };
+      }),
+
+    addToCollection: adminProcedure
+      .input(z.object({
+        collectionId: z.number(),
+        useCaseId: z.number(),
+        sortOrder: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        await addUseCaseToCollection(input.collectionId, input.useCaseId, input.sortOrder ?? 0);
+        return { success: true };
+      }),
+
+    removeFromCollection: adminProcedure
+      .input(z.object({
+        collectionId: z.number(),
+        useCaseId: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await removeUseCaseFromCollection(input.collectionId, input.useCaseId);
+        return { success: true };
+      }),
+
+    getCollectionItems: adminProcedure
+      .input(z.object({ collectionId: z.number() }))
+      .query(async ({ input }) => {
+        return getCollectionUseCaseIds(input.collectionId);
+      }),
+
+    listCollections: adminProcedure
+      .input(z.object({ publishedOnly: z.boolean().optional() }).optional())
+      .query(async ({ input }) => {
+        return getAllCollections({ publishedOnly: input?.publishedOnly ?? false });
+      }),
+
+    // ─── Featured Use Case (Admin) ────────────────────────────
+    setFeatured: adminProcedure
+      .input(z.object({
+        useCaseId: z.number(),
+        editorialBlurb: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return setFeaturedUseCase({ ...input, featuredBy: ctx.user.id });
+      }),
+
+    removeFeatured: adminProcedure
+      .mutation(async () => {
+        await removeFeaturedUseCase();
+        return { success: true };
+      }),
+
+    getFeatured: adminProcedure.query(async () => {
+      return getActiveFeaturedUseCase();
+    }),
+  }),
+
+  // ── Blurhash ──────────────────────────────────────────────────
+  blurhash: router({
+    backfill: adminProcedure
+      .mutation(async () => {
+        const result = await backfillBlurhashes(10);
+        return result;
       }),
   }),
 

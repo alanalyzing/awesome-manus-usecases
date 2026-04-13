@@ -14,6 +14,9 @@ import {
   userProfiles, UserProfile, InsertUserProfile,
   userSocialHandles, UserSocialHandle, InsertUserSocialHandle,
   userFollows,
+  collections, Collection, InsertCollection,
+  collectionUseCases, CollectionUseCase,
+  featuredUseCase, FeaturedUseCase, InsertFeaturedUseCase,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -101,7 +104,7 @@ export type UseCaseWithDetails = UseCase & {
   submitterUsername: string | null;
   submitterAvatar: string | null;
   categories: { id: number; name: string; slug: string; type: string }[];
-  screenshots: { id: number; url: string; sortOrder: number }[];
+  screenshots: { id: number; url: string; blurhash?: string | null; sortOrder: number }[];
   hasUpvoted?: boolean;
   aiScore?: { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null } | null;
 };
@@ -194,8 +197,8 @@ export async function getApprovedUseCases(opts: {
 
   // Fetch screenshots
   const screenshotRows = await db.select().from(screenshots).where(inArray(screenshots.useCaseId, ucIds)).orderBy(asc(screenshots.sortOrder));
-  const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
-  for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
+  const ssMap = new Map<number, { id: number; url: string; blurhash?: string | null; sortOrder: number }[]>();
+  for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, blurhash: s.blurhash, sortOrder: s.sortOrder }); }
 
   // Fetch user upvotes
    let upvoteSet = new Set<number>();
@@ -1568,4 +1571,235 @@ export async function deleteScreenshot(screenshotId: number): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   await db.delete(screenshots).where(eq(screenshots.id, screenshotId));
+}
+
+
+// ─── Collections ──────────────────────────────────────────────────────
+
+export async function createCollection(data: {
+  title: string;
+  slug: string;
+  description?: string;
+  coverImageUrl?: string;
+  createdBy: number;
+}): Promise<Collection> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [result] = await db.insert(collections).values(data).$returningId();
+  const [row] = await db.select().from(collections).where(eq(collections.id, result.id));
+  return row;
+}
+
+export async function updateCollection(id: number, data: {
+  title?: string;
+  description?: string;
+  coverImageUrl?: string;
+  isPublished?: boolean;
+  sortOrder?: number;
+}): Promise<Collection | null> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(collections).set(data).where(eq(collections.id, id));
+  const [row] = await db.select().from(collections).where(eq(collections.id, id));
+  return row ?? null;
+}
+
+export async function deleteCollection(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(collectionUseCases).where(eq(collectionUseCases.collectionId, id));
+  await db.delete(collections).where(eq(collections.id, id));
+}
+
+export async function getCollectionBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const [row] = await db.select().from(collections).where(eq(collections.slug, slug));
+  if (!row) return null;
+  // Get use cases in this collection
+  const items = await db
+    .select({
+      useCaseId: collectionUseCases.useCaseId,
+      sortOrder: collectionUseCases.sortOrder,
+    })
+    .from(collectionUseCases)
+    .where(eq(collectionUseCases.collectionId, row.id))
+    .orderBy(collectionUseCases.sortOrder);
+  
+  if (items.length === 0) return { ...row, useCases: [] };
+
+  const ucIds = items.map(i => i.useCaseId);
+  const ucs = await db
+    .select()
+    .from(useCases)
+    .where(inArray(useCases.id, ucIds));
+
+  // Enrich with screenshots and categories
+  const screenshotRows = await db
+    .select()
+    .from(screenshots)
+    .where(inArray(screenshots.useCaseId, ucIds))
+    .orderBy(screenshots.sortOrder);
+
+  const catRows = await db
+    .select({
+      useCaseId: useCaseCategories.useCaseId,
+      categoryId: useCaseCategories.categoryId,
+      name: categories.name,
+      slug: categories.slug,
+      type: categories.type,
+    })
+    .from(useCaseCategories)
+    .innerJoin(categories, eq(useCaseCategories.categoryId, categories.id))
+    .where(inArray(useCaseCategories.useCaseId, ucIds));
+
+  const scoreRows = await db
+    .select()
+    .from(aiScores)
+    .where(inArray(aiScores.useCaseId, ucIds));
+
+  const enriched = items.map(item => {
+    const uc = ucs.find(u => u.id === item.useCaseId);
+    if (!uc) return null;
+    return {
+      ...uc,
+      screenshots: screenshotRows.filter(s => s.useCaseId === uc.id),
+      categories: catRows.filter(c => c.useCaseId === uc.id),
+      aiScore: scoreRows.find(s => s.useCaseId === uc.id) ?? null,
+      collectionSortOrder: item.sortOrder,
+    };
+  }).filter(Boolean);
+
+  return { ...row, useCases: enriched };
+}
+
+export async function getAllCollections(opts?: { publishedOnly?: boolean }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  let query = db.select().from(collections).orderBy(collections.sortOrder, collections.createdAt);
+  
+  const rows = opts?.publishedOnly
+    ? await db.select().from(collections).where(eq(collections.isPublished, true)).orderBy(collections.sortOrder, collections.createdAt)
+    : await db.select().from(collections).orderBy(collections.sortOrder, collections.createdAt);
+
+  // Count use cases per collection
+  const allItems = await db.select({
+    collectionId: collectionUseCases.collectionId,
+    useCaseId: collectionUseCases.useCaseId,
+  }).from(collectionUseCases);
+
+  return rows.map(c => ({
+    ...c,
+    useCaseCount: allItems.filter(i => i.collectionId === c.id).length,
+  }));
+}
+
+export async function addUseCaseToCollection(collectionId: number, useCaseId: number, sortOrder: number = 0) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  try {
+    await db.insert(collectionUseCases).values({ collectionId, useCaseId, sortOrder });
+  } catch (e: any) {
+    if (e.code === "ER_DUP_ENTRY") return; // already in collection
+    throw e;
+  }
+}
+
+export async function removeUseCaseFromCollection(collectionId: number, useCaseId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(collectionUseCases).where(
+    and(
+      eq(collectionUseCases.collectionId, collectionId),
+      eq(collectionUseCases.useCaseId, useCaseId)
+    )
+  );
+}
+
+export async function getCollectionUseCaseIds(collectionId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const rows = await db
+    .select({ useCaseId: collectionUseCases.useCaseId })
+    .from(collectionUseCases)
+    .where(eq(collectionUseCases.collectionId, collectionId))
+    .orderBy(collectionUseCases.sortOrder);
+  return rows.map(r => r.useCaseId);
+}
+
+// ─── Featured Use Case ──────────────────────────────────────────────
+
+export async function setFeaturedUseCase(data: {
+  useCaseId: number;
+  editorialBlurb?: string;
+  featuredBy: number;
+}): Promise<FeaturedUseCase> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Deactivate all current featured
+  await db.update(featuredUseCase).set({ isActive: false }).where(eq(featuredUseCase.isActive, true));
+  // Insert new
+  const [result] = await db.insert(featuredUseCase).values({
+    useCaseId: data.useCaseId,
+    editorialBlurb: data.editorialBlurb,
+    featuredBy: data.featuredBy,
+    isActive: true,
+  }).$returningId();
+  const [row] = await db.select().from(featuredUseCase).where(eq(featuredUseCase.id, result.id));
+  return row;
+}
+
+export async function getActiveFeaturedUseCase() {
+  const db = await getDb();
+  if (!db) return null;
+  const [row] = await db
+    .select()
+    .from(featuredUseCase)
+    .where(eq(featuredUseCase.isActive, true))
+    .orderBy(desc(featuredUseCase.createdAt))
+    .limit(1);
+  if (!row) return null;
+
+  // Get the use case details
+  const [uc] = await db.select().from(useCases).where(eq(useCases.id, row.useCaseId));
+  if (!uc || uc.status !== "approved") return null;
+
+  // Get screenshots
+  const screenshotList = await db
+    .select()
+    .from(screenshots)
+    .where(eq(screenshots.useCaseId, uc.id))
+    .orderBy(screenshots.sortOrder);
+
+  // Get categories
+  const catRows = await db
+    .select({
+      categoryId: useCaseCategories.categoryId,
+      name: categories.name,
+      slug: categories.slug,
+      type: categories.type,
+    })
+    .from(useCaseCategories)
+    .innerJoin(categories, eq(useCaseCategories.categoryId, categories.id))
+    .where(eq(useCaseCategories.useCaseId, uc.id));
+
+  // Get AI score
+  const [score] = await db.select().from(aiScores).where(eq(aiScores.useCaseId, uc.id));
+
+  return {
+    ...row,
+    useCase: {
+      ...uc,
+      screenshots: screenshotList,
+      categories: catRows,
+      aiScore: score ?? null,
+    },
+  };
+}
+
+export async function removeFeaturedUseCase(): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(featuredUseCase).set({ isActive: false }).where(eq(featuredUseCase.isActive, true));
 }

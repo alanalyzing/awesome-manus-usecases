@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import { apiRouter } from "../apiSubmit";
 import { rssRouter } from "../rssFeed";
 import { updateRouter } from "../apiUpdate";
+import { extensionRouter } from "../apiExtension";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -42,6 +43,7 @@ async function startServer() {
   app.use("/api", apiRouter);
   app.use("/api", rssRouter);
   app.use("/api", updateRouter);
+  app.use("/api", extensionRouter);
   // tRPC API
   app.use(
     "/api/trpc",

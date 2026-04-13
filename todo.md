@@ -214,3 +214,11 @@
 - [x] Bug: PATCH /api/update endpoint returns 429 from external clients — resolved by running backfill via localhost
 - [x] Task: Backfill 68 deliverable URLs from Notion data via localhost — 62 succeeded, 6 not found in DB, 12 skipped (no Replay URL)
 - [x] Feature: Add AI rewrite buttons for title and description in admin edit dialog (using same system prompt as AI summary generation)
+- [x] Feature: Curated Collections — admin-created themed groups of use cases (schema, backend CRUD, admin UI, public display, shareable links)
+- [x] Feature: Featured Use Case of the Week — admin-selectable spotlight on homepage with larger card and editorial blurb
+- [x] Feature: Public API Documentation Page — interactive docs page listing all public REST endpoints with examples
+- [x] Feature: Image Blur Placeholders — generate blurhash for screenshots, show blur-up effect while images load
+- [x] Feature: Chrome Extension — public API endpoints for extension consumption
+- [x] Feature: Chrome Extension — popup UI with category browsing, search, sort, and batch tab opening
+- [x] Feature: Chrome Extension — background service worker with caching and tab management
+- [x] Feature: Chrome Extension — Manus brand styling and packaging for distribution

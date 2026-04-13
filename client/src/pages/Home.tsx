@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { stripMarkdown } from "@/components/MarkdownContent";
+import BlurhashImage from "@/components/BlurhashImage";
 import { getLoginUrl } from "@/const";
 import { useI18n } from "@/lib/i18n";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -49,6 +50,7 @@ import {
   Rss,
   Star,
   Pencil,
+  Loader2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -122,11 +124,11 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
               >
                 <div className="aspect-[16/10] bg-muted overflow-hidden relative">
                   {uc.screenshots?.[0] ? (
-                    <img
+                    <BlurhashImage
                       src={uc.screenshots[0].url}
+                      blurhash={uc.screenshots[0].blurhash}
                       alt={uc.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
+                      className="w-full h-full group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-accent/20">
@@ -170,9 +172,152 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
   );
 }
 
+/** Featured Use Case of the Week — spotlight banner */
+function FeaturedSection({ onCardClick }: { onCardClick: (slug: string) => void }) {
+  const featuredQuery = trpc.useCases.featured.useQuery();
+  const featured = featuredQuery.data;
+
+  if (featuredQuery.isLoading || !featured) return null;
+
+  return (
+    <div className="border-b bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <Star size={16} className="text-primary" />
+          <h2 className="font-serif font-bold text-sm">Featured This Week</h2>
+        </div>
+        <div
+          className="group bg-card rounded-xl border hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden cursor-pointer"
+          onClick={() => onCardClick(featured.useCase.slug)}
+        >
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-2/5 aspect-[16/10] md:aspect-auto bg-muted overflow-hidden relative">
+              {featured.useCase.screenshots?.[0] ? (
+                <BlurhashImage
+                  src={featured.useCase.screenshots[0].url}
+                  blurhash={featured.useCase.screenshots[0].blurhash}
+                  alt={featured.useCase.title}
+                  className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-accent/20 min-h-[160px]">
+                  <ManusGlyph size={40} className="opacity-20" />
+                </div>
+              )}
+              <div className="absolute top-3 left-3">
+                <Badge className="bg-primary text-primary-foreground border-0 gap-1 text-[10px] shadow-md">
+                  <Star size={10} />
+                  Featured
+                </Badge>
+              </div>
+            </div>
+            <div className="flex-1 p-5 md:p-6 flex flex-col justify-center">
+              <h3 className="font-serif font-bold text-lg md:text-xl leading-snug mb-2 group-hover:text-primary transition-colors">
+                {featured.useCase.title}
+              </h3>
+              {featured.editorialBlurb && (
+                <p className="text-sm text-muted-foreground italic mb-3">"{featured.editorialBlurb}"</p>
+              )}
+              <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+                {featured.useCase.aiSummary || featured.useCase.description}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {featured.useCase.categories?.map((cat: any) => (
+                  <Badge key={cat.slug} variant="secondary" className="text-[10px]">{cat.name}</Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Collections section — horizontal scrollable strip of curated collections */
+function CollectionsSection({ onCardClick }: { onCardClick: (slug: string) => void }) {
+  const collectionsQuery = trpc.useCases.collections.useQuery({ publishedOnly: true });
+  const cols = collectionsQuery.data ?? [];
+  const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
+  const expandedQuery = trpc.useCases.collectionBySlug.useQuery(
+    { slug: expandedSlug ?? "" },
+    { enabled: !!expandedSlug }
+  );
+
+  if (collectionsQuery.isLoading || cols.length === 0) return null;
+
+  return (
+    <div className="border-b bg-accent/10">
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <BookOpen size={16} className="text-primary" />
+          <h2 className="font-serif font-bold text-sm">Curated Collections</h2>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+          {cols.map((col: any) => (
+            <div
+              key={col.id}
+              className={`shrink-0 w-56 bg-card rounded-lg border p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/20 ${
+                expandedSlug === col.slug ? "ring-2 ring-primary/30" : ""
+              }`}
+              onClick={() => setExpandedSlug(expandedSlug === col.slug ? null : col.slug)}
+            >
+              <h3 className="font-serif font-semibold text-sm mb-1 line-clamp-1">{col.title}</h3>
+              {col.description && (
+                <p className="text-[11px] text-muted-foreground line-clamp-2 mb-2">{col.description}</p>
+              )}
+              <div className="text-[10px] text-muted-foreground">
+                {col.useCaseCount} use case{col.useCaseCount !== 1 ? "s" : ""}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Expanded collection items */}
+        {expandedSlug && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4"
+          >
+            {expandedQuery.isLoading ? (
+              <div className="flex justify-center py-6"><Loader2 size={20} className="animate-spin text-muted-foreground" /></div>
+            ) : expandedQuery.data?.useCases?.length ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {expandedQuery.data.useCases.map((uc: any) => (
+                  <div
+                    key={uc.id}
+                    className="group bg-card rounded-lg border hover:shadow-md hover:border-primary/20 transition-all duration-200 overflow-hidden cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); onCardClick(uc.slug); }}
+                  >
+                    <div className="aspect-[16/10] bg-muted overflow-hidden">
+                      {uc.screenshots?.[0] ? (
+                        <BlurhashImage src={uc.screenshots[0].url} blurhash={uc.screenshots[0].blurhash} alt={uc.title} className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"><ManusGlyph size={20} className="opacity-20" /></div>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <h4 className="font-serif font-bold text-xs line-clamp-2 group-hover:text-primary transition-colors">{uc.title}</h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground text-center py-4">This collection is empty.</p>
+            )}
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 const LEARN_MORE_LINKS = [
   { name: "Team Plan", url: "https://manus.im/team" },
   { name: "Trust Center", url: "https://trust.manus.im/" },
+  { name: "API Docs", url: "/api-docs" },
 ];
 
 const SOCIAL_LINKS = [
@@ -870,9 +1015,19 @@ export default function Home() {
             )}
           </AnimatePresence>
 
+          {/* ─── Featured Use Case of the Week ─── */}
+          {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
+            <FeaturedSection onCardClick={setModalSlug} />
+          )}
+
           {/* ─── Trending This Week ─── */}
           {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
             <TrendingSection onCardClick={setModalSlug} />
+          )}
+
+          {/* ─── Curated Collections ─── */}
+          {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
+            <CollectionsSection onCardClick={setModalSlug} />
           )}
 
           <div className="p-6 max-w-7xl mx-auto">
@@ -982,11 +1137,11 @@ export default function Home() {
                         {/* Thumbnail */}
                         <div className="aspect-[16/10] bg-muted overflow-hidden relative">
                           {uc.screenshots[0] ? (
-                            <img
+                            <BlurhashImage
                               src={uc.screenshots[0].url}
+                              blurhash={uc.screenshots[0].blurhash}
                               alt={uc.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                              loading="lazy"
+                              className="w-full h-full group-hover:scale-105 transition-transform duration-500 ease-out"
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-accent/20">
