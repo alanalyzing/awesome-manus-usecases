@@ -240,6 +240,17 @@ export async function getApprovedUseCases(opts: {
   return { items, total };
 }
 
+/** Look up a use case by session replay URL — returns id, slug, title */
+export async function getUseCaseBySessionUrl(sessionUrl: string): Promise<{ id: number; slug: string; title: string } | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select({ id: useCases.id, slug: useCases.slug, title: useCases.title })
+    .from(useCases)
+    .where(eq(useCases.sessionReplayUrl, sessionUrl))
+    .limit(1);
+  return rows.length > 0 ? rows[0] : null;
+}
+
 /** Lightweight fetch for OG meta injection — does NOT increment view count or log view events */
 export async function getUseCaseMetaBySlug(slug: string): Promise<{ title: string; description: string; screenshots: { url: string }[] } | null> {
   const db = await getDb();

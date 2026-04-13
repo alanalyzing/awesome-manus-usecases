@@ -304,7 +304,7 @@ export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [highlightOnly, setHighlightOnly] = useState(false);
   const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">("newest");
-  const [limit] = useState(20);
+  const [limit] = useState(40);
   const [offset, setOffset] = useState(0);
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
   const [modalSlug, setModalSlug] = useState<string | null>(null);
@@ -326,13 +326,19 @@ export default function Home() {
   const globalCountQuery = trpc.useCases.list.useQuery({ limit: 1, offset: 0 });
   const globalTotal = globalCountQuery.data?.total ?? 0;
 
+  const stableCategoryIds = useMemo(
+    () => selectedCategories.length > 0 ? selectedCategories : undefined,
+    [selectedCategories.join(",")]
+  );
   const useCasesQuery = trpc.useCases.list.useQuery({
     search: search || undefined,
-    categoryIds: selectedCategories.length > 0 ? selectedCategories : undefined,
+    categoryIds: stableCategoryIds,
     highlightOnly: highlightOnly || undefined,
     sort,
     limit,
     offset,
+  }, {
+    placeholderData: (prev) => prev,
   });
 
   // Accumulate items for infinite scroll
@@ -425,7 +431,7 @@ export default function Home() {
           setOffset((prev) => prev + limit);
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: "600px" }
     );
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
@@ -969,7 +975,7 @@ export default function Home() {
                       key={uc.id}
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3) }}
+                      transition={{ duration: 0.25, delay: index < 12 ? index * 0.03 : 0 }}
                     >
                       <div className="group bg-card rounded-xl border hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden cursor-pointer"
                            onClick={() => setModalSlug(uc.slug)}>

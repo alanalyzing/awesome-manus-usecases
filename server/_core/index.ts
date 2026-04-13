@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { apiRouter } from "../apiSubmit";
 import { rssRouter } from "../rssFeed";
+import { updateRouter } from "../apiUpdate";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -40,6 +41,7 @@ async function startServer() {
   // Public API routes (for programmatic submission)
   app.use("/api", apiRouter);
   app.use("/api", rssRouter);
+  app.use("/api", updateRouter);
   // tRPC API
   app.use(
     "/api/trpc",

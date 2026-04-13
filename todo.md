@@ -199,3 +199,13 @@
 - [x] Feature: Add "Approve All" button in admin panel to bulk-approve all pending submissions
 - [x] Feature: Admin-only edit dialog for use case cards (edit title, description, screenshots, deliverable URL, categories)
 - [x] Feature: Add deliverableUrl field to the POST /api/submit and POST /api/submit/bulk endpoints (already supported)
+- [x] Feature: Add PATCH /api/update endpoint with flexible lookup by id, slug, or sessionReplayUrl
+- [x] Feature: Add PATCH /api/update/bulk endpoint for batch updating up to 50 use cases
+- [x] Feature: Add getUseCaseBySessionUrl db helper for session URL-based lookups
+- [x] Performance: Improve infinite scroll loading speed for gallery use cases
+- [x] Performance: Increase page size from 20 to 40 items per fetch
+- [x] Performance: Add placeholderData to prevent UI flash during page transitions
+- [x] Performance: Increase IntersectionObserver rootMargin to 600px for earlier prefetching
+- [x] Performance: Cap animation delays to first 12 items only (instant for subsequent items)
+- [x] Performance: Add database indexes on use_cases (status+createdAt, status+upvoteCount, status+viewCount, submitterId, sessionReplayUrl)
+- [x] Performance: Add database indexes on screenshots (useCaseId+sortOrder) and ai_scores (useCaseId)
