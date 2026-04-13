@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { apiRouter } from "../apiSubmit";
+import { rssRouter } from "../rssFeed";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -38,6 +39,7 @@ async function startServer() {
   registerOAuthRoutes(app);
   // Public API routes (for programmatic submission)
   app.use("/api", apiRouter);
+  app.use("/api", rssRouter);
   // tRPC API
   app.use(
     "/api/trpc",

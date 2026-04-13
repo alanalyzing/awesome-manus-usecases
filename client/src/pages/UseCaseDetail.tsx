@@ -10,8 +10,10 @@ import {
   ArrowUp,
   Eye,
   Calendar,
-  Share2,
   ExternalLink,
+  Twitter,
+  Linkedin,
+  Copy,
   Play,
   Sparkles,
   ChevronLeft,
@@ -64,12 +66,23 @@ export default function UseCaseDetailPage() {
     }
   }, [useCaseQuery.data, toggleUpvote, isAuthenticated]);
 
-  const handleShare = useCallback(() => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      toast.success(t("detail.copied"));
-    });
-  }, [t]);
+  const handleCopyLink = useCallback(() => {
+    navigator.clipboard.writeText(window.location.href).then(
+      () => toast.success("Link copied to clipboard"),
+      () => toast.error("Failed to copy link")
+    );
+  }, []);
+
+  const handleShareTwitter = useCallback(() => {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Check out this Manus use case: ${useCaseQuery.data?.title || ""}`);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, "_blank");
+  }, [useCaseQuery.data?.title]);
+
+  const handleShareLinkedIn = useCallback(() => {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, "_blank");
+  }, []);
 
   const uc = useCaseQuery.data;
 
@@ -119,10 +132,17 @@ export default function UseCaseDetailPage() {
             </Button>
           </Link>
           <div className="flex-1" />
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={handleShare}>
-            <Share2 size={14} />
-            {t("detail.share")}
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleShareTwitter} title="Share on X (Twitter)">
+              <Twitter size={14} />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleShareLinkedIn} title="Share on LinkedIn">
+              <Linkedin size={14} />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleCopyLink} title="Copy link">
+              <Copy size={14} />
+            </Button>
+          </div>
           <button
             onClick={handleUpvote}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all border ${

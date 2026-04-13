@@ -15,6 +15,7 @@ import AboutPage from "./pages/About";
 import ProfileSetupPage from "./pages/ProfileSetup";
 import ProfilePage from "./pages/Profile";
 import LeaderboardPage from "./pages/Leaderboard";
+import RSSFeedPage from "./pages/RSSFeed";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/profile/setup" component={ProfileSetupPage} />
       <Route path="/profile/:username" component={ProfilePage} />
       <Route path="/leaderboard" component={LeaderboardPage} />
+      <Route path="/rss" component={RSSFeedPage} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

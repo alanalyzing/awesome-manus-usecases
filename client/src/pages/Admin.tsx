@@ -39,6 +39,7 @@ import {
   Download,
   Zap,
   Wand2,
+  Pencil,
   Clipboard,
   ImagePlus,
 } from "lucide-react";
@@ -78,6 +79,9 @@ export default function AdminPage() {
   const [removeReason, setRemoveReason] = useState("");
   const [summarizingIds, setSummarizingIds] = useState<Set<number>>(new Set());
   const [uploadingScreenshotIds, setUploadingScreenshotIds] = useState<Set<number>>(new Set());
+  const [editingSummaryId, setEditingSummaryId] = useState<number | null>(null);
+  const [editingSummaryText, setEditingSummaryText] = useState("");
+  const [savingSummary, setSavingSummary] = useState(false);
 
   const isAdmin = user?.role === "admin";
   const trpcUtils = trpc.useUtils();
@@ -238,6 +242,10 @@ export default function AdminPage() {
     setSummarizingIds((prev) => new Set(prev).add(useCaseId));
     generateSummaryMutation.mutate({ useCaseId });
   }, [generateSummaryMutation]);
+
+  const updateSummaryMutation = trpc.admin.updateSummary.useMutation({
+    onSuccess: () => { trpcUtils.admin.submissions.invalidate(); },
+  });
 
   const addScreenshotMutation = trpc.admin.addScreenshot.useMutation({
     onSuccess: (data, variables) => {
@@ -704,8 +712,42 @@ export default function AdminPage() {
                                 <div className="flex items-center gap-2 mb-1.5">
                                   <Wand2 size={13} className="text-primary" />
                                   <span className="text-xs font-semibold">AI Summary</span>
+                                  {editingSummaryId !== uc.id && (
+                                    <button
+                                      className="ml-auto p-1 hover:bg-accent rounded transition-colors"
+                                      onClick={() => { setEditingSummaryId(uc.id); setEditingSummaryText(uc.aiSummary || ""); }}
+                                    >
+                                      <Pencil size={11} className="text-muted-foreground" />
+                                    </button>
+                                  )}
                                 </div>
-                                <p className="text-sm text-foreground/80 leading-relaxed">{uc.aiSummary}</p>
+                                {editingSummaryId === uc.id ? (
+                                  <div className="space-y-2">
+                                    <textarea
+                                      value={editingSummaryText}
+                                      onChange={(e) => setEditingSummaryText(e.target.value)}
+                                      className="w-full text-sm bg-background border rounded-md p-2 min-h-[80px] resize-y focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                    <div className="flex gap-2 justify-end">
+                                      <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setEditingSummaryId(null)}>Cancel</Button>
+                                      <Button size="sm" className="text-xs h-7 gap-1" disabled={savingSummary} onClick={async () => {
+                                        setSavingSummary(true);
+                                        try {
+                                          await updateSummaryMutation.mutateAsync({ useCaseId: uc.id, summary: editingSummaryText });
+                                          toast.success("Summary updated");
+                                          setEditingSummaryId(null);
+                                          trpcUtils.admin.submissions.invalidate();
+                                        } catch (e: any) { toast.error(e.message || "Failed to save"); }
+                                        setSavingSummary(false);
+                                      }}>
+                                        {savingSummary && <Loader2 size={11} className="animate-spin" />}
+                                        Save
+                                      </Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-foreground/80 leading-relaxed">{uc.aiSummary}</p>
+                                )}
                               </div>
                             )}
                             {/* Rejection reason */}

@@ -187,3 +187,11 @@
 - [x] Feature: Add public REST API endpoint for use case submission (POST /api/submit with JSON body, Bearer token auth)
 - [x] Feature: Allow submission via API without browser UI for Manus agent compatibility
 - [x] Feature: Add GET /api/categories endpoint for discovering valid category slugs
+- [x] Feature: User dropdown menu in navbar (My Profile, My Submissions, Settings, Logout)
+- [x] Feature: Score badges on gallery cards (show overall AI score e.g. 4.2/5)
+- [x] Feature: Editable AI summary in admin panel (inline edit before approving)
+- [x] Feature: Bulk import API endpoint (POST /api/submit/bulk for batch submissions, max 20 items)
+- [x] Feature: Admin dashboard analytics with charts (already existed, verified complete)
+- [x] Feature: Related use cases on detail page (already existed, verified complete)
+- [x] Feature: RSS feed of newly approved use cases (GET /api/rss)
+- [x] Feature: Share buttons on detail page (Twitter/X, LinkedIn, copy link)

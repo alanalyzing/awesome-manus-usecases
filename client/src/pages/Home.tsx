@@ -41,7 +41,22 @@ import {
   BookOpen,
   Info,
   UserCircle,
+  LogOut,
+  FileText,
+  Settings,
+  ChevronDown,
+  User,
+  Rss,
+  Star,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { LOCALES, type Locale } from "@/lib/i18n";
@@ -276,7 +291,7 @@ function LeaderboardWidget() {
 }
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { t, locale, setLocale } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const [, navigate] = useLocation();
@@ -508,36 +523,53 @@ export default function Home() {
                   <TooltipContent>Notifications & My Submissions</TooltipContent>
                 </Tooltip>
               </Link>
-              {!hasProfile && !profileQuery.isLoading && (
-                <Link href="/profile/setup">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="p-2 hover:bg-accent rounded-md transition-colors text-primary">
-                        <UserCircle size={16} />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Set up your profile</TooltipContent>
-                  </Tooltip>
-                </Link>
-              )}
-              {hasProfile && profileQuery.data?.username ? (
-                <Link href={`/profile/${profileQuery.data.username}`}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="p-1.5 hover:bg-accent rounded-full transition-colors">
-                        {profileQuery.data.avatarUrl ? (
-                          <img src={profileQuery.data.avatarUrl} alt={user?.name || ""} className="w-6 h-6 rounded-full object-cover" />
-                        ) : (
-                          <UserCircle size={18} className="text-muted-foreground" />
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>{user?.name}</TooltipContent>
-                  </Tooltip>
-                </Link>
-              ) : (
-                <span className="text-xs text-muted-foreground hidden md:inline">{user?.name}</span>
-              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 p-1.5 hover:bg-accent rounded-full transition-colors">
+                    {hasProfile && profileQuery.data?.avatarUrl ? (
+                      <img src={profileQuery.data.avatarUrl} alt={user?.name || ""} className="w-6 h-6 rounded-full object-cover" />
+                    ) : (
+                      <UserCircle size={18} className="text-muted-foreground" />
+                    )}
+                    <ChevronDown size={12} className="text-muted-foreground" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{user?.email || ""}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {hasProfile && profileQuery.data?.username ? (
+                    <DropdownMenuItem onClick={() => navigate(`/profile/${profileQuery.data!.username}`)}>
+                      <User size={14} className="mr-2" />
+                      My Profile
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onClick={() => navigate("/profile/setup")}>
+                      <User size={14} className="mr-2" />
+                      Set Up Profile
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => navigate("/my-submissions")}>
+                    <FileText size={14} className="mr-2" />
+                    My Submissions
+                  </DropdownMenuItem>
+                  {hasProfile && (
+                    <DropdownMenuItem onClick={() => navigate("/profile/setup")}>
+                      <Settings size={14} className="mr-2" />
+                      Edit Profile
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => { logout(); }} className="text-destructive focus:text-destructive">
+                    <LogOut size={14} className="mr-2" />
+                    Log Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
             <a href={getLoginUrl()}>
@@ -958,6 +990,18 @@ export default function Home() {
                                 <Sparkles size={10} />
                                 {t("detail.onlyManus")}
                               </Badge>
+                            </div>
+                          )}
+                          {uc.aiScore && Number(uc.aiScore.overall) > 0 && (
+                            <div className="absolute top-2.5 right-2.5">
+                              <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-md backdrop-blur-sm ${
+                                Number(uc.aiScore.overall) >= 4 ? "bg-emerald-500/90 text-white" :
+                                Number(uc.aiScore.overall) >= 3 ? "bg-amber-500/90 text-white" :
+                                "bg-zinc-500/90 text-white"
+                              }`}>
+                                <Star size={10} className="fill-current" />
+                                {Number(uc.aiScore.overall).toFixed(1)}
+                              </div>
                             </div>
                           )}
                           {/* Hover overlay */}

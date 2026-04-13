@@ -949,6 +949,20 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
         return { summary };
       }),
 
+    updateSummary: adminProcedure
+      .input(z.object({ useCaseId: z.number(), summary: z.string().min(1).max(5000) }))
+      .mutation(async ({ input, ctx }) => {
+        await saveAiSummary(input.useCaseId, input.summary);
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "ai_summary",
+          targetType: "use_case",
+          targetId: input.useCaseId,
+          details: JSON.stringify({ summary: input.summary.substring(0, 200), manual: true }),
+        });
+        return { success: true };
+      }),
+
     // ─── Admin Add Screenshot ─────────────────────────────────
     addScreenshot: adminProcedure
       .input(z.object({

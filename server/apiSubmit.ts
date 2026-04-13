@@ -205,6 +205,131 @@ apiRouter.get("/categories", async (_req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/submit/bulk
+ *
+ * Bulk import endpoint — accepts an array of use cases in one call.
+ * Same auth as single submit. Maximum 20 items per request.
+ *
+ * Body (JSON):
+ * {
+ *   "items": [
+ *     { "title": "...", "description": "...", "categorySlugs": [...], "screenshotUrls": [...], ... },
+ *     ...
+ *   ]
+ * }
+ */
+apiRouter.post("/submit/bulk", async (req: Request, res: Response) => {
+  try {
+    // ─── Auth check ───
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Missing or invalid Authorization header. Use: Bearer YOUR_API_KEY" });
+    }
+    const token = authHeader.slice(7).trim();
+    if (!ENV.apiSubmitKey || token !== ENV.apiSubmitKey) {
+      return res.status(403).json({ error: "Invalid API key" });
+    }
+
+    const { items } = req.body;
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "items is required (array of use case objects, at least 1)" });
+    }
+    if (items.length > 20) {
+      return res.status(400).json({ error: "Maximum 20 items per bulk request" });
+    }
+
+    const results: Array<{ index: number; success: boolean; slug?: string; error?: string; warnings?: string[] }> = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      try {
+        const {
+          title, description, sessionReplayUrl, deliverableUrl,
+          language = "en", categorySlugs = [], screenshotUrls = [],
+          submitterName = "API Submission", submitterEmail, consentToContact = false,
+        } = item;
+
+        // Validate required fields
+        if (!title || typeof title !== "string" || title.trim().length === 0) {
+          results.push({ index: i, success: false, error: "title is required" }); continue;
+        }
+        if (!description || typeof description !== "string" || description.trim().length === 0) {
+          results.push({ index: i, success: false, error: "description is required" }); continue;
+        }
+        if (!Array.isArray(categorySlugs) || categorySlugs.length === 0) {
+          results.push({ index: i, success: false, error: "categorySlugs is required (at least 1)" }); continue;
+        }
+        if (!Array.isArray(screenshotUrls) || screenshotUrls.length === 0) {
+          results.push({ index: i, success: false, error: "screenshotUrls is required (at least 1)" }); continue;
+        }
+
+        // Resolve categories
+        const categoryIds = await getCategoryIdsBySlugs(categorySlugs);
+        if (categoryIds.length === 0) {
+          results.push({ index: i, success: false, error: `No matching categories for: ${categorySlugs.join(", ")}` }); continue;
+        }
+
+        const unmatchedSlugs = categorySlugs.filter(
+          (s: string) => !categoryIds.some((c: { slug: string }) => c.slug === s)
+        );
+
+        // Create submitter
+        const submitter = await getOrCreateApiSubmitter({ name: submitterName, email: submitterEmail || undefined });
+
+        // Build screenshot data
+        const screenshotData = screenshotUrls.slice(0, 5).map((url: string) => ({
+          url,
+          fileKey: `api-submit/${new URL(url).pathname.split("/").pop() || "screenshot.png"}`,
+        }));
+
+        // Create use case
+        const useCase = await createUseCase({
+          title: title.trim(),
+          description: description.trim(),
+          sessionReplayUrl: sessionReplayUrl || undefined,
+          deliverableUrl: deliverableUrl || undefined,
+          language,
+          consentToContact,
+          submitterId: submitter.id,
+          categoryIds: categoryIds.map((c: { id: number }) => c.id),
+          screenshotData,
+        });
+
+        results.push({
+          index: i,
+          success: true,
+          slug: useCase.slug,
+          ...(unmatchedSlugs.length > 0 && { warnings: [`Skipped unknown slugs: ${unmatchedSlugs.join(", ")}`] }),
+        });
+      } catch (err: any) {
+        results.push({ index: i, success: false, error: err.message || "Unexpected error" });
+      }
+    }
+
+    // Notify owner once for the batch
+    const successCount = results.filter(r => r.success).length;
+    if (successCount > 0) {
+      try {
+        await notifyOwner({
+          title: `Bulk API Submission: ${successCount} new use cases`,
+          content: `${successCount} use case(s) were submitted via bulk API. Please review them in the admin moderation queue.`,
+        });
+      } catch (e) { console.warn("[Notification] Failed:", e); }
+    }
+
+    return res.status(201).json({
+      total: items.length,
+      succeeded: successCount,
+      failed: items.length - successCount,
+      results,
+    });
+  } catch (error: any) {
+    console.error("[API Bulk Submit] Error:", error);
+    return res.status(500).json({ error: "Internal server error", message: error.message });
+  }
+});
+
 export { apiRouter };
 
 // ─── Helper: get all categories for API ───
