@@ -183,3 +183,4 @@
 - [x] Feature: Check username duplication when creating/editing profile
 - [x] Feature: Limit username changes to 5 times max per user
 - [x] Feature: Show remaining username changes count on profile setup page
+- [x] Bug: Left sidebar not reaching the bottom of the page (height issue)

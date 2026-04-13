@@ -549,7 +549,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* ─── Sidebar ─── */}
         <AnimatePresence mode="wait">
           {sidebarOpen && (
@@ -558,7 +558,7 @@ export default function Home() {
               animate={{ width: 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="border-r bg-sidebar text-sidebar-foreground overflow-hidden shrink-0 hidden lg:block"
+              className="border-r bg-sidebar text-sidebar-foreground overflow-hidden shrink-0 hidden lg:block h-full"
             >
               <ScrollArea className="h-[calc(100vh-3.5rem)]">
                 <div className="p-4 space-y-5">
@@ -723,7 +723,7 @@ export default function Home() {
         )}
 
         {/* ─── Main Content ─── */}
-        <main id="main-content" className="flex-1 overflow-auto" tabIndex={-1}>
+        <main id="main-content" className="flex-1 overflow-auto h-full" tabIndex={-1}>
           {/* ─── Hero Section ─── */}
           <AnimatePresence>
             {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
