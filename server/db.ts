@@ -1451,3 +1451,38 @@ export async function saveAiSummary(useCaseId: number, summary: string): Promise
   if (!db) throw new Error("Database not available");
   await db.update(useCases).set({ aiSummary: summary }).where(eq(useCases.id, useCaseId));
 }
+
+export async function getWithoutAiSummary(): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const rows: any[] = await db.execute(sql`
+    SELECT ${useCases.id}
+    FROM ${useCases}
+    WHERE ${useCases.aiSummary} IS NULL OR ${useCases.aiSummary} = ''
+    ORDER BY ${useCases.createdAt} ASC
+  `);
+
+  const result = (rows as any)?.[0] ?? rows;
+  return (Array.isArray(result) ? result : []).map((r: any) => Number(r.id));
+}
+
+export async function addScreenshotToUseCase(useCaseId: number, url: string, fileKey: string): Promise<{ id: number; url: string }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Get current max sort order
+  const existing = await db.select({ maxSort: sql<number>`COALESCE(MAX(${screenshots.sortOrder}), -1)` })
+    .from(screenshots)
+    .where(eq(screenshots.useCaseId, useCaseId));
+  const nextSort = (existing[0]?.maxSort ?? -1) + 1;
+
+  const [result] = await db.insert(screenshots).values({
+    useCaseId,
+    url,
+    fileKey,
+    sortOrder: nextSort,
+  });
+
+  return { id: (result as any).insertId, url };
+}

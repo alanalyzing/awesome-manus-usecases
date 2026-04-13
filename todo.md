@@ -177,3 +177,9 @@
 - [x] Feature: Add "Generate Summary" button in admin panel submission review UI
 - [x] Feature: Store AI summary in database and display it on the admin submission card
 - [x] Change: Update AI summary system prompt to user's specified format (Category: What it does title + 2-sentence industry-agnostic description)
+- [x] Feature: Bulk AI summary generation — "Generate All Summaries" button to batch-process all submissions missing a summary
+- [x] Feature: Bulk AI scoring — "Score All" button to batch-evaluate all unscored submissions
+- [x] Feature: Admin image paste — allow pasting images from clipboard into the screenshot field during admin review
+- [ ] Feature: Check username duplication when creating/editing profile
+- [ ] Feature: Limit username changes to 5 times max per user
+- [ ] Feature: Show remaining username changes count on profile setup page

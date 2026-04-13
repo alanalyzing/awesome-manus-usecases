@@ -39,8 +39,10 @@ import {
   Download,
   Zap,
   Wand2,
+  Clipboard,
+  ImagePlus,
 } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import {
@@ -75,6 +77,7 @@ export default function AdminPage() {
   const [removeId, setRemoveId] = useState<number | null>(null);
   const [removeReason, setRemoveReason] = useState("");
   const [summarizingIds, setSummarizingIds] = useState<Set<number>>(new Set());
+  const [uploadingScreenshotIds, setUploadingScreenshotIds] = useState<Set<number>>(new Set());
 
   const isAdmin = user?.role === "admin";
   const trpcUtils = trpc.useUtils();
@@ -152,6 +155,7 @@ export default function AdminPage() {
   });
 
   const [bulkScanning, setBulkScanning] = useState(false);
+  const [bulkSummarizing, setBulkSummarizing] = useState(false);
   const bulkAiScanMutation = trpc.admin.bulkAiScan.useMutation({
     onSuccess: (data) => {
       setBulkScanning(false);
@@ -173,6 +177,28 @@ export default function AdminPage() {
     setBulkScanning(true);
     bulkAiScanMutation.mutate();
   }, [bulkAiScanMutation]);
+
+  const bulkSummaryMutation = trpc.admin.bulkGenerateSummary.useMutation({
+    onSuccess: (data) => {
+      setBulkSummarizing(false);
+      if (data.generated === 0) {
+        toast.info("All submissions already have summaries");
+      } else {
+        toast.success(`Generated summaries for ${data.generated} of ${data.total} submissions`);
+      }
+      submissionsQuery.refetch();
+      activityQuery.refetch();
+    },
+    onError: (err) => {
+      setBulkSummarizing(false);
+      toast.error("Bulk summary failed: " + err.message);
+    },
+  });
+
+  const handleBulkSummary = useCallback(() => {
+    setBulkSummarizing(true);
+    bulkSummaryMutation.mutate();
+  }, [bulkSummaryMutation]);
 
   const updateScoreMutation = trpc.admin.updateScore.useMutation({
     onSuccess: () => {
@@ -212,6 +238,71 @@ export default function AdminPage() {
     setSummarizingIds((prev) => new Set(prev).add(useCaseId));
     generateSummaryMutation.mutate({ useCaseId });
   }, [generateSummaryMutation]);
+
+  const addScreenshotMutation = trpc.admin.addScreenshot.useMutation({
+    onSuccess: (data, variables) => {
+      toast.success("Screenshot added");
+      setUploadingScreenshotIds((prev) => { const next = new Set(prev); next.delete(variables.useCaseId); return next; });
+      submissionsQuery.refetch();
+    },
+    onError: (err, variables) => {
+      toast.error("Upload failed: " + err.message);
+      setUploadingScreenshotIds((prev) => { const next = new Set(prev); next.delete(variables.useCaseId); return next; });
+    },
+  });
+
+  const handlePasteScreenshot = useCallback(async (useCaseId: number) => {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      let imageBlob: Blob | null = null;
+      for (const item of clipboardItems) {
+        const imageType = item.types.find(t => t.startsWith("image/"));
+        if (imageType) {
+          imageBlob = await item.getType(imageType);
+          break;
+        }
+      }
+      if (!imageBlob) {
+        toast.error("No image found in clipboard. Copy an image first.");
+        return;
+      }
+      if (imageBlob.size > 10 * 1024 * 1024) {
+        toast.error("Image exceeds 10MB limit");
+        return;
+      }
+      setUploadingScreenshotIds((prev) => new Set(prev).add(useCaseId));
+      const buffer = await imageBlob.arrayBuffer();
+      const base64 = btoa(Array.from(new Uint8Array(buffer), b => String.fromCharCode(b)).join(""));
+      addScreenshotMutation.mutate({
+        useCaseId,
+        fileName: `pasted-${Date.now()}.${imageBlob.type.split("/")[1] === "jpeg" ? "jpg" : imageBlob.type.split("/")[1]}`,
+        fileBase64: base64,
+        contentType: imageBlob.type,
+      });
+    } catch (err: any) {
+      toast.error("Clipboard access denied. Please allow clipboard permissions.");
+    }
+  }, [addScreenshotMutation]);
+
+  const handleFileScreenshot = useCallback(async (useCaseId: number, file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Only image files are allowed");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image exceeds 10MB limit");
+      return;
+    }
+    setUploadingScreenshotIds((prev) => new Set(prev).add(useCaseId));
+    const buffer = await file.arrayBuffer();
+    const base64 = btoa(Array.from(new Uint8Array(buffer), b => String.fromCharCode(b)).join(""));
+    addScreenshotMutation.mutate({
+      useCaseId,
+      fileName: file.name,
+      fileBase64: base64,
+      contentType: file.type,
+    });
+  }, [addScreenshotMutation]);
 
   const handleEditScore = useCallback((useCaseId: number, aiScore?: any) => {
     setScoreUseCaseId(useCaseId);
@@ -419,20 +510,36 @@ export default function AdminPage() {
             {/* Bulk AI Scan Button */}
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-serif font-bold text-sm">Moderation Queue</h2>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1.5 text-xs"
-                onClick={handleBulkAiScan}
-                disabled={bulkScanning}
-              >
-                {bulkScanning ? (
-                  <Loader2 size={13} className="animate-spin" />
-                ) : (
-                  <Zap size={13} />
-                )}
-                {bulkScanning ? "Scanning..." : "Scan All Pending"}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-xs"
+                  onClick={handleBulkAiScan}
+                  disabled={bulkScanning}
+                >
+                  {bulkScanning ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Zap size={13} />
+                  )}
+                  {bulkScanning ? "Scoring..." : "Score All"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 text-xs"
+                  onClick={handleBulkSummary}
+                  disabled={bulkSummarizing}
+                >
+                  {bulkSummarizing ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <Wand2 size={13} />
+                  )}
+                  {bulkSummarizing ? "Generating..." : "Summarize All"}
+                </Button>
+              </div>
             </div>
 
             {/* Moderation Queue */}
@@ -514,17 +621,45 @@ export default function AdminPage() {
                               ))}
                             </div>
                             {/* Screenshots */}
-                            {uc.screenshots.length > 0 && (
-                              <div className="flex gap-2 mt-3">
-                                {uc.screenshots.slice(0, 4).map((ss) => (
-                                  <a key={ss.id} href={ss.url} target="_blank" rel="noopener noreferrer">
-                                    <div className="w-16 h-10 rounded-md overflow-hidden border bg-muted">
-                                      <img src={ss.url} alt="" className="w-full h-full object-cover" />
-                                    </div>
-                                  </a>
-                                ))}
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2 mt-3 flex-wrap">
+                              {uc.screenshots.map((ss) => (
+                                <a key={ss.id} href={ss.url} target="_blank" rel="noopener noreferrer">
+                                  <div className="w-16 h-10 rounded-md overflow-hidden border bg-muted">
+                                    <img src={ss.url} alt="" className="w-full h-full object-cover" />
+                                  </div>
+                                </a>
+                              ))}
+                              {/* Paste from clipboard */}
+                              <button
+                                className="w-16 h-10 rounded-md border border-dashed border-muted-foreground/30 bg-muted/30 flex items-center justify-center hover:bg-muted/60 transition-colors disabled:opacity-50"
+                                onClick={() => handlePasteScreenshot(uc.id)}
+                                disabled={uploadingScreenshotIds.has(uc.id)}
+                                title="Paste image from clipboard"
+                              >
+                                {uploadingScreenshotIds.has(uc.id) ? (
+                                  <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                                ) : (
+                                  <Clipboard size={14} className="text-muted-foreground" />
+                                )}
+                              </button>
+                              {/* Upload file */}
+                              <label
+                                className="w-16 h-10 rounded-md border border-dashed border-muted-foreground/30 bg-muted/30 flex items-center justify-center hover:bg-muted/60 transition-colors cursor-pointer"
+                                title="Upload screenshot"
+                              >
+                                <ImagePlus size={14} className="text-muted-foreground" />
+                                <input
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/webp,image/gif"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleFileScreenshot(uc.id, file);
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
+                            </div>
                             {/* AI Score */}
                             {uc.aiScore && (
                               <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/10">

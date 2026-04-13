@@ -55,6 +55,8 @@ import {
   updateAiScore,
   getAverageScoresForUser,
   saveAiSummary,
+  getWithoutAiSummary,
+  addScreenshotToUseCase,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -942,6 +944,82 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
 
         return { summary };
       }),
+
+    // ─── Admin Add Screenshot ─────────────────────────────────
+    addScreenshot: adminProcedure
+      .input(z.object({
+        useCaseId: z.number(),
+        fileName: z.string(),
+        fileBase64: z.string(),
+        contentType: z.string().refine(
+          ct => ["image/png", "image/jpeg", "image/webp", "image/gif"].includes(ct),
+          "Only PNG, JPG, WebP, and GIF files are allowed"
+        ),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        if (buffer.length > 10 * 1024 * 1024) {
+          throw new Error("File size exceeds 10MB limit");
+        }
+        const ext = input.contentType.split("/")[1] === "jpeg" ? "jpg" : input.contentType.split("/")[1];
+        const fileKey = `use-cases/admin/${ctx.user.id}/${nanoid()}.${ext}`;
+        const { url } = await storagePut(fileKey, buffer, input.contentType);
+        const result = await addScreenshotToUseCase(input.useCaseId, url, fileKey);
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "edit",
+          targetType: "use_case",
+          targetId: input.useCaseId,
+          details: JSON.stringify({ action: "add_screenshot", url }),
+        });
+        return result;
+      }),
+
+    // ─── Bulk AI Summary Generation ─────────────────────────────
+    bulkGenerateSummary: adminProcedure.mutation(async ({ ctx }) => {
+      const ids = await getWithoutAiSummary();
+      if (ids.length === 0) return { generated: 0, total: 0 };
+
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      let generated = 0;
+      for (const ucId of ids) {
+        try {
+          const ucRows = await db.select().from(useCases).where(eq(useCases.id, ucId)).limit(1);
+          if (ucRows.length === 0) continue;
+          const uc = ucRows[0];
+
+          const userMessage = `Here are the details of the use case submission:\n\nTitle: ${uc.title}\nDescription: ${uc.description}\nSession Replay URL: ${uc.sessionReplayUrl || "Not provided"}\nDeliverable URL: ${uc.deliverableUrl || "Not provided"}\n\nReturn the title on the first line, then a blank line, then the 2-sentence description. No quotes, no labels, no markdown.`;
+
+          const result = await invokeLLM({
+            messages: [
+              { role: "system", content: "Review this use case replay session and write a short title and 2-sentence description for it. The title should follow the format \\\"Category: What it does\\\" and be concise. The description should be industry and brand agnostic, describing what the use case does at a high level without referencing specific companies, products, or sectors. Structure the description by answering: what problem did it solve, how did Manus help, and what was the outcome. Do not use em dashes." },
+              { role: "user", content: userMessage },
+            ],
+          });
+
+          const rawContent = result.choices[0]?.message?.content ?? "";
+          const summary = (typeof rawContent === "string" ? rawContent : "").trim();
+          if (!summary) continue;
+
+          await saveAiSummary(ucId, summary);
+          generated++;
+
+          await logAdminAction({
+            adminId: ctx.user.id,
+            action: "ai_summary",
+            targetType: "use_case",
+            targetId: ucId,
+            details: JSON.stringify({ summary: summary.substring(0, 200) }),
+          });
+        } catch (e) {
+          console.warn(`[BulkSummary] Failed for use case ${ucId}:`, e);
+        }
+      }
+
+      return { generated, total: ids.length };
+    }),
 
     // ─── CSV Export ──────────────────────────────────────────────
     exportAnalytics: adminProcedure
