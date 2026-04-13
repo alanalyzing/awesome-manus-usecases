@@ -1248,7 +1248,10 @@ export async function updateProfile(userId: number, data: {
 
   const profile = existing[0];
   const updates: Record<string, any> = {};
-  if (data.username !== undefined) updates.username = data.username;
+  if (data.username !== undefined && data.username !== profile.username) {
+    updates.username = data.username;
+    updates.usernameChangeCount = (profile.usernameChangeCount ?? 0) + 1;
+  }
   if (data.proficiency !== undefined) updates.proficiency = data.proficiency;
   if (data.company !== undefined) updates.company = data.company;
   if (data.jobTitle !== undefined) updates.jobTitle = data.jobTitle;

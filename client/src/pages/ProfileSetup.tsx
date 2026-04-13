@@ -187,6 +187,11 @@ export default function ProfileSetup() {
   }, []);
 
   const isFormValid = useMemo(() => {
+    // In edit mode, block submission if username changed but limit reached
+    const isUsernameChanged = isEditMode && profileQuery.data?.username !== username;
+    const isAtUsernameLimit = isEditMode && (profileQuery.data?.usernameChangeCount ?? 0) >= 5;
+    if (isUsernameChanged && isAtUsernameLimit) return false;
+
     return (
       username.length >= 3 &&
       (isUsernameAvailable || (isEditMode && profileQuery.data?.username === username)) &&
@@ -401,6 +406,21 @@ export default function ProfileSetup() {
               {username.length > 0 && username.length < 3 && (
                 <p className="text-xs text-muted-foreground">Username must be at least 3 characters</p>
               )}
+              {isEditMode && profileQuery.data && (() => {
+                const changeCount = profileQuery.data.usernameChangeCount ?? 0;
+                const remaining = Math.max(0, 5 - changeCount);
+                const isAtLimit = remaining === 0;
+                const isCurrentUsername = profileQuery.data.username === username;
+                return (
+                  <div className={`text-xs mt-1 ${isAtLimit && !isCurrentUsername ? "text-red-600" : "text-muted-foreground"}`}>
+                    {isAtLimit
+                      ? isCurrentUsername
+                        ? "You have used all 5 username changes"
+                        : "You have reached the maximum of 5 username changes"
+                      : `${remaining} username change${remaining === 1 ? "" : "s"} remaining`}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
 

@@ -180,6 +180,6 @@
 - [x] Feature: Bulk AI summary generation — "Generate All Summaries" button to batch-process all submissions missing a summary
 - [x] Feature: Bulk AI scoring — "Score All" button to batch-evaluate all unscored submissions
 - [x] Feature: Admin image paste — allow pasting images from clipboard into the screenshot field during admin review
-- [ ] Feature: Check username duplication when creating/editing profile
-- [ ] Feature: Limit username changes to 5 times max per user
-- [ ] Feature: Show remaining username changes count on profile setup page
+- [x] Feature: Check username duplication when creating/editing profile
+- [x] Feature: Limit username changes to 5 times max per user
+- [x] Feature: Show remaining username changes count on profile setup page

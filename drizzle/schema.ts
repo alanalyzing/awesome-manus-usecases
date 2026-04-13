@@ -166,6 +166,7 @@ export const userProfiles = mysqlTable("user_profiles", {
   company: varchar("company", { length: 128 }),
   bio: text("bio"),
   avatarUrl: text("avatarUrl"),
+  usernameChangeCount: int("usernameChangeCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

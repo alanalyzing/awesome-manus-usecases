@@ -331,6 +331,10 @@ export const appRouter = router({
           if (!validation.valid) throw new Error(validation.reason);
           const existing = await getProfileByUserId(ctx.user.id);
           if (existing && existing.username !== input.username) {
+            // Check username change limit (max 5)
+            if (existing.usernameChangeCount >= 5) {
+              throw new Error("You have reached the maximum of 5 username changes");
+            }
             const taken = await isUsernameTaken(input.username);
             if (taken) throw new Error("This username is already taken");
           }

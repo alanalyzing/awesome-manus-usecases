@@ -1,0 +1,1 @@
+ALTER TABLE `user_profiles` ADD `usernameChangeCount` int DEFAULT 0 NOT NULL;
