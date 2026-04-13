@@ -176,3 +176,4 @@
 - [x] Feature: Add AI-generated summary for admin submissions (backend tRPC procedure using LLM)
 - [x] Feature: Add "Generate Summary" button in admin panel submission review UI
 - [x] Feature: Store AI summary in database and display it on the admin submission card
+- [x] Change: Update AI summary system prompt to user's specified format (Category: What it does title + 2-sentence industry-agnostic description)

@@ -909,25 +909,19 @@ Return your evaluation as JSON.`;
         if (ucRows.length === 0) throw new Error("Use case not found");
         const uc = ucRows[0];
 
-        const prompt = `You are a professional editor for a curated use case library showcasing what people build with Manus (an AI agent platform).
+        const userMessage = `Here are the details of the use case submission:
 
-Given the following submission details, write a concise, engaging summary (2-4 sentences) that:
-- Clearly explains what the use case does and the problem it solves
-- Highlights the key Manus capabilities used (e.g., research, data analysis, coding, content creation)
-- Is written in third person, present tense, suitable for a public gallery listing
-- Avoids marketing fluff — be specific and factual
-
-Submission Title: ${uc.title}
-Submission Description: ${uc.description}
+Title: ${uc.title}
+Description: ${uc.description}
 Session Replay URL: ${uc.sessionReplayUrl || "Not provided"}
 Deliverable URL: ${uc.deliverableUrl || "Not provided"}
 
-Return ONLY the summary text, no quotes, no labels, no markdown.`;
+Return the title on the first line, then a blank line, then the 2-sentence description. No quotes, no labels, no markdown.`;
 
         const result = await invokeLLM({
           messages: [
-            { role: "system", content: "You are a concise, professional editor. Return only the summary text." },
-            { role: "user", content: prompt },
+            { role: "system", content: "Review this use case replay session and write a short title and 2-sentence description for it. The title should follow the format \"Category: What it does\" and be concise. The description should be industry and brand agnostic, describing what the use case does at a high level without referencing specific companies, products, or sectors. Structure the description by answering: what problem did it solve, how did Manus help, and what was the outcome. Do not use em dashes." },
+            { role: "user", content: userMessage },
           ],
         });
 
