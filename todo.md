@@ -222,3 +222,7 @@
 - [x] Feature: Chrome Extension — popup UI with category browsing, search, sort, and batch tab opening
 - [x] Feature: Chrome Extension — background service worker with caching and tab management
 - [x] Feature: Chrome Extension — Manus brand styling and packaging for distribution
+- [x] Feature: Chrome Extension — group opened tabs under "Manus Use Cases" tab group
+- [x] Feature: Chrome Extension — add Select All / Deselect All button in browse tab
+- [x] Feature: Chrome Extension — redesign with sleek glassmorphism UI
+- [x] Feature: Chrome Extension — generate polished Manus-branded extension icon (golden briefcase with Manus hand logo)
