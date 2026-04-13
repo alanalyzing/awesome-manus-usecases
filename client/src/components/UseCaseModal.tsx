@@ -23,8 +23,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Pencil,
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
+import { AdminEditDialog } from "@/components/AdminEditDialog";
 import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
 import { toast } from "sonner";
@@ -39,6 +41,7 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
   const { t } = useI18n();
   const [, navigate] = useLocation();
   const [activeScreenshot, setActiveScreenshot] = useState(0);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
 
   const useCaseQuery = trpc.useCases.getBySlug.useQuery(
     { slug: slug || "" },
@@ -112,6 +115,7 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
   const screenshots = uc?.screenshots ?? [];
 
   return (
+    <>
     <Dialog open={!!slug} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] p-0 gap-0 overflow-hidden">
         <DialogTitle className="sr-only">{uc?.title || "Use Case Details"}</DialogTitle>
@@ -141,6 +145,12 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
             </button>
           </div>
           <div className="flex items-center gap-2">
+            {user?.role === "admin" && (
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => setEditingSlug(slug)}>
+                <Pencil size={14} />
+                Edit
+              </Button>
+            )}
             <Button variant="ghost" size="sm" className="text-xs" onClick={handleOpenFullPage}>
               <ExternalLink size={14} className="mr-1" />
               Full Page
@@ -332,5 +342,18 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
         </ScrollArea>
       </DialogContent>
     </Dialog>
+
+    {/* Admin Edit Dialog */}
+    {user?.role === "admin" && (
+      <AdminEditDialog
+        slug={editingSlug}
+        onClose={() => setEditingSlug(null)}
+        onSaved={() => {
+          setEditingSlug(null);
+          useCaseQuery.refetch();
+        }}
+      />
+    )}
+    </>
   );
 }

@@ -18,8 +18,10 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Pencil,
 } from "lucide-react";
 import { useState, useCallback } from "react";
+import { AdminEditDialog } from "@/components/AdminEditDialog";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { motion } from "framer-motion";
 import { Link, useParams, useLocation } from "wouter";
@@ -31,6 +33,7 @@ export default function UseCaseDetailPage() {
   const { t } = useI18n();
   const [, navigate] = useLocation();
   const [activeScreenshot, setActiveScreenshot] = useState(0);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
 
   const useCaseQuery = trpc.useCases.getBySlug.useQuery(
     { slug: slug || "" },
@@ -133,6 +136,12 @@ export default function UseCaseDetailPage() {
           </Link>
           <div className="flex-1" />
           <div className="flex items-center gap-1">
+            {user?.role === "admin" && (
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs mr-2" onClick={() => setEditingSlug(slug ?? null)}>
+                <Pencil size={14} />
+                Edit
+              </Button>
+            )}
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleShareTwitter} title="Share on X (Twitter)">
               <Twitter size={14} />
             </Button>
@@ -317,6 +326,18 @@ export default function UseCaseDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Admin Edit Dialog */}
+      {user?.role === "admin" && (
+        <AdminEditDialog
+          slug={editingSlug}
+          onClose={() => setEditingSlug(null)}
+          onSaved={() => {
+            setEditingSlug(null);
+            useCaseQuery.refetch();
+          }}
+        />
+      )}
     </div>
   );
 }

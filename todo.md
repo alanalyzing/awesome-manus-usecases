@@ -197,3 +197,5 @@
 - [x] Feature: Share buttons on detail page (Twitter/X, LinkedIn, copy link)
 - [x] Data: Reassign all use cases submitted by Manus Agent to Alan Chan (alan@manus.ai) — 233 use cases reassigned
 - [x] Feature: Add "Approve All" button in admin panel to bulk-approve all pending submissions
+- [x] Feature: Admin-only edit dialog for use case cards (edit title, description, screenshots, deliverable URL, categories)
+- [x] Feature: Add deliverableUrl field to the POST /api/submit and POST /api/submit/bulk endpoints (already supported)

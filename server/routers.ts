@@ -58,6 +58,7 @@ import {
   getWithoutAiSummary,
   addScreenshotToUseCase,
   bulkApproveAllPending,
+  deleteScreenshot,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -546,6 +547,8 @@ export const appRouter = router({
         categoryIds: z.array(z.number()).optional(),
         isHighlight: z.boolean().optional(),
         status: z.enum(["pending", "approved", "rejected"]).optional(),
+        sessionReplayUrl: z.string().optional(),
+        deliverableUrl: z.string().optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         const { id, ...data } = input;
@@ -992,6 +995,21 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
           details: JSON.stringify({ action: "add_screenshot", url }),
         });
         return result;
+      }),
+
+    // ─── Delete Screenshot ─────────────────────────────────────
+    deleteScreenshot: adminProcedure
+      .input(z.object({ screenshotId: z.number(), useCaseId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        await deleteScreenshot(input.screenshotId);
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "edit",
+          targetType: "use_case",
+          targetId: input.useCaseId,
+          details: JSON.stringify({ action: "delete_screenshot", screenshotId: input.screenshotId }),
+        });
+        return { success: true };
       }),
 
     // ─── Bulk AI Summary Generation ─────────────────────────────

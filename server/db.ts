@@ -703,6 +703,8 @@ export async function updateUseCaseAdmin(id: number, data: {
   categoryIds?: number[];
   isHighlight?: boolean;
   status?: "pending" | "approved" | "rejected";
+  sessionReplayUrl?: string;
+  deliverableUrl?: string;
 }): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -712,6 +714,8 @@ export async function updateUseCaseAdmin(id: number, data: {
   if (data.description !== undefined) updateFields.description = data.description;
   if (data.isHighlight !== undefined) updateFields.isHighlight = data.isHighlight;
   if (data.status !== undefined) updateFields.status = data.status;
+  if (data.sessionReplayUrl !== undefined) updateFields.sessionReplayUrl = data.sessionReplayUrl;
+  if (data.deliverableUrl !== undefined) updateFields.deliverableUrl = data.deliverableUrl;
 
   if (Object.keys(updateFields).length > 0) {
     await db.update(useCases).set(updateFields).where(eq(useCases.id, id));
@@ -1546,4 +1550,11 @@ export async function bulkApproveAllPending(): Promise<{ approved: number; ids: 
   }).where(eq(useCases.status, "pending"));
 
   return { approved: ids.length, ids };
+}
+
+// ─── Delete Screenshot ──────────────────────────────────────────────
+export async function deleteScreenshot(screenshotId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(screenshots).where(eq(screenshots.id, screenshotId));
 }

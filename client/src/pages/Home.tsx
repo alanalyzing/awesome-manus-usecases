@@ -48,6 +48,7 @@ import {
   User,
   Rss,
   Star,
+  Pencil,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -65,6 +66,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ManusLogo, ManusGlyph, MadeWithManusBadge } from "@/components/ManusLogo";
 import { MobileSidebar } from "@/components/MobileSidebar";
 import { UseCaseModal } from "@/components/UseCaseModal";
+import { AdminEditDialog } from "@/components/AdminEditDialog";
 
 /** Trending This Week section — horizontal scrollable strip */
 function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void }) {
@@ -306,6 +308,7 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
   const [modalSlug, setModalSlug] = useState<string | null>(null);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [showHero, setShowHero] = useState(true);
 
   // Infinite scroll sentinel
@@ -1004,8 +1007,18 @@ export default function Home() {
                               </div>
                             </div>
                           )}
+                          {/* Admin edit button */}
+                          {user?.role === "admin" && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setEditingSlug(uc.slug); }}
+                              className="absolute bottom-2.5 right-2.5 p-1.5 rounded-md bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/80 z-10"
+                              title="Edit use case"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                          )}
                           {/* Hover overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                         </div>
 
                         {/* Content */}
@@ -1113,6 +1126,15 @@ export default function Home() {
 
       {/* Use Case Detail Modal */}
       <UseCaseModal slug={modalSlug} onClose={() => setModalSlug(null)} />
+
+      {/* Admin Edit Dialog */}
+      {user?.role === "admin" && (
+        <AdminEditDialog
+          slug={editingSlug}
+          onClose={() => setEditingSlug(null)}
+          onSaved={() => setEditingSlug(null)}
+        />
+      )}
 
       {/* Mobile Sidebar Drawer */}
       <MobileSidebar
