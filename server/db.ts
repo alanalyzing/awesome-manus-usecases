@@ -109,7 +109,7 @@ export async function getApprovedUseCases(opts: {
   search?: string;
   categoryIds?: number[];
   highlightOnly?: boolean;
-  sort?: "popular" | "newest" | "views";
+  sort?: "popular" | "newest" | "views" | "score";
   limit?: number;
   offset?: number;
   userId?: number;
@@ -150,9 +150,11 @@ export async function getApprovedUseCases(opts: {
   const total = countResult[0]?.count ?? 0;
 
   let orderBy;
+  let useScoreSort = false;
   switch (opts.sort) {
     case "popular": orderBy = desc(useCases.upvoteCount); break;
     case "views": orderBy = desc(useCases.viewCount); break;
+    case "score": useScoreSort = true; orderBy = desc(useCases.createdAt); break;
     case "newest": default: orderBy = desc(useCases.createdAt); break;
   }
 
@@ -204,6 +206,21 @@ export async function getApprovedUseCases(opts: {
      upvoteSet = new Set(userUpvotes.map(u => u.useCaseId));
    }
 
+  // Fetch AI scores for score-based sorting
+  let scoreMap = new Map<number, number>();
+  if (useScoreSort && ucIds.length > 0) {
+    const scoreRows = await db
+      .select({ useCaseId: aiScores.useCaseId, overallScore: aiScores.overallScore })
+      .from(aiScores)
+      .where(inArray(aiScores.useCaseId, ucIds));
+    // Keep the latest score per use case (highest id)
+    for (const s of scoreRows) {
+      const current = scoreMap.get(s.useCaseId);
+      const val = parseFloat(s.overallScore);
+      if (current === undefined || val > current) scoreMap.set(s.useCaseId, val);
+    }
+  }
+
   const items: UseCaseWithDetails[] = rows.map(uc => ({
     ...uc,
     submitterName: submitterMap.get(uc.submitterId) ?? null,
@@ -213,6 +230,11 @@ export async function getApprovedUseCases(opts: {
     screenshots: ssMap.get(uc.id) ?? [],
     hasUpvoted: opts.userId ? upvoteSet.has(uc.id) : undefined,
   }));
+
+  // Sort by score if requested (in-memory since scores are in a separate table)
+  if (useScoreSort) {
+    items.sort((a, b) => (scoreMap.get(b.id) ?? 0) - (scoreMap.get(a.id) ?? 0));
+  }
 
   return { items, total };
 }
@@ -780,6 +802,61 @@ export async function getAiScore(useCaseId: number): Promise<AiScore | null> {
   return rows.length > 0 ? rows[0] : null;
 }
 
+export async function updateAiScore(useCaseId: number, data: {
+  completenessScore: string;
+  innovativenessScore: string;
+  impactScore: string;
+  complexityScore: string;
+  presentationScore: string;
+  overallScore: string;
+}): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // Update the latest score record for this use case
+  const existing = await db.select().from(aiScores).where(eq(aiScores.useCaseId, useCaseId)).orderBy(desc(aiScores.scannedAt)).limit(1);
+  if (existing.length > 0) {
+    await db.update(aiScores).set({
+      ...data,
+      scannedAt: new Date(),
+    }).where(eq(aiScores.id, existing[0].id));
+  } else {
+    // Create a new score record if none exists
+    await db.insert(aiScores).values({
+      useCaseId,
+      ...data,
+      reasoning: "Manually set by admin",
+    });
+  }
+}
+
+export async function getAverageScoresForUser(userId: number): Promise<{
+  completeness: number;
+  innovativeness: number;
+  impact: number;
+  complexity: number;
+  presentation: number;
+  overall: number;
+  count: number;
+} | null> {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db
+    .select({
+      completeness: sql<number>`AVG(CAST(${aiScores.completenessScore} AS DECIMAL(3,1)))`,
+      innovativeness: sql<number>`AVG(CAST(${aiScores.innovativenessScore} AS DECIMAL(3,1)))`,
+      impact: sql<number>`AVG(CAST(${aiScores.impactScore} AS DECIMAL(3,1)))`,
+      complexity: sql<number>`AVG(CAST(${aiScores.complexityScore} AS DECIMAL(3,1)))`,
+      presentation: sql<number>`AVG(CAST(${aiScores.presentationScore} AS DECIMAL(3,1)))`,
+      overall: sql<number>`AVG(CAST(${aiScores.overallScore} AS DECIMAL(3,1)))`,
+      count: sql<number>`COUNT(DISTINCT ${aiScores.useCaseId})`,
+    })
+    .from(aiScores)
+    .innerJoin(useCases, eq(aiScores.useCaseId, useCases.id))
+    .where(and(eq(useCases.submitterId, userId), eq(useCases.status, "approved")));
+  if (rows.length === 0 || rows[0].count === 0) return null;
+  return rows[0];
+}
+
 // ─── Admin Stats ─────────────────────────────────────────────────────
 
 export async function getTopCategories(limit = 10): Promise<{ id: number; name: string; slug: string; count: number }[]> {
@@ -1125,6 +1202,7 @@ export async function createProfile(data: {
   username: string;
   proficiency: "beginner" | "intermediate" | "advanced" | "expert";
   company?: string;
+  jobTitle?: string;
   bio?: string;
   socialHandles: { platform: "x" | "instagram" | "linkedin" | "other"; handle: string }[];
 }): Promise<UserProfile> {
@@ -1136,6 +1214,7 @@ export async function createProfile(data: {
     username: data.username,
     proficiency: data.proficiency,
     company: data.company || null,
+    jobTitle: data.jobTitle || null,
     bio: data.bio || null,
   });
 
@@ -1155,6 +1234,7 @@ export async function updateProfile(userId: number, data: {
   username?: string;
   proficiency?: "beginner" | "intermediate" | "advanced" | "expert";
   company?: string | null;
+  jobTitle?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
   socialHandles?: { platform: "x" | "instagram" | "linkedin" | "other"; handle: string }[];
@@ -1170,6 +1250,7 @@ export async function updateProfile(userId: number, data: {
   if (data.username !== undefined) updates.username = data.username;
   if (data.proficiency !== undefined) updates.proficiency = data.proficiency;
   if (data.company !== undefined) updates.company = data.company;
+  if (data.jobTitle !== undefined) updates.jobTitle = data.jobTitle;
   if (data.bio !== undefined) updates.bio = data.bio;
   if (data.avatarUrl !== undefined) updates.avatarUrl = data.avatarUrl;
 

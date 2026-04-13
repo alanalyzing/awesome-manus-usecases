@@ -186,6 +186,13 @@ export default function SubmitPage() {
         toast.error("Session Replay URL is required");
         return;
       }
+      if (!sessionReplayUrl.trim().startsWith("https://manus.im/share/")) {
+        toast.error(
+          "Session Replay URL must start with https://manus.im/share/. To get this link, open your Manus task, click the Share button in the top-right corner, and copy the share link.",
+          { duration: 8000 }
+        );
+        return;
+      }
 
       setSubmitting(true);
       try {
@@ -406,9 +413,13 @@ export default function SubmitPage() {
               value={sessionReplayUrl}
               onChange={(e) => setSessionReplayUrl(e.target.value)}
               placeholder="https://manus.im/share/..."
-              className="bg-card"
+              className={`bg-card ${sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? "border-destructive focus-visible:ring-destructive" : ""}`}
             />
-            <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
+            {sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? (
+              <p className="text-xs text-destructive">URL must start with https://manus.im/share/. Open your Manus task → click Share (top-right) → copy the link.</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
+            )}
           </div>
 
           {/* Deliverable URL */}

@@ -67,6 +67,12 @@ export default function AdminPage() {
   const [editCategoryIds, setEditCategoryIds] = useState<number[]>([]);
   const [scanningIds, setScanningIds] = useState<Set<number>>(new Set());
   const [activityFilter, setActivityFilter] = useState<string | undefined>(undefined);
+  const [scoreDialogOpen, setScoreDialogOpen] = useState(false);
+  const [scoreUseCaseId, setScoreUseCaseId] = useState<number | null>(null);
+  const [editScores, setEditScores] = useState({ completeness: 3, innovativeness: 3, impact: 3, complexity: 3, presentation: 3 });
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+  const [removeId, setRemoveId] = useState<number | null>(null);
+  const [removeReason, setRemoveReason] = useState("");
 
   const isAdmin = user?.role === "admin";
   const trpcUtils = trpc.useUtils();
@@ -166,6 +172,50 @@ export default function AdminPage() {
     bulkAiScanMutation.mutate();
   }, [bulkAiScanMutation]);
 
+  const updateScoreMutation = trpc.admin.updateScore.useMutation({
+    onSuccess: () => {
+      toast.success("Score updated successfully");
+      submissionsQuery.refetch();
+      activityQuery.refetch();
+      setScoreDialogOpen(false);
+    },
+    onError: (err) => toast.error("Failed to update score: " + err.message),
+  });
+
+  const removeApprovedMutation = trpc.admin.removeApproved.useMutation({
+    onSuccess: () => {
+      toast.success("Use case removed from gallery");
+      submissionsQuery.refetch();
+      statsQuery.refetch();
+      activityQuery.refetch();
+      setRemoveDialogOpen(false);
+      setRemoveReason("");
+    },
+    onError: (err) => toast.error("Failed to remove: " + err.message),
+  });
+
+  const handleEditScore = useCallback((useCaseId: number, aiScore?: any) => {
+    setScoreUseCaseId(useCaseId);
+    if (aiScore) {
+      setEditScores({
+        completeness: parseFloat(aiScore.completeness) || 3,
+        innovativeness: parseFloat(aiScore.innovativeness) || 3,
+        impact: parseFloat(aiScore.impact) || 3,
+        complexity: parseFloat(aiScore.complexity) || 3,
+        presentation: parseFloat(aiScore.presentation) || 3,
+      });
+    } else {
+      setEditScores({ completeness: 3, innovativeness: 3, impact: 3, complexity: 3, presentation: 3 });
+    }
+    setScoreDialogOpen(true);
+  }, []);
+
+  const handleRemoveApproved = useCallback((id: number) => {
+    setRemoveId(id);
+    setRemoveReason("");
+    setRemoveDialogOpen(true);
+  }, []);
+
   const [csvExporting, setCsvExporting] = useState(false);
   const handleCsvExport = useCallback(async () => {
     setCsvExporting(true);
@@ -234,6 +284,8 @@ export default function AdminPage() {
     approve: "Approved",
     reject: "Rejected",
     edit: "Edited",
+    edit_score: "Score Edited",
+    remove_approved: "Removed from Gallery",
     promote_admin: "Promoted to Admin",
     demote_admin: "Demoted to User",
     ai_scan: "AI Scanned",
@@ -520,6 +572,15 @@ export default function AdminPage() {
                               <>
                                 <Button
                                   size="sm"
+                                  variant="outline"
+                                  className="gap-1.5 text-xs"
+                                  onClick={() => handleEditScore(uc.id, uc.aiScore)}
+                                >
+                                  <Star size={13} />
+                                  Edit Score
+                                </Button>
+                                <Button
+                                  size="sm"
                                   className="gap-1.5 text-xs bg-primary hover:bg-primary/90 text-primary-foreground"
                                   onClick={() =>
                                     handleApproveClick(uc.id, uc.categories.map((c) => c.id), uc.isHighlight)
@@ -540,16 +601,36 @@ export default function AdminPage() {
                               </>
                             )}
                             {uc.status === "approved" && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="gap-1.5 text-xs"
-                                onClick={() =>
-                                  handleApproveClick(uc.id, uc.categories.map((c) => c.id), uc.isHighlight)
-                                }
-                              >
-                                Edit
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1.5 text-xs"
+                                  onClick={() =>
+                                    handleApproveClick(uc.id, uc.categories.map((c) => c.id), uc.isHighlight)
+                                  }
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1.5 text-xs"
+                                  onClick={() => handleEditScore(uc.id, uc.aiScore)}
+                                >
+                                  <Star size={13} />
+                                  Edit Score
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+                                  onClick={() => handleRemoveApproved(uc.id)}
+                                >
+                                  <XCircle size={13} />
+                                  Remove
+                                </Button>
+                              </>
                             )}
                           </div>
                         </div>
@@ -1067,6 +1148,95 @@ export default function AdminPage() {
             >
               {approveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
               {t("admin.approve")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Score Edit Dialog */}
+      <Dialog open={scoreDialogOpen} onOpenChange={setScoreDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Star size={16} className="text-primary" /> Edit Scores</DialogTitle>
+            <DialogDescription>Manually adjust the scores for each dimension (0–5). The overall score is calculated automatically.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {(["completeness", "innovativeness", "impact", "complexity", "presentation"] as const).map((dim) => (
+              <div key={dim} className="flex items-center justify-between gap-4">
+                <Label className="text-sm capitalize w-28">{dim}</Label>
+                <div className="flex items-center gap-2 flex-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    step="0.1"
+                    value={editScores[dim]}
+                    onChange={(e) => setEditScores(prev => ({ ...prev, [dim]: parseFloat(e.target.value) }))}
+                    className="flex-1 accent-primary"
+                  />
+                  <span className="text-sm font-mono w-8 text-right">{editScores[dim].toFixed(1)}</span>
+                </div>
+              </div>
+            ))}
+            <Separator />
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">Overall Score</span>
+              <span className="text-lg font-bold text-primary">
+                {(editScores.completeness * 0.20 + editScores.innovativeness * 0.25 + editScores.impact * 0.25 + editScores.complexity * 0.15 + editScores.presentation * 0.15).toFixed(1)}
+              </span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setScoreDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (scoreUseCaseId === null) return;
+                updateScoreMutation.mutate({ useCaseId: scoreUseCaseId, ...editScores });
+              }}
+              disabled={updateScoreMutation.isPending}
+              className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {updateScoreMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              Save Scores
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Approved Dialog */}
+      <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remove from Gallery</DialogTitle>
+            <DialogDescription>This will remove the approved use case from the public gallery. The submitter will be notified.</DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Label htmlFor="removeReason">Reason for removal</Label>
+            <textarea
+              id="removeReason"
+              value={removeReason}
+              onChange={(e) => setRemoveReason(e.target.value)}
+              rows={3}
+              className="w-full mt-2 rounded-md border bg-card px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-y"
+              placeholder="Explain why this use case is being removed..."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRemoveDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                if (removeId === null || !removeReason.trim()) {
+                  toast.error("Please provide a reason");
+                  return;
+                }
+                removeApprovedMutation.mutate({ id: removeId, reason: removeReason.trim() });
+              }}
+              disabled={removeApprovedMutation.isPending}
+              variant="destructive"
+              className="gap-1.5"
+            >
+              {removeApprovedMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              Remove
             </Button>
           </DialogFooter>
         </DialogContent>

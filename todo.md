@@ -155,3 +155,13 @@
 - [x] Fix: Rewrite interview consent checkbox to be more casual: "I'm open to being contacted for an interview about this use case"
 - [x] Fix: Make Session Replay URL a required field (remove "Recommended" badge, add validation)
 - [x] Fix: Rename feature category "Apps" to "Desktop & Mobile Apps" in all i18n translations
+- [x] Fix: Move job title next to company info on profile page (shows as "Job Title at Company")
+- [x] Bug: Edit Profile button now works — navigates to /profile/setup?edit=1 with pre-filled form
+- [x] Feature: Add jobTitle field to user_profiles schema and display next to company on profile page
+- [x] Bug: Fix Edit Profile button — ProfileSetup supports both create and edit modes
+- [x] Feature: Allow admins to remove/unapprove approved use cases from admin panel
+- [x] Feature: Enforce session URL must start with https://manus.im/share/ with helpful error instructions
+- [x] Fix: Top logo and title should be left-aligned (use full-width padding instead of centered container)
+- [x] Feature: Allow admins to manually edit AI scores for approved use cases (final score per dimension)
+- [x] Feature: Add score-based sorting option to gallery ("Top Rated")
+- [x] Feature: Add radar chart on user profile pages showing average scores across submitted use cases

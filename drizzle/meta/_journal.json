@@ -50,6 +50,13 @@
       "when": 1775994069592,
       "tag": "0006_smart_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1776040597523,
+      "tag": "0007_salty_lucky_pierre",
+      "breakpoints": true
     }
   ]
 }

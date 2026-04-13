@@ -52,6 +52,8 @@ import {
   getFollowing,
   getLikedUseCases,
   getProfileStats,
+  updateAiScore,
+  getAverageScoresForUser,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -95,7 +97,7 @@ export const appRouter = router({
         search: z.string().optional(),
         categoryIds: z.array(z.number()).optional(),
         highlightOnly: z.boolean().optional(),
-        sort: z.enum(["popular", "newest", "views"]).optional(),
+        sort: z.enum(["popular", "newest", "views", "score"]).optional(),
         limit: z.number().min(1).max(100).optional(),
         offset: z.number().min(0).optional(),
       }))
@@ -263,12 +265,20 @@ export const appRouter = router({
         return getProfileByUsername(input.username);
       }),
 
+    // Average scores for a user's approved use cases (public — for profile radar chart)
+    averageScores: publicProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ input }) => {
+        return getAverageScoresForUser(input.userId);
+      }),
+
     // Create profile (protected, one per user)
     create: protectedProcedure
       .input(z.object({
         username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_-]+$/),
         proficiency: z.enum(["beginner", "intermediate", "advanced", "expert"]),
         company: z.string().max(128).optional(),
+        jobTitle: z.string().max(128).optional(),
         bio: z.string().max(500).optional(),
         socialHandles: z.array(z.object({
           platform: z.enum(["x", "instagram", "linkedin", "other"]),
@@ -291,6 +301,7 @@ export const appRouter = router({
           username: input.username,
           proficiency: input.proficiency,
           company: input.company,
+          jobTitle: input.jobTitle,
           bio: input.bio,
           socialHandles: input.socialHandles,
         });
@@ -302,7 +313,9 @@ export const appRouter = router({
         username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_-]+$/).optional(),
         proficiency: z.enum(["beginner", "intermediate", "advanced", "expert"]).optional(),
         company: z.string().max(128).nullable().optional(),
+        jobTitle: z.string().max(128).nullable().optional(),
         bio: z.string().max(500).nullable().optional(),
+        avatarUrl: z.string().url().nullable().optional(),
         socialHandles: z.array(z.object({
           platform: z.enum(["x", "instagram", "linkedin", "other"]),
           handle: z.string().min(1).max(256),
@@ -815,6 +828,74 @@ Return your evaluation as JSON.`;
 
       return { scanned: results.filter(r => r.success).length, total: pendingIds.length, results };
     }),
+
+    // ─── Manual Score Edit ──────────────────────────────────────
+    updateScore: adminProcedure
+      .input(z.object({
+        useCaseId: z.number(),
+        completeness: z.number().min(0).max(5),
+        innovativeness: z.number().min(0).max(5),
+        impact: z.number().min(0).max(5),
+        complexity: z.number().min(0).max(5),
+        presentation: z.number().min(0).max(5),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const overall = (
+          input.completeness * 0.20 +
+          input.innovativeness * 0.25 +
+          input.impact * 0.25 +
+          input.complexity * 0.15 +
+          input.presentation * 0.15
+        );
+        const data = {
+          completenessScore: input.completeness.toFixed(1),
+          innovativenessScore: input.innovativeness.toFixed(1),
+          impactScore: input.impact.toFixed(1),
+          complexityScore: input.complexity.toFixed(1),
+          presentationScore: input.presentation.toFixed(1),
+          overallScore: overall.toFixed(1),
+        };
+        await updateAiScore(input.useCaseId, data);
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "edit_score",
+          targetType: "use_case",
+          targetId: input.useCaseId,
+          details: JSON.stringify(data),
+        });
+        return { ...data, success: true };
+      }),
+
+    // ─── Remove/Unapprove ─────────────────────────────────────────
+    removeApproved: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        reason: z.string().min(1),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+        // Set status back to rejected
+        await db.update(useCases).set({ status: "rejected" }).where(eq(useCases.id, input.id));
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "remove_approved",
+          targetType: "use_case",
+          targetId: input.id,
+          details: JSON.stringify({ reason: input.reason }),
+        });
+        // Notify submitter
+        const uc = await db.select().from(useCases).where(eq(useCases.id, input.id)).limit(1);
+        if (uc.length > 0) {
+          await createSubmitterNotification({
+            useCaseId: input.id,
+            userId: uc[0].submitterId,
+            type: "rejected",
+            message: `Your use case "${uc[0].title}" has been removed from the gallery. Reason: ${input.reason}`,
+          });
+        }
+        return { success: true };
+      }),
 
     // ─── CSV Export ──────────────────────────────────────────────
     exportAnalytics: adminProcedure

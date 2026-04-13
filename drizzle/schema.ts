@@ -161,6 +161,7 @@ export const userProfiles = mysqlTable("user_profiles", {
   userId: int("userId").notNull().unique(),
   username: varchar("username", { length: 32 }).notNull().unique(),
   proficiency: mysqlEnum("proficiency", ["beginner", "intermediate", "advanced", "expert"]).notNull(),
+  jobTitle: varchar("jobTitle", { length: 128 }),
   company: varchar("company", { length: 128 }),
   bio: text("bio"),
   avatarUrl: text("avatarUrl"),

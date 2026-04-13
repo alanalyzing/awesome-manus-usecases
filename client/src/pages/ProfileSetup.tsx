@@ -1,8 +1,9 @@
+
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { getLoginUrl } from "@/const";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,30 +31,55 @@ const PROFICIENCY_LABELS: Record<string, { label: string; description: string }>
 export default function ProfileSetup() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [, navigate] = useLocation();
+  const searchString = useSearch();
+  const isEditMode = new URLSearchParams(searchString).get("edit") === "1";
+
   const profileQuery = trpc.profile.me.useQuery(undefined, {
     enabled: isAuthenticated,
   });
 
-  // If user already has a profile, redirect to home
+  // If user already has a profile and NOT in edit mode, redirect to home
   useEffect(() => {
-    if (profileQuery.data) {
+    if (profileQuery.data && !isEditMode) {
       navigate("/", { replace: true });
     }
-  }, [profileQuery.data, navigate]);
+  }, [profileQuery.data, navigate, isEditMode]);
 
   const [username, setUsername] = useState("");
   const [proficiency, setProficiency] = useState<string>("");
   const [company, setCompany] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [bio, setBio] = useState("");
   const [socialHandles, setSocialHandles] = useState<SocialHandle[]>([
     { platform: "x", handle: "" },
   ]);
+  const [initialized, setInitialized] = useState(false);
 
   // Avatar state
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  // Pre-fill form in edit mode
+  useEffect(() => {
+    if (isEditMode && profileQuery.data && !initialized) {
+      const p = profileQuery.data;
+      setUsername(p.username);
+      setProficiency(p.proficiency);
+      setCompany(p.company || "");
+      setJobTitle(p.jobTitle || "");
+      setBio(p.bio || "");
+      if (p.avatarUrl) {
+        setAvatarPreview(p.avatarUrl);
+        setAvatarUrl(p.avatarUrl);
+      }
+      if (p.socialHandles && p.socialHandles.length > 0) {
+        setSocialHandles(p.socialHandles.map((h: any) => ({ platform: h.platform, handle: h.handle })));
+      }
+      setInitialized(true);
+    }
+  }, [isEditMode, profileQuery.data, initialized]);
 
   // Debounced username check
   const [debouncedUsername, setDebouncedUsername] = useState("");
@@ -64,8 +90,15 @@ export default function ProfileSetup() {
 
   const usernameCheck = trpc.profile.checkUsername.useQuery(
     { username: debouncedUsername },
-    { enabled: debouncedUsername.length >= 3 }
+    {
+      enabled: debouncedUsername.length >= 3 && !(isEditMode && profileQuery.data?.username === debouncedUsername),
+    }
   );
+
+  // In edit mode, if username hasn't changed, it's always "available"
+  const isUsernameAvailable = isEditMode && profileQuery.data?.username === debouncedUsername
+    ? true
+    : usernameCheck.data?.available === true;
 
   const uploadAvatar = trpc.profile.uploadAvatar.useMutation({
     onSuccess: (data) => {
@@ -84,6 +117,17 @@ export default function ProfileSetup() {
     onSuccess: () => {
       toast.success("Profile created successfully!");
       navigate("/", { replace: true });
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+
+  const updateProfile = trpc.profile.update.useMutation({
+    onSuccess: () => {
+      toast.success("Profile updated successfully!");
+      const uname = profileQuery.data?.username || username;
+      navigate(`/profile/${uname}`, { replace: true });
     },
     onError: (err) => {
       toast.error(err.message);
@@ -145,25 +189,43 @@ export default function ProfileSetup() {
   const isFormValid = useMemo(() => {
     return (
       username.length >= 3 &&
-      usernameCheck.data?.available === true &&
+      (isUsernameAvailable || (isEditMode && profileQuery.data?.username === username)) &&
       proficiency !== "" &&
       socialHandles.length >= 1 &&
       socialHandles.every(h => h.handle.trim().length > 0) &&
       !avatarUploading
     );
-  }, [username, usernameCheck.data, proficiency, socialHandles, avatarUploading]);
+  }, [username, isUsernameAvailable, isEditMode, profileQuery.data, proficiency, socialHandles, avatarUploading]);
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
-    createProfile.mutate({
-      username,
-      proficiency: proficiency as "beginner" | "intermediate" | "advanced" | "expert",
-      company: company || undefined,
-      bio: bio || undefined,
-      socialHandles: socialHandles.filter(h => h.handle.trim().length > 0),
-    });
-  }, [isFormValid, username, proficiency, company, bio, socialHandles, createProfile]);
+
+    const filteredHandles = socialHandles.filter(h => h.handle.trim().length > 0);
+
+    if (isEditMode) {
+      updateProfile.mutate({
+        username,
+        proficiency: proficiency as "beginner" | "intermediate" | "advanced" | "expert",
+        company: company || null,
+        jobTitle: jobTitle || null,
+        bio: bio || null,
+        avatarUrl: avatarUrl || null,
+        socialHandles: filteredHandles,
+      });
+    } else {
+      createProfile.mutate({
+        username,
+        proficiency: proficiency as "beginner" | "intermediate" | "advanced" | "expert",
+        company: company || undefined,
+        jobTitle: jobTitle || undefined,
+        bio: bio || undefined,
+        socialHandles: filteredHandles,
+      });
+    }
+  }, [isFormValid, isEditMode, username, proficiency, company, jobTitle, bio, avatarUrl, socialHandles, createProfile, updateProfile]);
+
+  const isPending = createProfile.isPending || updateProfile.isPending;
 
   if (authLoading || profileQuery.isLoading) {
     return (
@@ -199,10 +261,12 @@ export default function ProfileSetup() {
         <div className="text-center mb-8">
           <ManusLogo className="h-8 mx-auto mb-4" />
           <h1 className="text-3xl font-serif font-bold text-foreground mb-2">
-            Set Up Your Profile
+            {isEditMode ? "Edit Your Profile" : "Set Up Your Profile"}
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Create your contributor profile to showcase your Manus use cases and connect with the community.
+            {isEditMode
+              ? "Update your contributor profile information."
+              : "Create your contributor profile to showcase your Manus use cases and connect with the community."}
           </p>
         </div>
 
@@ -307,7 +371,7 @@ export default function ProfileSetup() {
                   maxLength={32}
                   className="pr-10"
                 />
-                {debouncedUsername.length >= 3 && (
+                {debouncedUsername.length >= 3 && !(isEditMode && profileQuery.data?.username === debouncedUsername) && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     {usernameCheck.isLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -318,13 +382,21 @@ export default function ProfileSetup() {
                     )}
                   </div>
                 )}
+                {isEditMode && profileQuery.data?.username === debouncedUsername && debouncedUsername.length >= 3 && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <Check className="h-4 w-4 text-green-500" />
+                  </div>
+                )}
               </div>
-              {debouncedUsername.length >= 3 && usernameCheck.data && (
+              {debouncedUsername.length >= 3 && !(isEditMode && profileQuery.data?.username === debouncedUsername) && usernameCheck.data && (
                 <p className={`text-xs ${usernameCheck.data.available ? "text-green-600" : "text-red-600"}`}>
                   {usernameCheck.data.available
                     ? `\u2713 /profile/${debouncedUsername} is available`
                     : usernameCheck.data.reason}
                 </p>
+              )}
+              {isEditMode && profileQuery.data?.username === debouncedUsername && debouncedUsername.length >= 3 && (
+                <p className="text-xs text-green-600">{"\u2713"} Current username</p>
               )}
               {username.length > 0 && username.length < 3 && (
                 <p className="text-xs text-muted-foreground">Username must be at least 3 characters</p>
@@ -454,14 +526,25 @@ export default function ProfileSetup() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Company / Organization</label>
-                <Input
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  placeholder="e.g., Acme Corp"
-                  maxLength={128}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Job Title</label>
+                  <Input
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="e.g., Product Manager"
+                    maxLength={128}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">Company / Organization</label>
+                  <Input
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="e.g., Acme Corp"
+                    maxLength={128}
+                  />
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Bio</label>
@@ -482,22 +565,28 @@ export default function ProfileSetup() {
             <Button
               type="button"
               variant="ghost"
-              onClick={() => navigate("/")}
+              onClick={() => {
+                if (isEditMode && profileQuery.data?.username) {
+                  navigate(`/profile/${profileQuery.data.username}`);
+                } else {
+                  navigate("/");
+                }
+              }}
             >
-              Skip for now
+              {isEditMode ? "Cancel" : "Skip for now"}
             </Button>
             <Button
               type="submit"
-              disabled={!isFormValid || createProfile.isPending}
+              disabled={!isFormValid || isPending}
               className="min-w-[160px]"
             >
-              {createProfile.isPending ? (
+              {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Creating...
+                  {isEditMode ? "Saving..." : "Creating..."}
                 </>
               ) : (
-                "Create Profile"
+                isEditMode ? "Save Changes" : "Create Profile"
               )}
             </Button>
           </div>

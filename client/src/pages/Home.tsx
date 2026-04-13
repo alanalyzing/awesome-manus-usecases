@@ -286,7 +286,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [highlightOnly, setHighlightOnly] = useState(false);
-  const [sort, setSort] = useState<"popular" | "newest" | "views">("newest");
+  const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">("newest");
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
@@ -430,7 +430,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       {/* ─── Top Navigation ─── */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-        <div className="container flex h-14 items-center gap-2 sm:gap-4">
+        <div className="w-full px-4 sm:px-6 flex h-14 items-center gap-2 sm:gap-4">
           <button
             onClick={() => setMobileSidebarOpen(true)}
             className="lg:hidden p-2 hover:bg-accent rounded-md"
@@ -857,7 +857,8 @@ export default function Home() {
                   <SelectItem value="popular">{t("gallery.sortPopular")}</SelectItem>
                   <SelectItem value="newest">{t("gallery.sortNewest")}</SelectItem>
                   <SelectItem value="views">{t("gallery.sortViews")}</SelectItem>
-                </SelectContent>
+                   <SelectItem value="score">Top Rated</SelectItem>
+                 </SelectContent>
               </Select>
             </div>
 

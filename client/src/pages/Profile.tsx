@@ -29,6 +29,7 @@ import {
   FileText,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts";
 
 const PROFICIENCY_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
   beginner: { label: "Beginner", color: "text-blue-700", bgColor: "bg-blue-50 border-blue-200" },
@@ -43,6 +44,60 @@ const PLATFORM_ICONS: Record<string, React.ReactNode> = {
   linkedin: <Linkedin size={16} />,
   other: <Globe size={16} />,
 };
+
+function ProfileRadarChart({ userId }: { userId: number }) {
+  const avgQuery = trpc.profile.averageScores.useQuery(
+    { userId },
+    { enabled: !!userId }
+  );
+
+  const avg = avgQuery.data;
+  if (!avg || avg.count === 0) return null;
+
+  const data = [
+    { dimension: "Completeness", score: avg.completeness, fullMark: 5 },
+    { dimension: "Innovation", score: avg.innovativeness, fullMark: 5 },
+    { dimension: "Impact", score: avg.impact, fullMark: 5 },
+    { dimension: "Complexity", score: avg.complexity, fullMark: 5 },
+    { dimension: "Presentation", score: avg.presentation, fullMark: 5 },
+  ];
+
+  return (
+    <Card className="mb-4">
+      <CardContent className="pt-4 pb-3 px-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Average Score</h3>
+          <span className="text-lg font-bold text-primary">{avg.overall.toFixed(1)}<span className="text-xs text-muted-foreground font-normal">/5</span></span>
+        </div>
+        <div className="w-full" style={{ height: 220 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
+              <PolarGrid stroke="hsl(var(--border))" />
+              <PolarAngleAxis
+                dataKey="dimension"
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+              />
+              <PolarRadiusAxis
+                angle={90}
+                domain={[0, 5]}
+                tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                tickCount={6}
+              />
+              <Radar
+                name="Score"
+                dataKey="score"
+                stroke="hsl(var(--primary))"
+                fill="hsl(var(--primary) / 0.15)"
+                strokeWidth={2}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-[10px] text-muted-foreground text-center">Based on {avg.count} scored use case{avg.count !== 1 ? "s" : ""}</p>
+      </CardContent>
+    </Card>
+  );
+}
 
 const PLATFORM_URLS: Record<string, (handle: string) => string> = {
   x: (h) => h.startsWith("http") ? h : `https://x.com/${h.replace(/^@/, "")}`,
@@ -220,11 +275,11 @@ export default function ProfilePage() {
                 {proficiency.label}
               </div>
 
-              {/* Company */}
-              {profile.company && (
+              {/* Job Title & Company */}
+              {(profile.jobTitle || profile.company) && (
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Briefcase size={14} />
-                  {profile.company}
+                  {[profile.jobTitle, profile.company].filter(Boolean).join(" at ")}
                 </div>
               )}
 
@@ -254,7 +309,7 @@ export default function ProfilePage() {
 
               {/* Edit Profile */}
               {isOwnProfile && (
-                <Link href="/profile/setup">
+                <Link href="/profile/setup?edit=1">
                   <Button variant="outline" size="sm" className="gap-1.5 mt-2">
                     <Edit size={12} /> Edit Profile
                   </Button>
@@ -268,6 +323,9 @@ export default function ProfilePage() {
               {profile.bio && (
                 <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
               )}
+
+              {/* Radar Chart - Average Scores */}
+              <ProfileRadarChart userId={profile.userId} />
 
               {/* Stats Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
