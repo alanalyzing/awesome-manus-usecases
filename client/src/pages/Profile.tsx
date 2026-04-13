@@ -54,12 +54,14 @@ function ProfileRadarChart({ userId }: { userId: number }) {
   const avg = avgQuery.data;
   if (!avg || avg.count === 0) return null;
 
+  // SQL AVG may return strings via Superjson — coerce to numbers
+  const overall = Number(avg.overall) || 0;
   const data = [
-    { dimension: "Completeness", score: avg.completeness, fullMark: 5 },
-    { dimension: "Innovation", score: avg.innovativeness, fullMark: 5 },
-    { dimension: "Impact", score: avg.impact, fullMark: 5 },
-    { dimension: "Complexity", score: avg.complexity, fullMark: 5 },
-    { dimension: "Presentation", score: avg.presentation, fullMark: 5 },
+    { dimension: "Completeness", score: Number(avg.completeness) || 0, fullMark: 5 },
+    { dimension: "Innovation", score: Number(avg.innovativeness) || 0, fullMark: 5 },
+    { dimension: "Impact", score: Number(avg.impact) || 0, fullMark: 5 },
+    { dimension: "Complexity", score: Number(avg.complexity) || 0, fullMark: 5 },
+    { dimension: "Presentation", score: Number(avg.presentation) || 0, fullMark: 5 },
   ];
 
   return (
@@ -67,7 +69,7 @@ function ProfileRadarChart({ userId }: { userId: number }) {
       <CardContent className="pt-4 pb-3 px-4">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Average Score</h3>
-          <span className="text-lg font-bold text-primary">{avg.overall.toFixed(1)}<span className="text-xs text-muted-foreground font-normal">/5</span></span>
+          <span className="text-lg font-bold text-primary">{overall.toFixed(1)}<span className="text-xs text-muted-foreground font-normal">/5</span></span>
         </div>
         <div className="w-full" style={{ height: 220 }}>
           <ResponsiveContainer width="100%" height="100%">

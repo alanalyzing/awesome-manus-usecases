@@ -165,3 +165,8 @@
 - [x] Feature: Allow admins to manually edit AI scores for approved use cases (final score per dimension)
 - [x] Feature: Add score-based sorting option to gallery ("Top Rated")
 - [x] Feature: Add radar chart on user profile pages showing average scores across submitted use cases
+- [x] Verify: Admin management feature (add/remove admins) is accessible from admin panel (Users tab with promote/demote)
+- [x] Action: Add lucia@manus.ai as admin user (auto-promote via ADMIN_EMAILS env var on first login)
+- [x] Bug: Fix all hardcoded links — Submit Yours now uses relative /submit URL
+- [x] Bug: Profile radar chart fixed — avg.overall.toFixed error resolved by coercing SQL AVG strings to numbers
+- [x] Bug: Fix duplicate Star import in Admin.tsx — stale Vite cache; verified clean build passes (3071 modules, 0 errors)

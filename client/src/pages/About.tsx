@@ -267,9 +267,7 @@ export default function About() {
               </p>
             </a>
             <a
-              href="https://manuslib-jnjq5dyo.manus.space/submit"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/submit"
               className="bg-card border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
             >
               <div className="font-semibold mb-1 group-hover:text-primary transition-colors">
