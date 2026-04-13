@@ -48,6 +48,7 @@ export const useCases = mysqlTable("use_cases", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   approvedAt: timestamp("approvedAt"),
+  aiSummary: text("aiSummary"),
 });
 
 export type UseCase = typeof useCases.$inferSelect;

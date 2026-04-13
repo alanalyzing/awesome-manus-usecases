@@ -38,6 +38,7 @@ import {
   Star,
   Download,
   Zap,
+  Wand2,
 } from "lucide-react";
 import { useState, useCallback, useMemo } from "react";
 import { Link } from "wouter";
@@ -73,6 +74,7 @@ export default function AdminPage() {
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [removeId, setRemoveId] = useState<number | null>(null);
   const [removeReason, setRemoveReason] = useState("");
+  const [summarizingIds, setSummarizingIds] = useState<Set<number>>(new Set());
 
   const isAdmin = user?.role === "admin";
   const trpcUtils = trpc.useUtils();
@@ -194,6 +196,23 @@ export default function AdminPage() {
     onError: (err) => toast.error("Failed to remove: " + err.message),
   });
 
+  const generateSummaryMutation = trpc.admin.generateSummary.useMutation({
+    onSuccess: (data, variables) => {
+      toast.success("AI summary generated");
+      setSummarizingIds((prev) => { const next = new Set(prev); next.delete(variables.useCaseId); return next; });
+      submissionsQuery.refetch();
+    },
+    onError: (err, variables) => {
+      toast.error("Summary generation failed: " + err.message);
+      setSummarizingIds((prev) => { const next = new Set(prev); next.delete(variables.useCaseId); return next; });
+    },
+  });
+
+  const handleGenerateSummary = useCallback((useCaseId: number) => {
+    setSummarizingIds((prev) => new Set(prev).add(useCaseId));
+    generateSummaryMutation.mutate({ useCaseId });
+  }, [generateSummaryMutation]);
+
   const handleEditScore = useCallback((useCaseId: number, aiScore?: any) => {
     setScoreUseCaseId(useCaseId);
     if (aiScore) {
@@ -289,6 +308,7 @@ export default function AdminPage() {
     promote_admin: "Promoted to Admin",
     demote_admin: "Demoted to User",
     ai_scan: "AI Scanned",
+    ai_summary: "AI Summary Generated",
   };
 
   if (loading) {
@@ -543,6 +563,16 @@ export default function AdminPage() {
                                 )}
                               </div>
                             )}
+                            {/* AI Summary */}
+                            {uc.aiSummary && (
+                              <div className="mt-3 p-3 rounded-lg bg-accent/50 border border-accent">
+                                <div className="flex items-center gap-2 mb-1.5">
+                                  <Wand2 size={13} className="text-primary" />
+                                  <span className="text-xs font-semibold">AI Summary</span>
+                                </div>
+                                <p className="text-sm text-foreground/80 leading-relaxed">{uc.aiSummary}</p>
+                              </div>
+                            )}
                             {/* Rejection reason */}
                             {uc.status === "rejected" && uc.rejectionReason && (
                               <div className="mt-2 p-2 rounded-md bg-destructive/10 text-destructive text-xs">
@@ -567,6 +597,21 @@ export default function AdminPage() {
                                 <Brain size={13} />
                               )}
                               AI Scan
+                            </Button>
+                            {/* Generate Summary button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 text-xs"
+                              onClick={() => handleGenerateSummary(uc.id)}
+                              disabled={summarizingIds.has(uc.id)}
+                            >
+                              {summarizingIds.has(uc.id) ? (
+                                <Loader2 size={13} className="animate-spin" />
+                              ) : (
+                                <Wand2 size={13} />
+                              )}
+                              {uc.aiSummary ? "Re-generate" : "AI Summary"}
                             </Button>
                             {uc.status === "pending" && (
                               <>

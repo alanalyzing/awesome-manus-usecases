@@ -1443,3 +1443,11 @@ export async function getProfileStats(userId: number): Promise<{
 
   return { useCaseCount, upvotesReceived, followerCount, followingCount };
 }
+
+// ─── AI Summary Helpers ─────────────────────────────────────────────
+
+export async function saveAiSummary(useCaseId: number, summary: string): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(useCases).set({ aiSummary: summary }).where(eq(useCases.id, useCaseId));
+}

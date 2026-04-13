@@ -173,3 +173,6 @@
 - [x] Design: Move bio above company info on profile page
 - [x] Design: Remove radar chart, replace with clean average score display
 - [x] Design: Improve overall profile page design (layout, spacing, typography, visual hierarchy)
+- [x] Feature: Add AI-generated summary for admin submissions (backend tRPC procedure using LLM)
+- [x] Feature: Add "Generate Summary" button in admin panel submission review UI
+- [x] Feature: Store AI summary in database and display it on the admin submission card

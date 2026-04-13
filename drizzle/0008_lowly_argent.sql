@@ -1,0 +1,1 @@
+ALTER TABLE `use_cases` ADD `aiSummary` text;

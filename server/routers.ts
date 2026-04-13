@@ -54,6 +54,7 @@ import {
   getProfileStats,
   updateAiScore,
   getAverageScoresForUser,
+  saveAiSummary,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -895,6 +896,57 @@ Return your evaluation as JSON.`;
           });
         }
         return { success: true };
+      }),
+
+    // ─── AI Summary Generation ──────────────────────────────────
+    generateSummary: adminProcedure
+      .input(z.object({ useCaseId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("Database not available");
+
+        const ucRows = await db.select().from(useCases).where(eq(useCases.id, input.useCaseId)).limit(1);
+        if (ucRows.length === 0) throw new Error("Use case not found");
+        const uc = ucRows[0];
+
+        const prompt = `You are a professional editor for a curated use case library showcasing what people build with Manus (an AI agent platform).
+
+Given the following submission details, write a concise, engaging summary (2-4 sentences) that:
+- Clearly explains what the use case does and the problem it solves
+- Highlights the key Manus capabilities used (e.g., research, data analysis, coding, content creation)
+- Is written in third person, present tense, suitable for a public gallery listing
+- Avoids marketing fluff — be specific and factual
+
+Submission Title: ${uc.title}
+Submission Description: ${uc.description}
+Session Replay URL: ${uc.sessionReplayUrl || "Not provided"}
+Deliverable URL: ${uc.deliverableUrl || "Not provided"}
+
+Return ONLY the summary text, no quotes, no labels, no markdown.`;
+
+        const result = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are a concise, professional editor. Return only the summary text." },
+            { role: "user", content: prompt },
+          ],
+        });
+
+        const rawContent = result.choices[0]?.message?.content ?? "";
+        const summary = (typeof rawContent === "string" ? rawContent : "").trim();
+        if (!summary) throw new Error("AI returned empty summary");
+
+        // Save to database
+        await saveAiSummary(input.useCaseId, summary);
+
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "ai_summary",
+          targetType: "use_case",
+          targetId: input.useCaseId,
+          details: JSON.stringify({ summary: summary.substring(0, 200) }),
+        });
+
+        return { summary };
       }),
 
     // ─── CSV Export ──────────────────────────────────────────────
