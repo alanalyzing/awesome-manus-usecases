@@ -204,6 +204,30 @@ export default function AdminPage() {
     bulkSummaryMutation.mutate();
   }, [bulkSummaryMutation]);
 
+  const [bulkApproving, setBulkApproving] = useState(false);
+  const bulkApproveMutation = trpc.admin.bulkApprove.useMutation({
+    onSuccess: (data) => {
+      setBulkApproving(false);
+      if (data.approved === 0) {
+        toast.info("No pending submissions to approve");
+      } else {
+        toast.success(`Approved ${data.approved} pending submissions`);
+      }
+      submissionsQuery.refetch();
+      activityQuery.refetch();
+    },
+    onError: (err) => {
+      setBulkApproving(false);
+      toast.error("Bulk approve failed: " + err.message);
+    },
+  });
+
+  const handleBulkApprove = useCallback(() => {
+    if (!confirm(`Are you sure you want to approve ALL pending submissions? This cannot be undone.`)) return;
+    setBulkApproving(true);
+    bulkApproveMutation.mutate();
+  }, [bulkApproveMutation]);
+
   const updateScoreMutation = trpc.admin.updateScore.useMutation({
     onSuccess: () => {
       toast.success("Score updated successfully");
@@ -546,6 +570,20 @@ export default function AdminPage() {
                     <Wand2 size={13} />
                   )}
                   {bulkSummarizing ? "Generating..." : "Summarize All"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="gap-1.5 text-xs"
+                  onClick={handleBulkApprove}
+                  disabled={bulkApproving}
+                >
+                  {bulkApproving ? (
+                    <Loader2 size={13} className="animate-spin" />
+                  ) : (
+                    <CheckCircle2 size={13} />
+                  )}
+                  {bulkApproving ? "Approving..." : "Approve All"}
                 </Button>
               </div>
             </div>

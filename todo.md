@@ -195,3 +195,5 @@
 - [x] Feature: Related use cases on detail page (already existed, verified complete)
 - [x] Feature: RSS feed of newly approved use cases (GET /api/rss)
 - [x] Feature: Share buttons on detail page (Twitter/X, LinkedIn, copy link)
+- [x] Data: Reassign all use cases submitted by Manus Agent to Alan Chan (alan@manus.ai) — 233 use cases reassigned
+- [x] Feature: Add "Approve All" button in admin panel to bulk-approve all pending submissions

@@ -1524,3 +1524,26 @@ export async function getOrCreateApiSubmitter(data: { name: string; email?: stri
   if (created.length === 0) throw new Error("Failed to create API submitter user");
   return created[0];
 }
+
+// ─── Bulk Approve All Pending ──────────────────────────────────────
+export async function bulkApproveAllPending(): Promise<{ approved: number; ids: number[] }> {
+  const db = await getDb();
+  if (!db) return { approved: 0, ids: [] };
+
+  // Get all pending use case IDs
+  const pendingRows: any[] = await db.execute(sql`
+    SELECT id FROM use_cases WHERE status = 'pending' ORDER BY createdAt ASC
+  `);
+  const rows = (pendingRows as any)?.[0] ?? pendingRows;
+  const ids = (Array.isArray(rows) ? rows : []).map((r: any) => Number(r.id));
+
+  if (ids.length === 0) return { approved: 0, ids: [] };
+
+  // Bulk update all pending to approved
+  await db.update(useCases).set({
+    status: "approved",
+    approvedAt: new Date(),
+  }).where(eq(useCases.status, "pending"));
+
+  return { approved: ids.length, ids };
+}

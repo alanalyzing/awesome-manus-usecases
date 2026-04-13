@@ -57,6 +57,7 @@ import {
   saveAiSummary,
   getWithoutAiSummary,
   addScreenshotToUseCase,
+  bulkApproveAllPending,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -1037,6 +1038,38 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
       }
 
       return { generated, total: ids.length };
+    }),
+
+    // ─── Bulk Approve All Pending ────────────────────────────────
+    bulkApprove: adminProcedure.mutation(async ({ ctx }) => {
+      const result = await bulkApproveAllPending();
+      if (result.approved === 0) return { approved: 0 };
+
+      // Log admin action for each approved use case
+      for (const ucId of result.ids) {
+        await logAdminAction({
+          adminId: ctx.user.id,
+          action: "approve",
+          targetType: "use_case",
+          targetId: ucId,
+          details: JSON.stringify({ bulk: true }),
+        }).catch(() => {});
+      }
+
+      // Single Slack notification for bulk approve
+      notifySlackStatusChange({
+        title: `Bulk approved ${result.approved} use cases`,
+        status: "approved",
+        adminName: ctx.user.name || "Unknown",
+      }).catch(() => {});
+
+      // Owner notification
+      await notifyOwner({
+        title: `Bulk Approved: ${result.approved} Use Cases`,
+        content: `Admin ${ctx.user.name || "Unknown"} bulk-approved ${result.approved} pending use cases.`,
+      }).catch(() => {});
+
+      return { approved: result.approved };
     }),
 
     // ─── CSV Export ──────────────────────────────────────────────
