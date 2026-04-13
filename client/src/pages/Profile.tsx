@@ -6,7 +6,6 @@ import { useRoute, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { ManusLogo } from "@/components/ManusLogo";
 import { getLoginUrl } from "@/const";
 import {
@@ -27,25 +26,34 @@ import {
   UserPlus,
   UserCheck,
   FileText,
+  Star,
+  MapPin,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from "recharts";
 
 const PROFICIENCY_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  beginner: { label: "Beginner", color: "text-blue-700", bgColor: "bg-blue-50 border-blue-200" },
-  intermediate: { label: "Intermediate", color: "text-green-700", bgColor: "bg-green-50 border-green-200" },
-  advanced: { label: "Advanced", color: "text-purple-700", bgColor: "bg-purple-50 border-purple-200" },
-  expert: { label: "Expert", color: "text-amber-700", bgColor: "bg-amber-50 border-amber-200" },
+  beginner: { label: "Beginner", color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
+  intermediate: { label: "Intermediate", color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
+  advanced: { label: "Advanced", color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
+  expert: { label: "Expert", color: "text-foreground", bgColor: "bg-primary/10 border-primary/20" },
 };
 
 const PLATFORM_ICONS: Record<string, React.ReactNode> = {
-  x: <Twitter size={16} />,
-  instagram: <Instagram size={16} />,
-  linkedin: <Linkedin size={16} />,
-  other: <Globe size={16} />,
+  x: <Twitter size={15} />,
+  instagram: <Instagram size={15} />,
+  linkedin: <Linkedin size={15} />,
+  other: <Globe size={15} />,
 };
 
-function ProfileRadarChart({ userId }: { userId: number }) {
+const PLATFORM_URLS: Record<string, (handle: string) => string> = {
+  x: (h) => h.startsWith("http") ? h : `https://x.com/${h.replace(/^@/, "")}`,
+  instagram: (h) => h.startsWith("http") ? h : `https://instagram.com/${h.replace(/^@/, "")}`,
+  linkedin: (h) => h.startsWith("http") ? h : `https://linkedin.com/in/${h.replace(/^@/, "")}`,
+  other: (h) => h.startsWith("http") ? h : `https://${h}`,
+};
+
+/** Compact average score display replacing the radar chart */
+function AverageScoreBadge({ userId }: { userId: number }) {
   const avgQuery = trpc.profile.averageScores.useQuery(
     { userId },
     { enabled: !!userId }
@@ -54,59 +62,49 @@ function ProfileRadarChart({ userId }: { userId: number }) {
   const avg = avgQuery.data;
   if (!avg || avg.count === 0) return null;
 
-  // SQL AVG may return strings via Superjson — coerce to numbers
   const overall = Number(avg.overall) || 0;
-  const data = [
-    { dimension: "Completeness", score: Number(avg.completeness) || 0, fullMark: 5 },
-    { dimension: "Innovation", score: Number(avg.innovativeness) || 0, fullMark: 5 },
-    { dimension: "Impact", score: Number(avg.impact) || 0, fullMark: 5 },
-    { dimension: "Complexity", score: Number(avg.complexity) || 0, fullMark: 5 },
-    { dimension: "Presentation", score: Number(avg.presentation) || 0, fullMark: 5 },
+  const dimensions = [
+    { label: "Completeness", value: Number(avg.completeness) || 0 },
+    { label: "Innovation", value: Number(avg.innovativeness) || 0 },
+    { label: "Impact", value: Number(avg.impact) || 0 },
+    { label: "Complexity", value: Number(avg.complexity) || 0 },
+    { label: "Presentation", value: Number(avg.presentation) || 0 },
   ];
 
   return (
-    <Card className="mb-4">
-      <CardContent className="pt-4 pb-3 px-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Average Score</h3>
-          <span className="text-lg font-bold text-primary">{overall.toFixed(1)}<span className="text-xs text-muted-foreground font-normal">/5</span></span>
+    <div className="rounded-xl border bg-card p-5">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-primary/10">
+          <Star size={20} className="text-primary" />
         </div>
-        <div className="w-full" style={{ height: 220 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
-              <PolarGrid stroke="hsl(var(--border))" />
-              <PolarAngleAxis
-                dataKey="dimension"
-                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-              />
-              <PolarRadiusAxis
-                angle={90}
-                domain={[0, 5]}
-                tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
-                tickCount={6}
-              />
-              <Radar
-                name="Score"
-                dataKey="score"
-                stroke="hsl(var(--primary))"
-                fill="hsl(var(--primary) / 0.15)"
-                strokeWidth={2}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+        <div>
+          <div className="text-2xl font-bold text-foreground tracking-tight">
+            {overall.toFixed(1)}<span className="text-sm font-normal text-muted-foreground ml-0.5">/5</span>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Avg. across {avg.count} use case{avg.count !== 1 ? "s" : ""}
+          </div>
         </div>
-        <p className="text-[10px] text-muted-foreground text-center">Based on {avg.count} scored use case{avg.count !== 1 ? "s" : ""}</p>
-      </CardContent>
-    </Card>
+      </div>
+      <div className="space-y-2.5">
+        {dimensions.map((d) => (
+          <div key={d.label} className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground w-24 shrink-0">{d.label}</span>
+            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+              <motion.div
+                className="h-full rounded-full bg-primary/70"
+                initial={{ width: 0 }}
+                animate={{ width: `${(d.value / 5) * 100}%` }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              />
+            </div>
+            <span className="text-xs font-medium text-foreground w-7 text-right">{d.value.toFixed(1)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
-
-const PLATFORM_URLS: Record<string, (handle: string) => string> = {
-  x: (h) => h.startsWith("http") ? h : `https://x.com/${h.replace(/^@/, "")}`,
-  instagram: (h) => h.startsWith("http") ? h : `https://instagram.com/${h.replace(/^@/, "")}`,
-  linkedin: (h) => h.startsWith("http") ? h : `https://linkedin.com/in/${h.replace(/^@/, "")}`,
-  other: (h) => h.startsWith("http") ? h : `https://${h}`,
-};
 
 type Tab = "use-cases" | "liked" | "followers" | "following";
 
@@ -125,13 +123,11 @@ export default function ProfilePage() {
   const profile = profileQuery.data;
   const isOwnProfile = user && profile && user.id === profile.userId;
 
-  // Stats query
   const statsQuery = trpc.profile.stats.useQuery(
     { userId: profile?.userId ?? 0 },
     { enabled: !!profile }
   );
 
-  // Follow state
   const isFollowingQuery = trpc.profile.isFollowing.useQuery(
     { targetUserId: profile?.userId ?? 0 },
     { enabled: !!user && !!profile && !isOwnProfile }
@@ -146,7 +142,6 @@ export default function ProfilePage() {
     },
   });
 
-  // Tab data queries
   const likedQuery = trpc.profile.likedUseCases.useQuery(
     { userId: profile?.userId ?? 0 },
     { enabled: !!profile && activeTab === "liked" }
@@ -202,7 +197,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur">
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="container flex h-14 items-center gap-4">
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2 text-xs">
@@ -216,185 +211,160 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <div className="container max-w-4xl py-8 px-4">
+      <div className="container max-w-3xl py-10 px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: 0.35 }}
         >
-          {/* Profile Card */}
-          <div className="flex flex-col md:flex-row gap-6 mb-8">
-            {/* Avatar / Identity */}
-            <div className="flex flex-col items-center md:items-start gap-4 md:w-64 shrink-0">
-              <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-3xl font-serif font-bold text-primary overflow-hidden">
-                {profile.avatarUrl ? (
-                  <img src={profile.avatarUrl} alt={profile.username} className="h-full w-full object-cover" />
-                ) : (
-                  (profile.user.name || username).charAt(0).toUpperCase()
-                )}
-              </div>
-              <div className="text-center md:text-left">
-                <h1 className="text-2xl font-serif font-bold text-foreground">
-                  {profile.user.name || username}
-                </h1>
-                <p className="text-sm text-muted-foreground">@{profile.username}</p>
-              </div>
+          {/* ─── Profile Hero ─────────────────────────────────── */}
+          <div className="flex flex-col items-center text-center mb-10">
+            {/* Avatar */}
+            <div className="h-28 w-28 rounded-full bg-primary/10 flex items-center justify-center text-4xl font-serif font-bold text-primary overflow-hidden ring-4 ring-background shadow-lg mb-5">
+              {profile.avatarUrl ? (
+                <img src={profile.avatarUrl} alt={profile.username} className="h-full w-full object-cover" />
+              ) : (
+                (profile.user.name || username).charAt(0).toUpperCase()
+              )}
+            </div>
 
-              {/* Follow Button */}
+            {/* Name & handle */}
+            <h1 className="text-2xl font-serif font-bold text-foreground mb-0.5">
+              {profile.user.name || username}
+            </h1>
+            <p className="text-sm text-muted-foreground mb-3">@{profile.username}</p>
+
+            {/* Bio — prominently placed right under the name */}
+            {profile.bio && (
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mb-4">
+                {profile.bio}
+              </p>
+            )}
+
+            {/* Meta line: job title, company, member since */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground mb-4">
+              {(profile.jobTitle || profile.company) && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Briefcase size={12} />
+                  {[profile.jobTitle, profile.company].filter(Boolean).join(" at ")}
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar size={12} />
+                Joined {memberSince}
+              </span>
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-medium ${proficiency.bgColor} ${proficiency.color}`}>
+                <Award size={11} />
+                {proficiency.label}
+              </span>
+            </div>
+
+            {/* Social handles */}
+            {profile.socialHandles.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
+                {profile.socialHandles.map((sh) => (
+                  <a
+                    key={sh.id}
+                    href={PLATFORM_URLS[sh.platform]?.(sh.handle) ?? sh.handle}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card hover:bg-accent text-xs transition-colors"
+                  >
+                    {PLATFORM_ICONS[sh.platform]}
+                    <span className="text-foreground">{sh.handle}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="flex items-center gap-2">
               {!isOwnProfile && (
-                <div>
+                <>
                   {user ? (
                     <Button
                       variant={isFollowingQuery.data ? "outline" : "default"}
                       size="sm"
-                      className="gap-1.5"
+                      className="gap-1.5 rounded-full px-5"
                       onClick={() => toggleFollowMutation.mutate({ targetUserId: profile.userId })}
                       disabled={toggleFollowMutation.isPending}
                     >
                       {isFollowingQuery.data ? (
-                        <>
-                          <UserCheck size={14} /> Following
-                        </>
+                        <><UserCheck size={14} /> Following</>
                       ) : (
-                        <>
-                          <UserPlus size={14} /> Follow
-                        </>
+                        <><UserPlus size={14} /> Follow</>
                       )}
                     </Button>
                   ) : (
                     <a href={getLoginUrl()}>
-                      <Button variant="default" size="sm" className="gap-1.5">
+                      <Button variant="default" size="sm" className="gap-1.5 rounded-full px-5">
                         <UserPlus size={14} /> Follow
                       </Button>
                     </a>
                   )}
-                </div>
+                </>
               )}
-
-              {/* Proficiency Badge */}
-              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ${proficiency.bgColor} ${proficiency.color}`}>
-                <Award size={12} />
-                {proficiency.label}
-              </div>
-
-              {/* Job Title & Company */}
-              {(profile.jobTitle || profile.company) && (
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Briefcase size={14} />
-                  {[profile.jobTitle, profile.company].filter(Boolean).join(" at ")}
-                </div>
-              )}
-
-              {/* Member since */}
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Calendar size={12} />
-                Member since {memberSince}
-              </div>
-
-              {/* Social Handles */}
-              {profile.socialHandles.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {profile.socialHandles.map((sh) => (
-                    <a
-                      key={sh.id}
-                      href={PLATFORM_URLS[sh.platform]?.(sh.handle) ?? sh.handle}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border bg-card hover:bg-accent text-xs transition-colors"
-                    >
-                      {PLATFORM_ICONS[sh.platform]}
-                      <span className="text-foreground">{sh.handle}</span>
-                    </a>
-                  ))}
-                </div>
-              )}
-
-              {/* Edit Profile */}
               {isOwnProfile && (
                 <Link href="/profile/setup?edit=1">
-                  <Button variant="outline" size="sm" className="gap-1.5 mt-2">
+                  <Button variant="outline" size="sm" className="gap-1.5 rounded-full px-5">
                     <Edit size={12} /> Edit Profile
                   </Button>
                 </Link>
               )}
             </div>
-
-            {/* Stats + Bio */}
-            <div className="flex-1 space-y-6">
-              {/* Bio */}
-              {profile.bio && (
-                <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
-              )}
-
-              {/* Radar Chart - Average Scores */}
-              <ProfileRadarChart userId={profile.userId} />
-
-              {/* Stats Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Card>
-                  <CardContent className="pt-4 pb-3 px-4 text-center">
-                    <div className="text-2xl font-bold text-foreground">{stats?.useCaseCount ?? 0}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">Use Cases</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-3 px-4 text-center">
-                    <div className="text-2xl font-bold text-foreground">{stats?.upvotesReceived ?? 0}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">Upvotes</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-3 px-4 text-center">
-                    <button
-                      onClick={() => setActiveTab("followers")}
-                      className="w-full hover:opacity-80 transition-opacity"
-                    >
-                      <div className="text-2xl font-bold text-foreground">{stats?.followerCount ?? 0}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">Followers</div>
-                    </button>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-4 pb-3 px-4 text-center">
-                    <button
-                      onClick={() => setActiveTab("following")}
-                      className="w-full hover:opacity-80 transition-opacity"
-                    >
-                      <div className="text-2xl font-bold text-foreground">{stats?.followingCount ?? 0}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">Following</div>
-                    </button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
           </div>
 
-          <Separator className="my-6" />
-
-          {/* Tabs */}
-          <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
-            {tabs.map((tab) => (
+          {/* ─── Stats Row ────────────────────────────────────── */}
+          <div className="grid grid-cols-4 gap-3 mb-8">
+            {[
+              { label: "Use Cases", value: stats?.useCaseCount ?? 0 },
+              { label: "Upvotes", value: stats?.upvotesReceived ?? 0 },
+              { label: "Followers", value: stats?.followerCount ?? 0, action: () => setActiveTab("followers") },
+              { label: "Following", value: stats?.followingCount ?? 0, action: () => setActiveTab("following") },
+            ].map((stat) => (
               <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                  activeTab === tab.key
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                }`}
+                key={stat.label}
+                onClick={stat.action}
+                className={`rounded-xl border bg-card p-4 text-center transition-colors ${stat.action ? "hover:bg-accent cursor-pointer" : "cursor-default"}`}
+                disabled={!stat.action}
               >
-                {tab.icon}
-                {tab.label}
-                {tab.count !== undefined && (
-                  <span className={`ml-1 text-xs ${activeTab === tab.key ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
-                    {tab.count}
-                  </span>
-                )}
+                <div className="text-xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</div>
               </button>
             ))}
           </div>
 
-          {/* Tab Content */}
+          {/* ─── Average Score ────────────────────────────────── */}
+          <div className="mb-8">
+            <AverageScoreBadge userId={profile.userId} />
+          </div>
+
+          {/* ─── Tabs ─────────────────────────────────────────── */}
+          <div className="border-b mb-6">
+            <div className="flex gap-0 overflow-x-auto">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`inline-flex items-center gap-1.5 px-5 py-3 text-sm font-medium transition-colors whitespace-nowrap border-b-2 -mb-px ${
+                    activeTab === tab.key
+                      ? "border-primary text-foreground"
+                      : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                  }`}
+                >
+                  {tab.icon}
+                  {tab.label}
+                  {tab.count !== undefined && (
+                    <span className={`ml-1 text-xs ${activeTab === tab.key ? "text-foreground/60" : "text-muted-foreground/50"}`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ─── Tab Content ──────────────────────────────────── */}
           {activeTab === "use-cases" && (
             <UseCasesTab useCases={profile.useCases} isOwnProfile={!!isOwnProfile} />
           )}
@@ -418,11 +388,12 @@ export default function ProfilePage() {
 function UseCasesTab({ useCases, isOwnProfile }: { useCases: any[]; isOwnProfile: boolean }) {
   if (useCases.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p>No published use cases yet.</p>
+      <div className="text-center py-16 text-muted-foreground">
+        <FileText className="h-10 w-10 mx-auto mb-3 opacity-20" />
+        <p className="text-sm">No published use cases yet.</p>
         {isOwnProfile && (
           <Link href="/submit">
-            <Button variant="outline" size="sm" className="mt-4">Submit your first use case</Button>
+            <Button variant="outline" size="sm" className="mt-4 rounded-full">Submit your first use case</Button>
           </Link>
         )}
       </div>
@@ -439,13 +410,13 @@ function UseCasesTab({ useCases, isOwnProfile }: { useCases: any[]; isOwnProfile
           transition={{ delay: i * 0.05 }}
         >
           <Link href={`/use-case/${uc.slug}`}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-md transition-all cursor-pointer h-full group">
               {uc.screenshots.length > 0 && (
                 <div className="aspect-video overflow-hidden rounded-t-lg">
                   <img
                     src={uc.screenshots[0].url}
                     alt={uc.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
@@ -484,7 +455,7 @@ function UseCasesTab({ useCases, isOwnProfile }: { useCases: any[]; isOwnProfile
 function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
+      <div className="flex justify-center py-16">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -492,9 +463,9 @@ function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <Heart className="h-8 w-8 mx-auto mb-2 opacity-30" />
-        <p>No liked use cases yet.</p>
+      <div className="text-center py-16 text-muted-foreground">
+        <Heart className="h-10 w-10 mx-auto mb-3 opacity-20" />
+        <p className="text-sm">No liked use cases yet.</p>
       </div>
     );
   }
@@ -509,13 +480,13 @@ function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
           transition={{ delay: i * 0.05 }}
         >
           <Link href={`/use-case/${uc.slug}`}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-md transition-all cursor-pointer h-full group">
               {uc.screenshots?.length > 0 && (
                 <div className="aspect-video overflow-hidden rounded-t-lg">
                   <img
                     src={uc.screenshots[0].url}
                     alt={uc.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
@@ -558,7 +529,7 @@ function UserListTab({
 }) {
   if (isLoading) {
     return (
-      <div className="flex justify-center py-12">
+      <div className="flex justify-center py-16">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -566,9 +537,9 @@ function UserListTab({
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
-        <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
-        <p>{emptyMessage}</p>
+      <div className="text-center py-16 text-muted-foreground">
+        <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
+        <p className="text-sm">{emptyMessage}</p>
       </div>
     );
   }
@@ -584,7 +555,7 @@ function UserListTab({
         >
           {person.username ? (
             <Link href={`/profile/${person.username}`}>
-              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <Card className="hover:shadow-md transition-all cursor-pointer group">
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-serif font-bold text-primary shrink-0 overflow-hidden">
                     {person.avatarUrl ? (
@@ -594,7 +565,7 @@ function UserListTab({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <div className="font-medium text-sm text-foreground truncate">
+                    <div className="font-medium text-sm text-foreground truncate group-hover:text-primary transition-colors">
                       {person.name || person.username}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">

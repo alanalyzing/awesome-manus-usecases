@@ -170,3 +170,6 @@
 - [x] Bug: Fix all hardcoded links — Submit Yours now uses relative /submit URL
 - [x] Bug: Profile radar chart fixed — avg.overall.toFixed error resolved by coercing SQL AVG strings to numbers
 - [x] Bug: Fix duplicate Star import in Admin.tsx — stale Vite cache; verified clean build passes (3071 modules, 0 errors)
+- [x] Design: Move bio above company info on profile page
+- [x] Design: Remove radar chart, replace with clean average score display
+- [x] Design: Improve overall profile page design (layout, spacing, typography, visual hierarchy)
