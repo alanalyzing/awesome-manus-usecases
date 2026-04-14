@@ -91,6 +91,22 @@ export async function getAllCategories(): Promise<Category[]> {
   return db.select().from(categories).orderBy(asc(categories.sortOrder));
 }
 
+export async function getCategoriesWithCounts(): Promise<(Category & { count: number })[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const allCats = await db.select().from(categories).orderBy(asc(categories.type), asc(categories.sortOrder));
+  const countRows = await db
+    .select({
+      categoryId: useCaseCategories.categoryId,
+      count: sql<number>`count(DISTINCT ${useCaseCategories.useCaseId})`,
+    })
+    .from(useCaseCategories)
+    .innerJoin(useCases, and(eq(useCaseCategories.useCaseId, useCases.id), eq(useCases.status, "approved")))
+    .groupBy(useCaseCategories.categoryId);
+  const countMap = new Map(countRows.map(r => [r.categoryId, Number(r.count)]));
+  return allCats.map(cat => ({ ...cat, count: countMap.get(cat.id) ?? 0 }));
+}
+
 export async function getCategoriesByType(type: "job_function" | "feature"): Promise<Category[]> {
   const db = await getDb();
   if (!db) return [];

@@ -43,6 +43,7 @@ import {
   Clipboard,
   ImagePlus,
   BookOpen,
+  Tag,
 } from "lucide-react";
 import { useState, useCallback, useMemo, useRef } from "react";
 import { Link } from "wouter";
@@ -59,13 +60,14 @@ import {
   Bar,
 } from "recharts";
 import { AdminCollections } from "@/components/AdminCollections";
+import { AdminCategories } from "@/components/AdminCategories";
 import { AdminEditDialog } from "@/components/AdminEditDialog";
 
 export default function AdminPage() {
   const { user, isAuthenticated, loading } = useAuth();
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState("pending");
-  const [adminTab, setAdminTab] = useState<"moderation" | "analytics" | "users" | "activity" | "collections">("moderation");
+  const [adminTab, setAdminTab] = useState<"moderation" | "analytics" | "users" | "activity" | "collections" | "categories">("moderation");
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -487,7 +489,7 @@ export default function AdminPage() {
           <div className="flex-1" />
           {/* Admin section tabs */}
           <div className="flex gap-1">
-            {(["moderation", "analytics", "users", "activity", "collections"] as const).map((tab) => (
+            {(["moderation", "analytics", "users", "activity", "collections", "categories"] as const).map((tab) => (
               <Button
                 key={tab}
                 variant={adminTab === tab ? "default" : "ghost"}
@@ -500,6 +502,7 @@ export default function AdminPage() {
                 {tab === "users" && <Users size={13} />}
                 {tab === "activity" && <Activity size={13} />}
                 {tab === "collections" && <BookOpen size={13} />}
+                {tab === "categories" && <Tag size={13} />}
                 <span className="hidden sm:inline capitalize">{tab}</span>
               </Button>
             ))}
@@ -1266,6 +1269,10 @@ export default function AdminPage() {
             ═══════════════════════════════════════════════════════════════ */}
         {adminTab === "collections" && (
           <AdminCollections />
+        )}
+
+        {adminTab === "categories" && (
+          <AdminCategories />
         )}
 
         {adminTab === "activity" && (

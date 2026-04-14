@@ -190,13 +190,16 @@ export function MobileSidebar({
                   <button
                     key={cat.id}
                     onClick={() => { onCategoryToggle(cat.id); onClose(); }}
-                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors ${
                       selectedCategories.includes(cat.id)
                         ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                         : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"
                     }`}
                   >
-                    {t(`cat.${cat.slug}` as any) || cat.name}
+                    <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
+                    {(cat as any).count > 0 && (
+                      <span className="text-xs text-muted-foreground/60 tabular-nums">{(cat as any).count}</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -214,13 +217,16 @@ export function MobileSidebar({
                   <button
                     key={cat.id}
                     onClick={() => { onCategoryToggle(cat.id); onClose(); }}
-                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors ${
                       selectedCategories.includes(cat.id)
                         ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                         : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"
                     }`}
                   >
-                    {t(`cat.${cat.slug}` as any) || cat.name}
+                    <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
+                    {(cat as any).count > 0 && (
+                      <span className="text-xs text-muted-foreground/60 tabular-nums">{(cat as any).count}</span>
+                    )}
                   </button>
                 ))}
               </div>

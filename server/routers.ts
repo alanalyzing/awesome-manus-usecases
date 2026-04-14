@@ -11,6 +11,7 @@ import { createHash } from "crypto";
 import {
   getAllCategories,
   getCategoriesByType,
+  getCategoriesWithCounts,
   getApprovedUseCases,
   getUseCaseBySlug,
   getRelatedUseCases,
@@ -99,7 +100,7 @@ export const appRouter = router({
   // ─── Categories ──────────────────────────────────────────────────
   categories: router({
     list: publicProcedure.query(async () => {
-      return getAllCategories();
+      return getCategoriesWithCounts();
     }),
     byType: publicProcedure
       .input(z.object({ type: z.enum(["job_function", "feature"]) }))
@@ -1403,6 +1404,81 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
     getFeatured: adminProcedure.query(async () => {
       return getActiveFeaturedUseCase();
     }),
+
+    // ─── Category Management (Admin) ─────────────────────────
+    listCategories: adminProcedure.query(async () => {
+      return getCategoriesWithCounts();
+    }),
+
+    createCategory: adminProcedure
+      .input(z.object({
+        name: z.string().min(1).max(128),
+        slug: z.string().min(1).max(128),
+        type: z.enum(["job_function", "feature"]),
+        sortOrder: z.number().int().min(0).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const [existing] = await db.select().from(categories).where(eq(categories.slug, input.slug));
+        if (existing) throw new Error("Category with this slug already exists");
+        const [result] = await db.insert(categories).values({
+          name: input.name,
+          slug: input.slug,
+          type: input.type,
+          sortOrder: input.sortOrder ?? 0,
+        });
+        await logAdminAction({ adminId: ctx.user.id, action: "create_category", targetType: "category", targetId: result.insertId, details: JSON.stringify(input) });
+        return { id: result.insertId, success: true };
+      }),
+
+    updateCategory: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().min(1).max(128).optional(),
+        slug: z.string().min(1).max(128).optional(),
+        type: z.enum(["job_function", "feature"]).optional(),
+        sortOrder: z.number().int().min(0).optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        const updates: Record<string, any> = {};
+        if (input.name !== undefined) updates.name = input.name;
+        if (input.slug !== undefined) updates.slug = input.slug;
+        if (input.type !== undefined) updates.type = input.type;
+        if (input.sortOrder !== undefined) updates.sortOrder = input.sortOrder;
+        if (Object.keys(updates).length === 0) return { success: true };
+        await db.update(categories).set(updates).where(eq(categories.id, input.id));
+        await logAdminAction({ adminId: ctx.user.id, action: "update_category", targetType: "category", targetId: input.id, details: JSON.stringify(input) });
+        return { success: true };
+      }),
+
+    deleteCategory: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        // Remove all use_case_categories associations first
+        await db.delete(useCaseCategories).where(eq(useCaseCategories.categoryId, input.id));
+        await db.delete(categories).where(eq(categories.id, input.id));
+        await logAdminAction({ adminId: ctx.user.id, action: "delete_category", targetType: "category", targetId: input.id });
+        return { success: true };
+      }),
+
+    reorderCategories: adminProcedure
+      .input(z.object({
+        items: z.array(z.object({ id: z.number(), sortOrder: z.number() })),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const db = await getDb();
+        if (!db) throw new Error("DB unavailable");
+        for (const item of input.items) {
+          await db.update(categories).set({ sortOrder: item.sortOrder }).where(eq(categories.id, item.id));
+        }
+        await logAdminAction({ adminId: ctx.user.id, action: "reorder_categories", targetType: "category", targetId: 0, details: JSON.stringify(input.items) });
+        return { success: true };
+      }),
 
     // ─── Delete Use Case (Admin) ──────────────────────────────
     deleteUseCase: adminProcedure

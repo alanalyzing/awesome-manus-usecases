@@ -265,3 +265,6 @@
 - [x] Add "Others" category under job function type
 - [x] Add "Others" category under feature type
 - [x] Update i18n translations for "Others" category in all locales
+- [x] Data: Reassign 133 orphaned use cases (formerly SMBs) to "Others" job function category
+- [x] Feature: Add category counts next to each sidebar category name
+- [x] Feature: Admin category management UI (add, rename, reorder, delete categories)
