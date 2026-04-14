@@ -255,6 +255,40 @@ export const appRouter = router({
         const { url } = await storagePut(fileKey, buffer, input.contentType);
         return { url, fileKey };
       }),
+
+    // ─── AI Summarize (for submission form) ────────────────────────
+    aiSummarize: protectedProcedure
+      .input(z.object({
+        sessionReplayUrl: z.string().url(),
+        deliverableUrl: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const systemPrompt = "Review this use case replay session and write a short title and 2-sentence description for it. The title should follow the format \"Category: What it does\" and be concise. The description should be industry and brand agnostic, describing what the use case does at a high level without referencing specific companies, products, or sectors. Structure the description by answering: what problem did it solve, how did Manus help, and what was the outcome. Do not use em dashes.";
+
+        const userMessage = `Here are the links for a Manus use case submission:
+
+Session Replay URL: ${input.sessionReplayUrl}
+Deliverable URL: ${input.deliverableUrl || "Not provided"}
+
+Based on these URLs, generate a title and description for this use case. Return the title on the first line, then a blank line, then the 2-sentence description. No quotes, no labels, no markdown.`;
+
+        const result = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+          ],
+        });
+
+        const rawContent = result.choices[0]?.message?.content ?? "";
+        const content = (typeof rawContent === "string" ? rawContent : "").trim();
+        if (!content) throw new Error("AI returned empty response");
+
+        const lines = content.split("\n");
+        const title = lines[0]?.trim() || "";
+        const description = lines.slice(1).join("\n").trim() || "";
+
+        return { title, description };
+      }),
   }),
 
   // ─── User Notifications & Submissions ─────────────────────────────

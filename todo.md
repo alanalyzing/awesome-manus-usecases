@@ -244,3 +244,6 @@
 - [x] UI: Update screenshot upload input in submission form to use text input with '+ Add' button design
 - [x] UI: Replace Admin Dashboard edit/approve dialogs with AdminEditDialog component (same features as use case card edit)
 - [x] UI: Admin Dashboard approve dialog should show split categories (Features/Job Functions), editable title/description/URLs, scores, screenshots
+- [x] UI: Move Session Replay URL and Deliverable URL inputs above title/description in submission form
+- [x] Feature: Add AI Summarize button that auto-generates title and description from session replay URL
+- [x] UI: Update submission guidelines to reflect new workflow (enter URLs first, then AI summarize)

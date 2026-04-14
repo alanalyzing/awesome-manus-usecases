@@ -30,6 +30,7 @@ import {
   BookOpen,
   ImageIcon,
   LinkIcon,
+  Sparkles,
 } from "lucide-react";
 import { useState, useCallback, useRef } from "react";
 import { Link, useLocation } from "wouter";
@@ -47,15 +48,15 @@ type UploadedFile = {
   preview: string;
 };
 
-const GUIDE_ICONS = [PenLine, BookOpen, ImageIcon, LinkIcon];
+const GUIDE_ICONS = [LinkIcon, Sparkles, ImageIcon, PenLine];
 
 function SubmissionGuidelines() {
   const { t } = useI18n();
   const steps = [
-    { title: t("submit.guideStep1Title"), desc: t("submit.guideStep1Desc") },
-    { title: t("submit.guideStep2Title"), desc: t("submit.guideStep2Desc") },
-    { title: t("submit.guideStep3Title"), desc: t("submit.guideStep3Desc") },
-    { title: t("submit.guideStep4Title"), desc: t("submit.guideStep4Desc") },
+    { title: "Paste your session replay link", desc: "Start by pasting your Manus session replay URL. This is the most important field and helps reviewers verify your work." },
+    { title: "Let AI write your title & description", desc: "Click the AI Summarize button to automatically generate a title and description from your session replay. You can edit the result afterwards." },
+    { title: "Add compelling screenshots", desc: t("submit.guideStep3Desc") },
+    { title: "Review and refine", desc: "Double-check the AI-generated content, select relevant categories, and add any additional details before submitting." },
   ];
 
   return (
@@ -109,12 +110,14 @@ export default function SubmitPage() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [aiSummarizing, setAiSummarizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [screenshotUrl, setScreenshotUrl] = useState("");
 
   const categoriesQuery = trpc.categories.list.useQuery();
   const uploadMutation = trpc.useCases.uploadScreenshot.useMutation();
   const submitMutation = trpc.useCases.submit.useMutation();
+  const aiSummarizeMutation = trpc.useCases.aiSummarize.useMutation();
 
   const jobFunctionCats = (categoriesQuery.data ?? []).filter((c) => c.type === "job_function");
   const featureCats = (categoriesQuery.data ?? []).filter((c) => c.type === "feature");
@@ -319,6 +322,83 @@ export default function SubmitPage() {
         <SubmissionGuidelines />
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Session Replay URL - FIRST */}
+          <div className="space-y-2">
+            <Label htmlFor="sessionReplay">
+              {t("submit.sessionReplayUrl")}
+              <span className="ml-1 text-destructive">*</span>
+            </Label>
+            <Input
+              id="sessionReplay"
+              type="url"
+              value={sessionReplayUrl}
+              onChange={(e) => setSessionReplayUrl(e.target.value)}
+              placeholder="https://manus.im/share/..."
+              className={`bg-card ${sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? "border-destructive focus-visible:ring-destructive" : ""}`}
+            />
+            {sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? (
+              <p className="text-xs text-destructive">URL must start with https://manus.im/share/. Open your Manus task, click Share (top-right), and copy the link.</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
+            )}
+          </div>
+
+          {/* Deliverable URL - SECOND */}
+          <div className="space-y-2">
+            <Label htmlFor="deliverable">{t("submit.deliverableUrl")}</Label>
+            <Input
+              id="deliverable"
+              type="url"
+              value={deliverableUrl}
+              onChange={(e) => setDeliverableUrl(e.target.value)}
+              placeholder="https://..."
+              className="bg-card"
+            />
+            <p className="text-xs text-muted-foreground">{t("submit.deliverableHint")}</p>
+          </div>
+
+          {/* AI Summarize Button */}
+          {sessionReplayUrl.trim().startsWith("https://manus.im/share/") && (
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles size={16} className="text-amber-500" />
+                  <span className="text-sm font-medium">AI can write your title and description</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    setAiSummarizing(true);
+                    try {
+                      const result = await aiSummarizeMutation.mutateAsync({
+                        sessionReplayUrl: sessionReplayUrl.trim(),
+                        deliverableUrl: deliverableUrl.trim() || undefined,
+                      });
+                      if (result.title) setTitle(result.title);
+                      if (result.description) setDescription(result.description);
+                      toast.success("AI generated title and description. Feel free to edit!");
+                    } catch (err: any) {
+                      toast.error(err.message || "AI summarize failed");
+                    } finally {
+                      setAiSummarizing(false);
+                    }
+                  }}
+                  disabled={aiSummarizing}
+                  className="gap-1.5"
+                >
+                  {aiSummarizing ? (
+                    <><Loader2 size={14} className="animate-spin" /> Generating...</>
+                  ) : (
+                    <><Sparkles size={14} /> AI Summarize</>
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Generates a title and description based on your session replay. You can edit the result.</p>
+            </div>
+          )}
+
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title">{t("submit.useCaseTitle")} *</Label>
@@ -479,41 +559,6 @@ export default function SubmitPage() {
               onChange={handleFileSelect}
               className="hidden"
             />
-          </div>
-
-          {/* Session Replay URL */}
-          <div className="space-y-2">
-            <Label htmlFor="sessionReplay">
-              {t("submit.sessionReplayUrl")}
-              <span className="ml-1 text-destructive">*</span>
-            </Label>
-            <Input
-              id="sessionReplay"
-              type="url"
-              value={sessionReplayUrl}
-              onChange={(e) => setSessionReplayUrl(e.target.value)}
-              placeholder="https://manus.im/share/..."
-              className={`bg-card ${sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? "border-destructive focus-visible:ring-destructive" : ""}`}
-            />
-            {sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? (
-              <p className="text-xs text-destructive">URL must start with https://manus.im/share/. Open your Manus task → click Share (top-right) → copy the link.</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
-            )}
-          </div>
-
-          {/* Deliverable URL */}
-          <div className="space-y-2">
-            <Label htmlFor="deliverable">{t("submit.deliverableUrl")}</Label>
-            <Input
-              id="deliverable"
-              type="url"
-              value={deliverableUrl}
-              onChange={(e) => setDeliverableUrl(e.target.value)}
-              placeholder="https://..."
-              className="bg-card"
-            />
-            <p className="text-xs text-muted-foreground">{t("submit.deliverableHint")}</p>
           </div>
 
           {/* Language */}
