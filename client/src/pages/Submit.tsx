@@ -110,6 +110,7 @@ export default function SubmitPage() {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [screenshotUrl, setScreenshotUrl] = useState("");
 
   const categoriesQuery = trpc.categories.list.useQuery();
   const uploadMutation = trpc.useCases.uploadScreenshot.useMutation();
@@ -117,6 +118,63 @@ export default function SubmitPage() {
 
   const jobFunctionCats = (categoriesQuery.data ?? []).filter((c) => c.type === "job_function");
   const featureCats = (categoriesQuery.data ?? []).filter((c) => c.type === "feature");
+
+  const handleAddScreenshotUrl = useCallback(() => {
+    const url = screenshotUrl.trim();
+    if (!url) return;
+    if (uploadedFiles.length >= MAX_FILES) {
+      toast.error(`Maximum ${MAX_FILES} screenshots allowed`);
+      return;
+    }
+    try { new URL(url); } catch { toast.error("Please enter a valid URL"); return; }
+    setUploadedFiles((prev) => [
+      ...prev,
+      { url, fileKey: "", name: url.split("/").pop() || "screenshot", preview: url },
+    ]);
+    setScreenshotUrl("");
+  }, [screenshotUrl, uploadedFiles]);
+
+  const handlePasteImage = useCallback(
+    async (e: React.ClipboardEvent) => {
+      const items = Array.from(e.clipboardData.items);
+      const imageItem = items.find((item) => item.type.startsWith("image/"));
+      if (!imageItem) return;
+      e.preventDefault();
+      const file = imageItem.getAsFile();
+      if (!file) return;
+      if (uploadedFiles.length >= MAX_FILES) {
+        toast.error(`Maximum ${MAX_FILES} screenshots allowed`);
+        return;
+      }
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`);
+        return;
+      }
+      setUploading(true);
+      try {
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        let binary = "";
+        for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+        const base64 = btoa(binary);
+        const result = await uploadMutation.mutateAsync({
+          fileName: `pasted-${Date.now()}.png`,
+          fileBase64: base64,
+          contentType: file.type,
+        });
+        setUploadedFiles((prev) => [
+          ...prev,
+          { url: result.url, fileKey: result.fileKey, name: `pasted-image`, preview: result.url },
+        ]);
+        toast.success("Image pasted successfully");
+      } catch (err: any) {
+        toast.error("Failed to upload pasted image");
+      } finally {
+        setUploading(false);
+      }
+    },
+    [uploadedFiles, uploadMutation]
+  );
 
   const handleFileSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -355,42 +413,64 @@ export default function SubmitPage() {
           <div className="space-y-2">
             <Label>{t("submit.screenshots")} *</Label>
             <p className="text-xs text-muted-foreground">{t("submit.screenshotHelp")}</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {uploadedFiles.map((file, i) => (
-                <div key={i} className="relative group rounded-lg overflow-hidden border bg-muted aspect-[16/10]">
-                  <img src={file.preview} alt={file.name} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeFile(i)}
-                    className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X size={12} />
-                  </button>
-                  {i === 0 && (
-                    <Badge className="absolute bottom-1 left-1 text-[10px] bg-primary/90 text-primary-foreground border-0">
-                      Cover
-                    </Badge>
-                  )}
-                </div>
-              ))}
-              {uploadedFiles.length < MAX_FILES && (
-                <button
+            {uploadedFiles.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {uploadedFiles.map((file, i) => (
+                  <div key={i} className="relative group rounded-lg overflow-hidden border bg-muted aspect-[16/10]">
+                    <img src={file.preview} alt={file.name} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className="absolute top-1 right-1 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={12} />
+                    </button>
+                    {i === 0 && (
+                      <Badge className="absolute bottom-1 left-1 text-[10px] bg-primary/90 text-primary-foreground border-0">
+                        Cover
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {uploadedFiles.length < MAX_FILES && (
+              <div className="flex items-center gap-2" onPaste={handlePasteImage}>
+                <Input
+                  value={screenshotUrl}
+                  onChange={(e) => setScreenshotUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddScreenshotUrl(); } }}
+                  placeholder="Paste screenshot URL or paste image (Ctrl+V)"
+                  className="flex-1"
+                />
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddScreenshotUrl}
+                  disabled={!screenshotUrl.trim()}
+                  className="gap-1 shrink-0"
+                >
+                  + Add
+                </Button>
+              </div>
+            )}
+            {uploadedFiles.length < MAX_FILES && (
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="aspect-[16/10] rounded-lg border-2 border-dashed flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all bg-muted/30"
+                  className="gap-1.5"
                 >
-                  {uploading ? (
-                    <Loader2 size={20} className="animate-spin" />
-                  ) : (
-                    <>
-                      <Upload size={20} />
-                      <span className="text-xs">Upload</span>
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+                  {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+                  Upload File
+                </Button>
+                <span className="text-xs text-muted-foreground">You can also paste images directly into this form (Ctrl/Cmd+V)</span>
+              </div>
+            )}
             <input
               ref={fileInputRef}
               type="file"
