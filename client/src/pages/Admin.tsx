@@ -59,6 +59,7 @@ import {
   Bar,
 } from "recharts";
 import { AdminCollections } from "@/components/AdminCollections";
+import { AdminEditDialog } from "@/components/AdminEditDialog";
 
 export default function AdminPage() {
   const { user, isAuthenticated, loading } = useAuth();
@@ -84,6 +85,7 @@ export default function AdminPage() {
   const [editingSummaryId, setEditingSummaryId] = useState<number | null>(null);
   const [editingSummaryText, setEditingSummaryText] = useState("");
   const [savingSummary, setSavingSummary] = useState(false);
+  const [editingSlug, setEditingSlug] = useState<string | null>(null);
 
   const isAdmin = user?.role === "admin";
   const trpcUtils = trpc.useUtils();
@@ -837,10 +839,10 @@ export default function AdminPage() {
                                   size="sm"
                                   variant="outline"
                                   className="gap-1.5 text-xs"
-                                  onClick={() => handleEditScore(uc.id, uc.aiScore)}
+                                  onClick={() => setEditingSlug(uc.slug)}
                                 >
-                                  <Star size={13} />
-                                  Edit Score
+                                  <Pencil size={13} />
+                                  Edit
                                 </Button>
                                 <Button
                                   size="sm"
@@ -869,20 +871,10 @@ export default function AdminPage() {
                                   size="sm"
                                   variant="outline"
                                   className="gap-1.5 text-xs"
-                                  onClick={() =>
-                                    handleApproveClick(uc.id, uc.categories.map((c) => c.id), uc.isHighlight)
-                                  }
+                                  onClick={() => setEditingSlug(uc.slug)}
                                 >
+                                  <Pencil size={13} />
                                   Edit
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="gap-1.5 text-xs"
-                                  onClick={() => handleEditScore(uc.id, uc.aiScore)}
-                                >
-                                  <Star size={13} />
-                                  Edit Score
                                 </Button>
                                 <Button
                                   size="sm"
@@ -1360,115 +1352,17 @@ export default function AdminPage() {
         )}
       </div>
 
-      {/* Approve Dialog */}
-      <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{t("admin.approve")} / Edit Use Case</DialogTitle>
-            <DialogDescription>Edit categories and highlight status before approving.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="highlight"
-                checked={highlightToggle}
-                onCheckedChange={(checked) => setHighlightToggle(checked === true)}
-              />
-              <Label htmlFor="highlight" className="flex items-center gap-1.5 text-sm">
-                <Sparkles size={14} className="text-primary" />
-                {t("admin.highlight")}
-              </Label>
-            </div>
-            <Separator />
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider">{t("admin.categories")}</Label>
-              <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto">
-                {(categoriesQuery.data ?? []).map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() =>
-                      setEditCategoryIds((prev) =>
-                        prev.includes(cat.id) ? prev.filter((id) => id !== cat.id) : [...prev, cat.id]
-                      )
-                    }
-                    className={`px-2.5 py-1 rounded-full text-xs border transition-all ${
-                      editCategoryIds.includes(cat.id)
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card hover:bg-accent border-border"
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={confirmApprove}
-              disabled={approveMutation.isPending}
-              className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {approveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
-              {t("admin.approve")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Score Edit Dialog */}
-      <Dialog open={scoreDialogOpen} onOpenChange={setScoreDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Star size={16} className="text-primary" /> Edit Scores</DialogTitle>
-            <DialogDescription>Manually adjust the scores for each dimension (0–5). The overall score is calculated automatically.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            {(["completeness", "innovativeness", "impact", "complexity", "presentation"] as const).map((dim) => (
-              <div key={dim} className="flex items-center justify-between gap-4">
-                <Label className="text-sm capitalize w-28">{dim}</Label>
-                <div className="flex items-center gap-2 flex-1">
-                  <input
-                    type="range"
-                    min="0"
-                    max="5"
-                    step="0.1"
-                    value={editScores[dim]}
-                    onChange={(e) => setEditScores(prev => ({ ...prev, [dim]: parseFloat(e.target.value) }))}
-                    className="flex-1 accent-primary"
-                  />
-                  <span className="text-sm font-mono w-8 text-right">{editScores[dim].toFixed(1)}</span>
-                </div>
-              </div>
-            ))}
-            <Separator />
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold">Overall Score</span>
-              <span className="text-lg font-bold text-primary">
-                {(editScores.completeness * 0.20 + editScores.innovativeness * 0.25 + editScores.impact * 0.25 + editScores.complexity * 0.15 + editScores.presentation * 0.15).toFixed(1)}
-              </span>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setScoreDialogOpen(false)}>Cancel</Button>
-            <Button
-              onClick={() => {
-                if (scoreUseCaseId === null) return;
-                updateScoreMutation.mutate({ useCaseId: scoreUseCaseId, ...editScores });
-              }}
-              disabled={updateScoreMutation.isPending}
-              className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {updateScoreMutation.isPending && <Loader2 size={14} className="animate-spin" />}
-              Save Scores
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Admin Edit Dialog (reused from use case card edit) */}
+      <AdminEditDialog
+        slug={editingSlug}
+        onClose={() => setEditingSlug(null)}
+        onSaved={() => {
+          setEditingSlug(null);
+          submissionsQuery.refetch();
+          statsQuery.refetch();
+          activityQuery.refetch();
+        }}
+      />
 
       {/* Remove Approved Dialog */}
       <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>

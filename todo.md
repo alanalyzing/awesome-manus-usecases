@@ -241,3 +241,6 @@
 - [x] Feature: Add Previous/Next navigation buttons to use case modal for admins to quickly browse use cases
 - [x] Bug: Score not updating on card/modal after saving in admin edit dialog (cache invalidation issue)
 - [x] Bug: Score still not updating visibly after saving in admin edit dialog and closing (fixed accumulatedItems merge logic)
+- [ ] UI: Update screenshot upload input in submission form to use text input with '+ Add' button design
+- [x] UI: Replace Admin Dashboard edit/approve dialogs with AdminEditDialog component (same features as use case card edit)
+- [x] UI: Admin Dashboard approve dialog should show split categories (Features/Job Functions), editable title/description/URLs, scores, screenshots
