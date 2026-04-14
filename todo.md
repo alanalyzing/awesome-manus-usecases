@@ -261,3 +261,7 @@
 - [x] Bug: Use case edit page saves not reflected after saving - fix save logic
 - [x] Bug: Badges not updating after score changes on use case edit page
 - [x] UI: Remove "Modified" badge indicator from score section in admin edit dialog — just keep scores and badges in sync
+- [x] Remove "SMBs" job function category from database
+- [x] Add "Others" category under job function type
+- [x] Add "Others" category under feature type
+- [x] Update i18n translations for "Others" category in all locales

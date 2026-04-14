@@ -34,7 +34,8 @@ type TranslationKeys = {
   "cat.commercial-real-estate": string;
   "cat.public-services": string;
   "cat.startups": string;
-  "cat.smbs": string;
+  "cat.others-job": string;
+  "cat.others-feature": string;
   // Categories - Features
   "cat.web-development": string;
   "cat.slides": string;
@@ -163,7 +164,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.commercial-real-estate": "Commercial Real Estate",
     "cat.public-services": "Public Services",
     "cat.startups": "Startups",
-    "cat.smbs": "SMBs",
+    "cat.others-job": "Others",
+    "cat.others-feature": "Others",
     "cat.web-development": "Web Development",
     "cat.slides": "Slides",
     "cat.research": "Research",
@@ -281,7 +283,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.commercial-real-estate": "商业地产",
     "cat.public-services": "公共服务",
     "cat.startups": "创业公司",
-    "cat.smbs": "中小企业",
+    "cat.others-job": "其他",
+    "cat.others-feature": "其他",
     "cat.web-development": "网站开发",
     "cat.slides": "演示文稿",
     "cat.research": "研究",
@@ -399,7 +402,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.commercial-real-estate": "商業不動産",
     "cat.public-services": "公共サービス",
     "cat.startups": "スタートアップ",
-    "cat.smbs": "中小企業",
+    "cat.others-job": "その他",
+    "cat.others-feature": "その他",
     "cat.web-development": "Web開発",
     "cat.slides": "スライド",
     "cat.research": "リサーチ",
@@ -517,7 +521,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.commercial-real-estate": "상업용 부동산",
     "cat.public-services": "공공 서비스",
     "cat.startups": "스타트업",
-    "cat.smbs": "중소기업",
+    "cat.others-job": "기타",
+    "cat.others-feature": "기타",
     "cat.web-development": "웹 개발",
     "cat.slides": "슬라이드",
     "cat.research": "리서치",
@@ -635,7 +640,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.commercial-real-estate": "Imóveis Comerciais",
     "cat.public-services": "Serviços Públicos",
     "cat.startups": "Startups",
-    "cat.smbs": "PMEs",
+    "cat.others-job": "Outros",
+    "cat.others-feature": "Outros",
     "cat.web-development": "Desenvolvimento Web",
     "cat.slides": "Slides",
     "cat.research": "Pesquisa",
