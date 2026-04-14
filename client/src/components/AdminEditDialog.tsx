@@ -30,7 +30,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Plus, Save, Loader2, ImagePlus, X, Sparkles, RotateCcw } from "lucide-react";
+import { Trash2, Plus, Save, Loader2, ImagePlus, X, Sparkles, RotateCcw, Star } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
 
@@ -63,6 +64,16 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
   const [uploadingScreenshot, setUploadingScreenshot] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Score editing state
+  const [scores, setScores] = useState({
+    completeness: 3.0,
+    innovativeness: 3.0,
+    impact: 3.0,
+    complexity: 3.0,
+    presentation: 3.0,
+  });
+  const [scoresModified, setScoresModified] = useState(false);
+
   // AI rewrite state - store previous values for undo
   const [prevTitle, setPrevTitle] = useState<string | null>(null);
   const [prevDescription, setPrevDescription] = useState<string | null>(null);
@@ -80,6 +91,17 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
       setDeliverableUrl(uc.deliverableUrl ?? "");
       setSelectedCategoryIds(uc.categories.map((c: any) => c.id));
       setIsHighlight(uc.isHighlight ?? false);
+      // Populate scores
+      if (uc.aiScore) {
+        setScores({
+          completeness: parseFloat(uc.aiScore.completeness) || 3.0,
+          innovativeness: parseFloat(uc.aiScore.innovativeness) || 3.0,
+          impact: parseFloat(uc.aiScore.impact) || 3.0,
+          complexity: parseFloat(uc.aiScore.complexity) || 3.0,
+          presentation: parseFloat(uc.aiScore.presentation) || 3.0,
+        });
+      }
+      setScoresModified(false);
       // Reset undo state when loading new use case
       setPrevTitle(null);
       setPrevDescription(null);
@@ -251,6 +273,38 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     );
   }, []);
 
+  const updateScoreMutation = trpc.admin.updateScore.useMutation({
+    onSuccess: () => {
+      toast.success("Score updated");
+      useCaseQuery.refetch();
+      utils.useCases.list.invalidate();
+      utils.useCases.trending.invalidate();
+      setScoresModified(false);
+    },
+    onError: (err: any) => toast.error(`Score update failed: ${err.message}`),
+  });
+
+  const handleScoreChange = useCallback((key: keyof typeof scores, value: number[]) => {
+    setScores(prev => ({ ...prev, [key]: value[0] }));
+    setScoresModified(true);
+  }, []);
+
+  const computedOverall = (
+    scores.completeness * 0.20 +
+    scores.innovativeness * 0.25 +
+    scores.impact * 0.25 +
+    scores.complexity * 0.15 +
+    scores.presentation * 0.15
+  );
+
+  const handleSaveScores = useCallback(() => {
+    if (!uc?.id) return;
+    updateScoreMutation.mutate({
+      useCaseId: uc.id,
+      ...scores,
+    });
+  }, [uc?.id, scores, updateScoreMutation]);
+
   const deleteMutation = trpc.admin.deleteUseCase.useMutation({
     onSuccess: () => {
       toast.success("Use case deleted permanently");
@@ -271,6 +325,7 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
   const isSaving = updateMutation.isPending;
   const isRewriting = aiRewriteMutation.isPending;
   const isDeleting = deleteMutation.isPending;
+  const isSavingScores = updateScoreMutation.isPending;
 
   return (
     <Dialog open={!!slug} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -471,6 +526,57 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
                       >
                         {cat.name}
                       </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Score Editing */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium flex items-center gap-1.5">
+                      <Star size={14} className="text-amber-500" />
+                      Scores
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-amber-600">
+                        Overall: {computedOverall.toFixed(1)}
+                      </span>
+                      {scoresModified && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSaveScores}
+                          disabled={isSavingScores}
+                          className="h-7 gap-1 text-xs"
+                        >
+                          {isSavingScores ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+                          Save Scores
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid gap-3 rounded-lg border p-3 bg-muted/30">
+                    {([
+                      { key: "completeness" as const, label: "Completeness", weight: "20%" },
+                      { key: "innovativeness" as const, label: "Innovativeness", weight: "25%" },
+                      { key: "impact" as const, label: "Impact", weight: "25%" },
+                      { key: "complexity" as const, label: "Complexity", weight: "15%" },
+                      { key: "presentation" as const, label: "Presentation", weight: "15%" },
+                    ]).map(({ key, label, weight }) => (
+                      <div key={key} className="grid grid-cols-[120px_1fr_40px] items-center gap-3">
+                        <span className="text-xs text-muted-foreground">
+                          {label} <span className="opacity-60">({weight})</span>
+                        </span>
+                        <Slider
+                          value={[scores[key]]}
+                          onValueChange={(v) => handleScoreChange(key, v)}
+                          min={0}
+                          max={5}
+                          step={0.1}
+                          className="flex-1"
+                        />
+                        <span className="text-xs font-mono text-right">{scores[key].toFixed(1)}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
