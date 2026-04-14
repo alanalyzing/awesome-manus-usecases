@@ -238,3 +238,5 @@
 - [x] Bug: Add i18n translation for 'cat.scheduled-tasks' in all locales (currently shows raw key instead of 'Scheduled Tasks')
 - [x] Feature: Add score editing field to admin edit dialog so admins can change use case scores
 - [x] Feature: Update related use cases to dynamically show top-rated use cases by AI score
+- [x] Feature: Add Previous/Next navigation buttons to use case modal for admins to quickly browse use cases
+- [x] Bug: Score not updating on card/modal after saving in admin edit dialog (cache invalidation issue)

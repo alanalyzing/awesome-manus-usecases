@@ -1334,7 +1334,12 @@ export default function Home() {
       </div>
 
       {/* Use Case Detail Modal */}
-      <UseCaseModal slug={modalSlug} onClose={() => setModalSlug(null)} />
+      <UseCaseModal
+        slug={modalSlug}
+        onClose={() => setModalSlug(null)}
+        slugList={items.map((i: any) => i.slug)}
+        onNavigate={setModalSlug}
+      />
 
       {/* Admin Edit Dialog */}
       {user?.role === "admin" && (

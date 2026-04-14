@@ -34,9 +34,11 @@ import { toast } from "sonner";
 interface UseCaseModalProps {
   slug: string | null;
   onClose: () => void;
+  slugList?: string[];
+  onNavigate?: (slug: string) => void;
 }
 
-export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
+export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseModalProps) {
   const { user, isAuthenticated } = useAuth();
   const { t } = useI18n();
   const [, navigate] = useLocation();
@@ -119,6 +121,40 @@ export function UseCaseModal({ slug, onClose }: UseCaseModalProps) {
     <Dialog open={!!slug} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] p-0 gap-0 overflow-hidden">
         <DialogTitle className="sr-only">{uc?.title || "Use Case Details"}</DialogTitle>
+
+        {/* Admin prev/next navigation */}
+        {user?.role === "admin" && slugList && slugList.length > 1 && onNavigate && (() => {
+          const currentIndex = slug ? slugList.indexOf(slug) : -1;
+          const hasPrev = currentIndex > 0;
+          const hasNext = currentIndex >= 0 && currentIndex < slugList.length - 1;
+          return (
+            <div className="flex items-center justify-between px-5 py-2 border-b bg-muted/40 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs"
+                disabled={!hasPrev}
+                onClick={() => hasPrev && onNavigate(slugList[currentIndex - 1])}
+              >
+                <ChevronLeft size={14} />
+                Previous
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {currentIndex + 1} / {slugList.length}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 text-xs"
+                disabled={!hasNext}
+                onClick={() => hasNext && onNavigate(slugList[currentIndex + 1])}
+              >
+                Next
+                <ChevronRight size={14} />
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Header bar */}
         <div className="flex items-center justify-between px-5 py-3 border-b bg-card shrink-0">

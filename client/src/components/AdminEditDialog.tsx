@@ -277,9 +277,11 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     onSuccess: () => {
       toast.success("Score updated");
       useCaseQuery.refetch();
+      utils.useCases.getBySlug.invalidate();
       utils.useCases.list.invalidate();
       utils.useCases.trending.invalidate();
       setScoresModified(false);
+      onSaved?.();
     },
     onError: (err: any) => toast.error(`Score update failed: ${err.message}`),
   });
