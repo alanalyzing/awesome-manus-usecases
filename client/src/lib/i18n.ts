@@ -53,6 +53,7 @@ type TranslationKeys = {
   "gallery.sortPopular": string;
   "gallery.sortNewest": string;
   "gallery.sortViews": string;
+  "gallery.sortScore": string;
   "gallery.noResults": string;
   "gallery.noResultsDesc": string;
   "gallery.beFirst": string;
@@ -182,6 +183,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.sortPopular": "Most Popular",
     "gallery.sortNewest": "Newest",
     "gallery.sortViews": "Most Viewed",
+    "gallery.sortScore": "Top Rated",
     "gallery.noResults": "No use cases found",
     "gallery.noResultsDesc": "There are no use cases in this category yet.",
     "gallery.beFirst": "Be the first to submit one!",
@@ -302,6 +304,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.sortPopular": "最受欢迎",
     "gallery.sortNewest": "最新",
     "gallery.sortViews": "最多浏览",
+    "gallery.sortScore": "最高评分",
     "gallery.noResults": "暂无用例",
     "gallery.noResultsDesc": "该分类下暂无用例。",
     "gallery.beFirst": "成为第一个提交者！",
@@ -422,6 +425,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.sortPopular": "人気順",
     "gallery.sortNewest": "新着順",
     "gallery.sortViews": "閲覧数順",
+    "gallery.sortScore": "高評価順",
     "gallery.noResults": "ユースケースが見つかりません",
     "gallery.noResultsDesc": "このカテゴリにはまだユースケースがありません。",
     "gallery.beFirst": "最初の投稿者になりましょう！",
@@ -542,6 +546,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.sortPopular": "인기순",
     "gallery.sortNewest": "최신순",
     "gallery.sortViews": "조회순",
+    "gallery.sortScore": "최고 평점",
     "gallery.noResults": "유스케이스가 없습니다",
     "gallery.noResultsDesc": "이 카테고리에는 아직 유스케이스가 없습니다.",
     "gallery.beFirst": "첫 번째 제출자가 되어보세요!",
@@ -662,6 +667,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.sortPopular": "Mais Popular",
     "gallery.sortNewest": "Mais Recente",
     "gallery.sortViews": "Mais Visualizado",
+    "gallery.sortScore": "Melhor Avaliado",
     "gallery.noResults": "Nenhum caso de uso encontrado",
     "gallery.noResultsDesc": "Ainda não há casos de uso nesta categoria.",
     "gallery.beFirst": "Seja o primeiro a enviar!",

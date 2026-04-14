@@ -270,3 +270,4 @@
 - [x] Feature: Admin category management UI (add, rename, reorder, delete categories)
 - [x] UI: Hide category counts from public sidebar, keep only in admin category management
 - [x] Data: Add missing "Browser" feature category to database and i18n translations
+- [x] Feature: Change default sorting to "Top Rated" (highest score to lowest) across all views

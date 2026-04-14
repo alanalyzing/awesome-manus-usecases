@@ -472,7 +472,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [highlightOnly, setHighlightOnly] = useState(false);
-  const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">("newest");
+  const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">("score");
   const [minScore, setMinScore] = useState<number>(0);
   const [limit] = useState(40);
   const [offset, setOffset] = useState(0);
@@ -1081,11 +1081,11 @@ export default function Home() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="score">{t("gallery.sortScore")}</SelectItem>
                   <SelectItem value="popular">{t("gallery.sortPopular")}</SelectItem>
                   <SelectItem value="newest">{t("gallery.sortNewest")}</SelectItem>
                   <SelectItem value="views">{t("gallery.sortViews")}</SelectItem>
-                   <SelectItem value="score">Top Rated</SelectItem>
-                 </SelectContent>
+                </SelectContent>
               </Select>
               <Select value={String(minScore)} onValueChange={(v) => { setMinScore(Number(v)); setOffset(0); setAccumulatedItems([]); }}>
                 <SelectTrigger className="w-[160px] bg-card">
