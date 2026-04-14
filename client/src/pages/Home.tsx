@@ -147,6 +147,18 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
                     <Flame size={9} />
                     #{index + 1}
                   </div>
+                  {uc.aiScore && Number(uc.aiScore.overall) > 0 && (
+                    <div className="absolute bottom-2 right-2">
+                      <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-md backdrop-blur-sm ${
+                        Number(uc.aiScore.overall) >= 4 ? "bg-emerald-500/90 text-white" :
+                        Number(uc.aiScore.overall) >= 3 ? "bg-amber-500/90 text-white" :
+                        "bg-zinc-500/90 text-white"
+                      }`}>
+                        <Star size={10} className="fill-current" />
+                        {Number(uc.aiScore.overall).toFixed(1)}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="p-3">
                   <h3 className="font-serif font-bold text-xs leading-snug line-clamp-2 mb-1 group-hover:text-primary transition-colors">
@@ -291,11 +303,23 @@ function CollectionsSection({ onCardClick }: { onCardClick: (slug: string) => vo
                     className="group bg-card rounded-lg border hover:shadow-md hover:border-primary/20 transition-all duration-200 overflow-hidden cursor-pointer"
                     onClick={(e) => { e.stopPropagation(); onCardClick(uc.slug); }}
                   >
-                    <div className="aspect-[16/10] bg-muted overflow-hidden">
+                    <div className="aspect-[16/10] bg-muted overflow-hidden relative">
                       {uc.screenshots?.[0] ? (
                         <BlurhashImage src={uc.screenshots[0].url} blurhash={uc.screenshots[0].blurhash} alt={uc.title} className="w-full h-full group-hover:scale-105 transition-transform duration-300" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><ManusGlyph size={20} className="opacity-20" /></div>
+                      )}
+                      {uc.aiScore && Number(uc.aiScore?.overallScore ?? uc.aiScore?.overall ?? 0) > 0 && (
+                        <div className="absolute top-2 right-2">
+                          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold shadow-md backdrop-blur-sm ${
+                            Number(uc.aiScore?.overallScore ?? uc.aiScore?.overall ?? 0) >= 4 ? "bg-emerald-500/90 text-white" :
+                            Number(uc.aiScore?.overallScore ?? uc.aiScore?.overall ?? 0) >= 3 ? "bg-amber-500/90 text-white" :
+                            "bg-zinc-500/90 text-white"
+                          }`}>
+                            <Star size={10} className="fill-current" />
+                            {Number(uc.aiScore?.overallScore ?? uc.aiScore?.overall ?? 0).toFixed(1)}
+                          </div>
+                        </div>
                       )}
                     </div>
                     <div className="p-3">
