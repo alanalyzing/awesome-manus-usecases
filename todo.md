@@ -257,3 +257,6 @@
 - [x] UI: Chrome extension - sleek tech feel with rounded edges
 - [x] UI: Profile page - make top section more compact so use case cards are visible without scrolling
 - [x] UI: Chrome extension - convert from popup to right-hand side panel design
+- [x] Bug: Use case edit page has duplicated Save Scores / Save Changes buttons - consolidate into one
+- [x] Bug: Use case edit page saves not reflected after saving - fix save logic
+- [x] Bug: Badges not updating after score changes on use case edit page

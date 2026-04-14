@@ -115,6 +115,8 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
       utils.useCases.getBySlug.invalidate();
       utils.useCases.list.invalidate();
       utils.useCases.trending.invalidate();
+      utils.admin.stats.invalidate();
+      utils.admin.submissions.invalidate();
       onSaved?.();
     },
     onError: (err) => toast.error(err.message),
@@ -183,8 +185,24 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     }
   }, [prevDescription]);
 
-  const handleSave = useCallback(() => {
+  const updateScoreMutation = trpc.admin.updateScore.useMutation({
+    onSuccess: () => {
+      toast.success("Score updated");
+      useCaseQuery.refetch();
+      utils.useCases.getBySlug.invalidate();
+      utils.useCases.list.invalidate();
+      utils.useCases.trending.invalidate();
+      utils.admin.stats.invalidate();
+      utils.admin.submissions.invalidate();
+      setScoresModified(false);
+      onSaved?.();
+    },
+    onError: (err: any) => toast.error(`Score update failed: ${err.message}`),
+  });
+
+  const handleSave = useCallback(async () => {
     if (!uc?.id) return;
+    // Save use case fields
     updateMutation.mutate({
       id: uc.id,
       title,
@@ -194,7 +212,14 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
       categoryIds: selectedCategoryIds,
       isHighlight,
     });
-  }, [uc?.id, title, description, sessionReplayUrl, deliverableUrl, selectedCategoryIds, isHighlight, updateMutation]);
+    // Also save scores if they were modified
+    if (scoresModified) {
+      updateScoreMutation.mutate({
+        useCaseId: uc.id,
+        ...scores,
+      });
+    }
+  }, [uc?.id, title, description, sessionReplayUrl, deliverableUrl, selectedCategoryIds, isHighlight, updateMutation, scoresModified, scores, updateScoreMutation]);
 
   const handleAddScreenshotUrl = useCallback(async () => {
     if (!uc?.id || !screenshotUrl.trim()) return;
@@ -273,19 +298,6 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     );
   }, []);
 
-  const updateScoreMutation = trpc.admin.updateScore.useMutation({
-    onSuccess: () => {
-      toast.success("Score updated");
-      useCaseQuery.refetch();
-      utils.useCases.getBySlug.invalidate();
-      utils.useCases.list.invalidate();
-      utils.useCases.trending.invalidate();
-      setScoresModified(false);
-      onSaved?.();
-    },
-    onError: (err: any) => toast.error(`Score update failed: ${err.message}`),
-  });
-
   const handleScoreChange = useCallback((key: keyof typeof scores, value: number[]) => {
     setScores(prev => ({ ...prev, [key]: value[0] }));
     setScoresModified(true);
@@ -298,14 +310,6 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     scores.complexity * 0.15 +
     scores.presentation * 0.15
   );
-
-  const handleSaveScores = useCallback(() => {
-    if (!uc?.id) return;
-    updateScoreMutation.mutate({
-      useCaseId: uc.id,
-      ...scores,
-    });
-  }, [uc?.id, scores, updateScoreMutation]);
 
   const deleteMutation = trpc.admin.deleteUseCase.useMutation({
     onSuccess: () => {
@@ -544,16 +548,9 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
                         Overall: {computedOverall.toFixed(1)}
                       </span>
                       {scoresModified && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleSaveScores}
-                          disabled={isSavingScores}
-                          className="h-7 gap-1 text-xs"
-                        >
-                          {isSavingScores ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-                          Save Scores
-                        </Button>
+                        <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
+                          Modified
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -701,8 +698,8 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
           </AlertDialog>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSave} disabled={isSaving || !title.trim()} className="gap-1.5">
-              {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            <Button onClick={handleSave} disabled={isSaving || isSavingScores || !title.trim()} className="gap-1.5">
+              {(isSaving || isSavingScores) ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               Save Changes
             </Button>
           </div>
