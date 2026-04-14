@@ -248,3 +248,4 @@
 - [x] Feature: Add AI Summarize button that auto-generates title and description from session replay URL
 - [x] UI: Update submission guidelines to reflect new workflow (enter URLs first, then AI summarize)
 - [x] Feature: Improve AI summarize to fetch content from session replay/deliverable URLs, extract session title, and produce better structured output
+- [x] Feature: Enable searching use cases by session replay URL string (share ID) in existing search

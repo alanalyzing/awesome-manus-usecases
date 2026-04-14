@@ -127,7 +127,9 @@ export async function getApprovedUseCases(opts: {
     conditions.push(
       or(
         like(useCases.title, `%${opts.search}%`),
-        like(useCases.description, `%${opts.search}%`)
+        like(useCases.description, `%${opts.search}%`),
+        like(useCases.sessionReplayUrl, `%${opts.search}%`),
+        like(useCases.deliverableUrl, `%${opts.search}%`)
       )!
     );
   }
