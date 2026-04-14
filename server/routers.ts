@@ -70,6 +70,7 @@ import {
   setFeaturedUseCase,
   getActiveFeaturedUseCase,
   removeFeaturedUseCase,
+  deleteUseCase,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -1307,6 +1308,15 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
     getFeatured: adminProcedure.query(async () => {
       return getActiveFeaturedUseCase();
     }),
+
+    // ─── Delete Use Case (Admin) ──────────────────────────────
+    deleteUseCase: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        await deleteUseCase(input.id);
+        await logAdminAction({ adminId: ctx.user.id, action: "delete", targetType: "use_case", targetId: input.id, details: JSON.stringify({ deletedBy: ctx.user.name }) });
+        return { success: true };
+      }),
   }),
 
   // ── Blurhash ──────────────────────────────────────────────────

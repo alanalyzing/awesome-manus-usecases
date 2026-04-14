@@ -1826,3 +1826,21 @@ export async function removeFeaturedUseCase(): Promise<void> {
   if (!db) throw new Error("Database not available");
   await db.update(featuredUseCase).set({ isActive: false }).where(eq(featuredUseCase.isActive, true));
 }
+
+export async function deleteUseCase(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  // Delete all related records first (no FK constraints, manual cascade)
+  await db.delete(useCaseCategories).where(eq(useCaseCategories.useCaseId, id));
+  await db.delete(screenshots).where(eq(screenshots.useCaseId, id));
+  await db.delete(upvotes).where(eq(upvotes.useCaseId, id));
+  await db.delete(aiScores).where(eq(aiScores.useCaseId, id));
+  await db.delete(viewEvents).where(eq(viewEvents.useCaseId, id));
+  await db.delete(submitterNotifications).where(eq(submitterNotifications.useCaseId, id));
+  await db.delete(collectionUseCases).where(eq(collectionUseCases.useCaseId, id));
+  await db.delete(featuredUseCase).where(eq(featuredUseCase.useCaseId, id));
+
+  // Delete the use case itself
+  await db.delete(useCases).where(eq(useCases.id, id));
+}

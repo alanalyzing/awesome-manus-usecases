@@ -19,6 +19,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Trash2, Plus, Save, Loader2, ImagePlus, X, Sparkles, RotateCcw } from "lucide-react";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "sonner";
@@ -240,8 +251,26 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     );
   }, []);
 
+  const deleteMutation = trpc.admin.deleteUseCase.useMutation({
+    onSuccess: () => {
+      toast.success("Use case deleted permanently");
+      utils.useCases.list.invalidate();
+      utils.useCases.trending.invalidate();
+      utils.admin.stats.invalidate();
+      onSaved?.();
+      onClose();
+    },
+    onError: (err: any) => toast.error(`Delete failed: ${err.message}`),
+  });
+
+  const handleDelete = useCallback(() => {
+    if (!uc?.id) return;
+    deleteMutation.mutate({ id: uc.id });
+  }, [uc?.id, deleteMutation]);
+
   const isSaving = updateMutation.isPending;
   const isRewriting = aiRewriteMutation.isPending;
+  const isDeleting = deleteMutation.isPending;
 
   return (
     <Dialog open={!!slug} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -412,11 +441,28 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
                   />
                 </div>
 
-                {/* Categories */}
+                {/* Categories — Feature */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Categories</Label>
+                  <Label className="text-sm font-medium">Features</Label>
                   <div className="flex flex-wrap gap-2">
-                    {allCategories.map((cat: any) => (
+                    {allCategories.filter((c: any) => c.type === "feature").map((cat: any) => (
+                      <Badge
+                        key={cat.id}
+                        variant={selectedCategoryIds.includes(cat.id) ? "default" : "outline"}
+                        className="cursor-pointer transition-all hover:opacity-80"
+                        onClick={() => toggleCategory(cat.id)}
+                      >
+                        {cat.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Categories — Job Function */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Job Functions</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {allCategories.filter((c: any) => c.type === "job_function").map((cat: any) => (
                       <Badge
                         key={cat.id}
                         variant={selectedCategoryIds.includes(cat.id) ? "default" : "outline"}
@@ -518,12 +564,40 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
           </div>
         </ScrollArea>
 
-        <DialogFooter className="px-6 py-3 border-t shrink-0">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={isSaving || !title.trim()} className="gap-1.5">
-            {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            Save Changes
-          </Button>
+        <DialogFooter className="px-6 py-3 border-t shrink-0 flex !justify-between">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" className="gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10" disabled={isDeleting}>
+                {isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this use case?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete <strong className="text-foreground">{uc?.title}</strong> and all associated data (screenshots, scores, upvotes, collection memberships). This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {isDeleting ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Trash2 size={14} className="mr-1.5" />}
+                  Delete Permanently
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button onClick={handleSave} disabled={isSaving || !title.trim()} className="gap-1.5">
+              {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              Save Changes
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

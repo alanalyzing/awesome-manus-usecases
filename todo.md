@@ -230,3 +230,8 @@
 - [x] Fix: Chrome extension icon — transparent background, golden briefcase, more prominent Manus logo
 - [x] Feature: Add AI score badge on gallery card thumbnails (top-right corner, semi-transparent pill with star rating)
 - [x] Feature: Add minimum AI score filter to gallery (backend query parameter + UI filter control)
+- [x] Feature: Add delete use case button to admin edit dialog with confirmation step
+- [ ] Fix: Add 'Scheduled Tasks' to feature categories in the database
+- [x] Fix: Move deleteUseCase procedure inside the admin router (currently at top level, causing TypeScript error)
+- [x] UI: Separate feature and job function categories into two labeled sections in admin edit dialog
+- [x] Fix: Rename 'Apps' category to 'Desktop & Mobile Apps' in the database (slug already correct)
