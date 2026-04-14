@@ -115,6 +115,7 @@ export const appRouter = router({
         categoryIds: z.array(z.number()).optional(),
         highlightOnly: z.boolean().optional(),
         sort: z.enum(["popular", "newest", "views", "score"]).optional(),
+        minScore: z.number().min(0).max(5).optional(),
         limit: z.number().min(1).max(100).optional(),
         offset: z.number().min(0).optional(),
       }))

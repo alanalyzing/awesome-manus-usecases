@@ -117,6 +117,7 @@ export async function getApprovedUseCases(opts: {
   limit?: number;
   offset?: number;
   userId?: number;
+  minScore?: number;
 }): Promise<{ items: UseCaseWithDetails[]; total: number }> {
   const db = await getDb();
   if (!db) return { items: [], total: 0 };
@@ -132,6 +133,18 @@ export async function getApprovedUseCases(opts: {
   }
   if (opts.highlightOnly) {
     conditions.push(eq(useCases.isHighlight, true));
+  }
+
+  // Pre-filter by minScore if requested
+  let scoreFilteredIds: number[] | undefined;
+  if (opts.minScore && opts.minScore > 0) {
+    const scoredRows = await db
+      .select({ useCaseId: aiScores.useCaseId })
+      .from(aiScores)
+      .where(sql`CAST(${aiScores.overallScore} AS DECIMAL(3,1)) >= ${opts.minScore}`);
+    scoreFilteredIds = scoredRows.map(r => r.useCaseId);
+    if (scoreFilteredIds.length === 0) return { items: [], total: 0 };
+    conditions.push(inArray(useCases.id, scoreFilteredIds));
   }
 
   let filteredIds: number[] | undefined;

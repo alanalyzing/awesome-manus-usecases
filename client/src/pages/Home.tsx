@@ -473,6 +473,7 @@ export default function Home() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [highlightOnly, setHighlightOnly] = useState(false);
   const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">("newest");
+  const [minScore, setMinScore] = useState<number>(0);
   const [limit] = useState(40);
   const [offset, setOffset] = useState(0);
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
@@ -504,6 +505,7 @@ export default function Home() {
     categoryIds: stableCategoryIds,
     highlightOnly: highlightOnly || undefined,
     sort,
+    minScore: minScore > 0 ? minScore : undefined,
     limit,
     offset,
   }, {
@@ -1080,11 +1082,33 @@ export default function Home() {
                    <SelectItem value="score">Top Rated</SelectItem>
                  </SelectContent>
               </Select>
+              <Select value={String(minScore)} onValueChange={(v) => { setMinScore(Number(v)); setOffset(0); setAccumulatedItems([]); }}>
+                <SelectTrigger className="w-[160px] bg-card">
+                  <div className="flex items-center gap-1.5">
+                    <Star size={14} className="text-amber-500 fill-amber-500" />
+                    <span>{minScore > 0 ? `${minScore}+ Score` : "All Scores"}</span>
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">All Scores</SelectItem>
+                  <SelectItem value="3">3.0+ Score</SelectItem>
+                  <SelectItem value="3.5">3.5+ Score</SelectItem>
+                  <SelectItem value="4">4.0+ Score</SelectItem>
+                  <SelectItem value="4.5">4.5+ Score</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Active Filters */}
-            {(selectedCategories.length > 0 || highlightOnly) && (
+            {(selectedCategories.length > 0 || highlightOnly || minScore > 0) && (
               <div className="flex flex-wrap gap-2 mb-4">
+                {minScore > 0 && (
+                  <Badge variant="secondary" className="gap-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
+                    <Star size={12} className="fill-current" />
+                    {minScore}+ Score
+                    <button onClick={() => { setMinScore(0); setOffset(0); setAccumulatedItems([]); }} className="ml-1 hover:opacity-70">&times;</button>
+                  </Badge>
+                )}
                 {highlightOnly && (
                   <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
                     <Sparkles size={12} />

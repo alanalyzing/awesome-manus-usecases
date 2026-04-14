@@ -229,3 +229,4 @@
 - [x] Fix: Remove screenshot thumbnails from Chrome extension list items — too small and visually broken in popup
 - [x] Fix: Chrome extension icon — transparent background, golden briefcase, more prominent Manus logo
 - [x] Feature: Add AI score badge on gallery card thumbnails (top-right corner, semi-transparent pill with star rating)
+- [x] Feature: Add minimum AI score filter to gallery (backend query parameter + UI filter control)
