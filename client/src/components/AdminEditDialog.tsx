@@ -543,16 +543,9 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
                       <Star size={14} className="text-amber-500" />
                       Scores
                     </Label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-amber-600">
-                        Overall: {computedOverall.toFixed(1)}
-                      </span>
-                      {scoresModified && (
-                        <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">
-                          Modified
-                        </Badge>
-                      )}
-                    </div>
+                    <span className="text-sm font-semibold text-amber-600">
+                      Overall: {computedOverall.toFixed(1)}
+                    </span>
                   </div>
                   <div className="grid gap-3 rounded-lg border p-3 bg-muted/30">
                     {([

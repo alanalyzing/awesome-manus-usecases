@@ -260,3 +260,4 @@
 - [x] Bug: Use case edit page has duplicated Save Scores / Save Changes buttons - consolidate into one
 - [x] Bug: Use case edit page saves not reflected after saving - fix save logic
 - [x] Bug: Badges not updating after score changes on use case edit page
+- [x] UI: Remove "Modified" badge indicator from score section in admin edit dialog — just keep scores and badges in sync
