@@ -263,14 +263,75 @@ export const appRouter = router({
         deliverableUrl: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        const systemPrompt = "Review this use case replay session and write a short title and 2-sentence description for it. The title should follow the format \"Category: What it does\" and be concise. The description should be industry and brand agnostic, describing what the use case does at a high level without referencing specific companies, products, or sectors. Structure the description by answering: what problem did it solve, how did Manus help, and what was the outcome. Do not use em dashes.";
+        // Fetch content from the provided URLs
+        const fetchPageContent = async (url: string): Promise<{ title: string; text: string }> => {
+          try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 10000);
+            const res = await fetch(url, {
+              signal: controller.signal,
+              headers: { "User-Agent": "Mozilla/5.0 (compatible; ManusBot/1.0)" },
+            });
+            clearTimeout(timeout);
+            if (!res.ok) return { title: "", text: "" };
+            const html = await res.text();
+            // Extract <title>
+            const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+            const pageTitle = titleMatch ? titleMatch[1].trim() : "";
+            // Extract meaningful text: strip tags, collapse whitespace
+            const textContent = html
+              .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+              .replace(/<[^>]+>/g, " ")
+              .replace(/&nbsp;/g, " ")
+              .replace(/&amp;/g, "&")
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">")
+              .replace(/&quot;/g, '"')
+              .replace(/\s+/g, " ")
+              .trim()
+              .slice(0, 3000); // Limit to avoid token overflow
+            return { title: pageTitle, text: textContent };
+          } catch {
+            return { title: "", text: "" };
+          }
+        };
 
-        const userMessage = `Here are the links for a Manus use case submission:
+        const [sessionPage, deliverablePage] = await Promise.all([
+          fetchPageContent(input.sessionReplayUrl),
+          input.deliverableUrl ? fetchPageContent(input.deliverableUrl) : Promise.resolve({ title: "", text: "" }),
+        ]);
+
+        const systemPrompt = `You are an expert at writing concise use case titles and descriptions for a product called "Manus" (an AI agent platform).
+
+Rules for the title:
+- Follow the format "Category: What it does" (e.g., "Financial Analysis: Macroeconomic Signal Interpretation")
+- Be specific about the deliverable or outcome
+- Keep it under 80 characters
+
+Rules for the description:
+- Write exactly 2-3 sentences
+- Be industry and brand agnostic (do not reference specific companies, products, or sectors)
+- Structure: what problem did it solve, how did Manus help, and what was the outcome
+- Do not use em dashes
+- Do not use markdown formatting
+
+Return the title on the first line, then a blank line, then the description. No quotes, no labels.`;
+
+        let contextParts: string[] = [];
+        if (sessionPage.title) contextParts.push(`Session Title: ${sessionPage.title}`);
+        if (sessionPage.text) contextParts.push(`Session Page Content:\n${sessionPage.text}`);
+        if (deliverablePage.title) contextParts.push(`Deliverable Title: ${deliverablePage.title}`);
+        if (deliverablePage.text) contextParts.push(`Deliverable Page Content:\n${deliverablePage.text}`);
+
+        const userMessage = `Here is information about a Manus use case submission:
 
 Session Replay URL: ${input.sessionReplayUrl}
 Deliverable URL: ${input.deliverableUrl || "Not provided"}
 
-Based on these URLs, generate a title and description for this use case. Return the title on the first line, then a blank line, then the 2-sentence description. No quotes, no labels, no markdown.`;
+${contextParts.length > 0 ? "Extracted content from the links:\n\n" + contextParts.join("\n\n") : "(Could not fetch content from the URLs)"}
+
+Based on this information, generate a title and description for this use case.`;
 
         const result = await invokeLLM({
           messages: [
