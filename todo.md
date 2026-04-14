@@ -269,3 +269,4 @@
 - [x] Feature: Add category counts next to each sidebar category name
 - [x] Feature: Admin category management UI (add, rename, reorder, delete categories)
 - [x] UI: Hide category counts from public sidebar, keep only in admin category management
+- [x] Data: Add missing "Browser" feature category to database and i18n translations

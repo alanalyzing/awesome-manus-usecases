@@ -47,6 +47,7 @@ type TranslationKeys = {
   "cat.skills": string;
   "cat.apps": string;
   "cat.scheduled-tasks": string;
+  "cat.browser": string;
   // Gallery
   "gallery.search": string;
   "gallery.sortPopular": string;
@@ -176,6 +177,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.skills": "Skills",
     "cat.apps": "Desktop & Mobile Apps",
     "cat.scheduled-tasks": "Scheduled Tasks",
+    "cat.browser": "Browser",
     "gallery.search": "Search use cases...",
     "gallery.sortPopular": "Most Popular",
     "gallery.sortNewest": "Newest",
@@ -295,6 +297,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.skills": "技能",
     "cat.apps": "桌面和移动应用",
     "cat.scheduled-tasks": "定时任务",
+    "cat.browser": "浏览器",
     "gallery.search": "搜索用例...",
     "gallery.sortPopular": "最受欢迎",
     "gallery.sortNewest": "最新",
@@ -414,6 +417,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.skills": "スキル",
     "cat.apps": "デスクトップ＆モバイルアプリ",
     "cat.scheduled-tasks": "スケジュールタスク",
+    "cat.browser": "ブラウザ",
     "gallery.search": "ユースケースを検索...",
     "gallery.sortPopular": "人気順",
     "gallery.sortNewest": "新着順",
@@ -533,6 +537,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.skills": "스킬",
     "cat.apps": "데스크톱 및 모바일 앱",
     "cat.scheduled-tasks": "예약 작업",
+    "cat.browser": "브라우저",
     "gallery.search": "유스케이스 검색...",
     "gallery.sortPopular": "인기순",
     "gallery.sortNewest": "최신순",
@@ -652,6 +657,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.skills": "Skills",
     "cat.apps": "Apps Desktop e Mobile",
     "cat.scheduled-tasks": "Tarefas Agendadas",
+    "cat.browser": "Navegador",
     "gallery.search": "Pesquisar casos de uso...",
     "gallery.sortPopular": "Mais Popular",
     "gallery.sortNewest": "Mais Recente",
