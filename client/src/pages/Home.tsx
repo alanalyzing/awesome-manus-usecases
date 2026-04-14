@@ -833,9 +833,7 @@ export default function Home() {
                           }`}
                         >
                           <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-                          {(cat as any).count > 0 && (
-                            <span className="text-xs text-muted-foreground/60 tabular-nums">{(cat as any).count}</span>
-                          )}
+
                         </button>
                       ))}
                     </div>
@@ -860,9 +858,7 @@ export default function Home() {
                           }`}
                         >
                           <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-                          {(cat as any).count > 0 && (
-                            <span className="text-xs text-muted-foreground/60 tabular-nums">{(cat as any).count}</span>
-                          )}
+
                         </button>
                       ))}
                     </div>
