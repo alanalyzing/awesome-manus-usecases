@@ -237,3 +237,4 @@
 - [x] Fix: Rename 'Apps' category to 'Desktop & Mobile Apps' in the database (slug already correct)
 - [x] Bug: Add i18n translation for 'cat.scheduled-tasks' in all locales (currently shows raw key instead of 'Scheduled Tasks')
 - [x] Feature: Add score editing field to admin edit dialog so admins can change use case scores
+- [x] Feature: Update related use cases to dynamically show top-rated use cases by AI score

@@ -356,15 +356,39 @@ export async function getRelatedUseCases(useCaseId: number, categoryIds: number[
   const uniqueIds = Array.from(new Set(relatedIds.map(r => r.useCaseId)));
   if (uniqueIds.length === 0) return [];
 
-  const rows = await db
+  // Fetch all candidate rows (approved, sharing categories, excluding current)
+  const candidateRows = await db
     .select()
     .from(useCases)
-    .where(and(inArray(useCases.id, uniqueIds), eq(useCases.status, "approved")))
-    .orderBy(desc(useCases.upvoteCount))
-    .limit(limit);
+    .where(and(inArray(useCases.id, uniqueIds), eq(useCases.status, "approved")));
 
-  if (rows.length === 0) return [];
+  if (candidateRows.length === 0) return [];
 
+  const candidateIds = candidateRows.map(r => r.id);
+
+  // Fetch AI scores for all candidates to sort by top-rated
+  const scoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, candidateIds));
+  const scoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
+  const scoreNumMap = new Map<number, number>();
+  for (const s of scoreRows) {
+    if (!scoreMap.has(s.useCaseId)) {
+      scoreMap.set(s.useCaseId, {
+        overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore,
+        impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning,
+      });
+      scoreNumMap.set(s.useCaseId, parseFloat(s.overallScore));
+    }
+  }
+
+  // Sort candidates by AI score descending, then by upvote count as tiebreaker
+  const sorted = candidateRows.sort((a, b) => {
+    const scoreA = scoreNumMap.get(a.id) ?? 0;
+    const scoreB = scoreNumMap.get(b.id) ?? 0;
+    if (scoreB !== scoreA) return scoreB - scoreA;
+    return (b.upvoteCount ?? 0) - (a.upvoteCount ?? 0);
+  });
+
+  const rows = sorted.slice(0, limit);
   const ucIds = rows.map(r => r.id);
   const submitterIds = Array.from(new Set(rows.map(r => r.submitterId)));
   const submitters = submitterIds.length > 0
@@ -391,6 +415,7 @@ export async function getRelatedUseCases(useCaseId: number, categoryIds: number[
     submitterAvatar: null,
     categories: catMap.get(uc.id) ?? [],
     screenshots: ssMap.get(uc.id) ?? [],
+    aiScore: scoreMap.get(uc.id) ?? null,
   }));
 }
 
