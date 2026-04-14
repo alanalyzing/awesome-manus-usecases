@@ -72,25 +72,25 @@ function AverageScoreBadge({ userId }: { userId: number }) {
   ];
 
   return (
-    <div className="rounded-xl border bg-card p-5">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-primary/10">
-          <Star size={20} className="text-primary" />
+    <div className="rounded-lg border bg-card px-4 py-3">
+      <div className="flex items-center gap-3 mb-2.5">
+        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10">
+          <Star size={14} className="text-primary" />
         </div>
         <div>
-          <div className="text-2xl font-bold text-foreground tracking-tight">
-            {overall.toFixed(1)}<span className="text-sm font-normal text-muted-foreground ml-0.5">/5</span>
+          <div className="text-lg font-bold text-foreground tracking-tight leading-tight">
+            {overall.toFixed(1)}<span className="text-xs font-normal text-muted-foreground ml-0.5">/5</span>
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-[10px] text-muted-foreground leading-tight">
             Avg. across {avg.count} use case{avg.count !== 1 ? "s" : ""}
           </div>
         </div>
       </div>
-      <div className="space-y-2.5">
+      <div className="space-y-1.5">
         {dimensions.map((d) => (
-          <div key={d.label} className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground w-24 shrink-0">{d.label}</span>
-            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+          <div key={d.label} className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground w-20 shrink-0">{d.label}</span>
+            <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
               <motion.div
                 className="h-full rounded-full bg-primary/70"
                 initial={{ width: 0 }}
@@ -98,7 +98,7 @@ function AverageScoreBadge({ userId }: { userId: number }) {
                 transition={{ duration: 0.6, ease: "easeOut" }}
               />
             </div>
-            <span className="text-xs font-medium text-foreground w-7 text-right">{d.value.toFixed(1)}</span>
+            <span className="text-[10px] font-medium text-foreground w-6 text-right">{d.value.toFixed(1)}</span>
           </div>
         ))}
       </div>
@@ -211,136 +211,144 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <div className="container max-w-3xl py-10 px-4">
+      <div className="container max-w-4xl py-6 px-4">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35 }}
         >
-          {/* ─── Profile Hero ─────────────────────────────────── */}
-          <div className="flex flex-col items-center text-center mb-10">
-            {/* Avatar */}
-            <div className="h-28 w-28 rounded-full bg-primary/10 flex items-center justify-center text-4xl font-serif font-bold text-primary overflow-hidden ring-4 ring-background shadow-lg mb-5">
-              {profile.avatarUrl ? (
-                <img src={profile.avatarUrl} alt={profile.username} className="h-full w-full object-cover" />
-              ) : (
-                (profile.user.name || username).charAt(0).toUpperCase()
-              )}
-            </div>
-
-            {/* Name & handle */}
-            <h1 className="text-2xl font-serif font-bold text-foreground mb-0.5">
-              {profile.user.name || username}
-            </h1>
-            <p className="text-sm text-muted-foreground mb-3">@{profile.username}</p>
-
-            {/* Bio — prominently placed right under the name */}
-            {profile.bio && (
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mb-4">
-                {profile.bio}
-              </p>
-            )}
-
-            {/* Meta line: job title, company, member since */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground mb-4">
-              {(profile.jobTitle || profile.company) && (
-                <span className="inline-flex items-center gap-1.5">
-                  <Briefcase size={12} />
-                  {[profile.jobTitle, profile.company].filter(Boolean).join(" at ")}
-                </span>
-              )}
-              <span className="inline-flex items-center gap-1.5">
-                <Calendar size={12} />
-                Joined {memberSince}
-              </span>
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-medium ${proficiency.bgColor} ${proficiency.color}`}>
-                <Award size={11} />
-                {proficiency.label}
-              </span>
-            </div>
-
-            {/* Social handles */}
-            {profile.socialHandles.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
-                {profile.socialHandles.map((sh) => (
-                  <a
-                    key={sh.id}
-                    href={PLATFORM_URLS[sh.platform]?.(sh.handle) ?? sh.handle}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border bg-card hover:bg-accent text-xs transition-colors"
-                  >
-                    {PLATFORM_ICONS[sh.platform]}
-                    <span className="text-foreground">{sh.handle}</span>
-                  </a>
-                ))}
+          {/* ─── Compact Profile Hero ────────────────────────── */}
+          <div className="flex gap-5 mb-5">
+            {/* Avatar — left column */}
+            <div className="shrink-0">
+              <div className="h-[72px] w-[72px] rounded-full bg-primary/10 flex items-center justify-center text-2xl font-serif font-bold text-primary overflow-hidden ring-2 ring-background shadow-md">
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt={profile.username} className="h-full w-full object-cover" />
+                ) : (
+                  (profile.user.name || username).charAt(0).toUpperCase()
+                )}
               </div>
-            )}
+            </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2">
-              {!isOwnProfile && (
-                <>
-                  {user ? (
-                    <Button
-                      variant={isFollowingQuery.data ? "outline" : "default"}
-                      size="sm"
-                      className="gap-1.5 rounded-full px-5"
-                      onClick={() => toggleFollowMutation.mutate({ targetUserId: profile.userId })}
-                      disabled={toggleFollowMutation.isPending}
-                    >
-                      {isFollowingQuery.data ? (
-                        <><UserCheck size={14} /> Following</>
+            {/* Info — right column */}
+            <div className="flex-1 min-w-0">
+              {/* Name row with action button */}
+              <div className="flex items-start justify-between gap-3 mb-1">
+                <div className="min-w-0">
+                  <h1 className="text-xl font-serif font-bold text-foreground leading-tight truncate">
+                    {profile.user.name || username}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">@{profile.username}</p>
+                </div>
+                <div className="shrink-0 flex items-center gap-2">
+                  {!isOwnProfile && (
+                    <>
+                      {user ? (
+                        <Button
+                          variant={isFollowingQuery.data ? "outline" : "default"}
+                          size="sm"
+                          className="gap-1.5 rounded-full px-4 h-8 text-xs"
+                          onClick={() => toggleFollowMutation.mutate({ targetUserId: profile.userId })}
+                          disabled={toggleFollowMutation.isPending}
+                        >
+                          {isFollowingQuery.data ? (
+                            <><UserCheck size={12} /> Following</>
+                          ) : (
+                            <><UserPlus size={12} /> Follow</>
+                          )}
+                        </Button>
                       ) : (
-                        <><UserPlus size={14} /> Follow</>
+                        <a href={getLoginUrl()}>
+                          <Button variant="default" size="sm" className="gap-1.5 rounded-full px-4 h-8 text-xs">
+                            <UserPlus size={12} /> Follow
+                          </Button>
+                        </a>
                       )}
-                    </Button>
-                  ) : (
-                    <a href={getLoginUrl()}>
-                      <Button variant="default" size="sm" className="gap-1.5 rounded-full px-5">
-                        <UserPlus size={14} /> Follow
-                      </Button>
-                    </a>
+                    </>
                   )}
-                </>
+                  {isOwnProfile && (
+                    <Link href="/profile/setup?edit=1">
+                      <Button variant="outline" size="sm" className="gap-1.5 rounded-full px-4 h-8 text-xs">
+                        <Edit size={11} /> Edit Profile
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* Bio */}
+              {profile.bio && (
+                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-1.5">
+                  {profile.bio}
+                </p>
               )}
-              {isOwnProfile && (
-                <Link href="/profile/setup?edit=1">
-                  <Button variant="outline" size="sm" className="gap-1.5 rounded-full px-5">
-                    <Edit size={12} /> Edit Profile
-                  </Button>
-                </Link>
+
+              {/* Meta line */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground mb-2">
+                {(profile.jobTitle || profile.company) && (
+                  <span className="inline-flex items-center gap-1">
+                    <Briefcase size={11} />
+                    {[profile.jobTitle, profile.company].filter(Boolean).join(" at ")}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1">
+                  <Calendar size={11} />
+                  Joined {memberSince}
+                </span>
+                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[10px] font-medium ${proficiency.bgColor} ${proficiency.color}`}>
+                  <Award size={10} />
+                  {proficiency.label}
+                </span>
+              </div>
+
+              {/* Social handles — inline */}
+              {profile.socialHandles.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {profile.socialHandles.map((sh) => (
+                    <a
+                      key={sh.id}
+                      href={PLATFORM_URLS[sh.platform]?.(sh.handle) ?? sh.handle}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full border bg-card hover:bg-accent text-[11px] transition-colors"
+                    >
+                      {PLATFORM_ICONS[sh.platform]}
+                      <span className="text-foreground">{sh.handle}</span>
+                    </a>
+                  ))}
+                </div>
               )}
             </div>
           </div>
 
-          {/* ─── Stats Row ────────────────────────────────────── */}
-          <div className="grid grid-cols-4 gap-3 mb-8">
-            {[
-              { label: "Use Cases", value: stats?.useCaseCount ?? 0 },
-              { label: "Upvotes", value: stats?.upvotesReceived ?? 0 },
-              { label: "Followers", value: stats?.followerCount ?? 0, action: () => setActiveTab("followers") },
-              { label: "Following", value: stats?.followingCount ?? 0, action: () => setActiveTab("following") },
-            ].map((stat) => (
-              <button
-                key={stat.label}
-                onClick={stat.action}
-                className={`rounded-xl border bg-card p-4 text-center transition-colors ${stat.action ? "hover:bg-accent cursor-pointer" : "cursor-default"}`}
-                disabled={!stat.action}
-              >
-                <div className="text-xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{stat.label}</div>
-              </button>
-            ))}
-          </div>
+          {/* ─── Stats + Score Row ────────────────────────────── */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr] gap-3 mb-5">
+            {/* Stats — compact inline */}
+            <div className="flex gap-2">
+              {[
+                { label: "Use Cases", value: stats?.useCaseCount ?? 0 },
+                { label: "Upvotes", value: stats?.upvotesReceived ?? 0 },
+                { label: "Followers", value: stats?.followerCount ?? 0, action: () => setActiveTab("followers") },
+                { label: "Following", value: stats?.followingCount ?? 0, action: () => setActiveTab("following") },
+              ].map((stat) => (
+                <button
+                  key={stat.label}
+                  onClick={stat.action}
+                  className={`flex-1 rounded-lg border bg-card px-2 py-2.5 text-center transition-colors ${stat.action ? "hover:bg-accent cursor-pointer" : "cursor-default"}`}
+                  disabled={!stat.action}
+                >
+                  <div className="text-base font-bold text-foreground leading-tight">{stat.value}</div>
+                  <div className="text-[10px] text-muted-foreground">{stat.label}</div>
+                </button>
+              ))}
+            </div>
 
-          {/* ─── Average Score ────────────────────────────────── */}
-          <div className="mb-8">
+            {/* Average Score — compact */}
             <AverageScoreBadge userId={profile.userId} />
           </div>
 
           {/* ─── Tabs ─────────────────────────────────────────── */}
-          <div className="border-b mb-6">
+          <div className="border-b mb-4">
             <div className="flex gap-0 overflow-x-auto">
               {tabs.map((tab) => (
                 <button

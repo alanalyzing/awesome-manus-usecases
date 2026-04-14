@@ -249,3 +249,11 @@
 - [x] UI: Update submission guidelines to reflect new workflow (enter URLs first, then AI summarize)
 - [x] Feature: Improve AI summarize to fetch content from session replay/deliverable URLs, extract session title, and produce better structured output
 - [x] Feature: Enable searching use cases by session replay URL string (share ID) in existing search
+- [x] UI: Chrome extension - keep task titles on 1 line with ellipsis overflow
+- [x] UI: Chrome extension - increase row height to show more content per task
+- [x] UI: Chrome extension - allow task titles to wrap (show full text instead of truncating with ellipsis)
+- [x] UI: Chrome extension - replace logo with golden suitcase logo
+- [x] UI: Chrome extension - switch to light mode with semi-transparent white Apple glass UI
+- [x] UI: Chrome extension - sleek tech feel with rounded edges
+- [x] UI: Profile page - make top section more compact so use case cards are visible without scrolling
+- [x] UI: Chrome extension - convert from popup to right-hand side panel design
