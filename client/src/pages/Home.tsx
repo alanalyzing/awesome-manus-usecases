@@ -519,9 +519,12 @@ export default function Home() {
       setAccumulatedItems(useCasesQuery.data.items);
     } else {
       setAccumulatedItems((prev) => {
+        // Merge: update existing items with fresh data, append new ones
+        const freshMap = new Map(useCasesQuery.data.items.map((item: any) => [item.id, item]));
+        const updated = prev.map((item: any) => freshMap.get(item.id) ?? item);
         const existingIds = new Set(prev.map((item: any) => item.id));
         const newItems = useCasesQuery.data.items.filter((item: any) => !existingIds.has(item.id));
-        return [...prev, ...newItems];
+        return [...updated, ...newItems];
       });
     }
   }, [useCasesQuery.data, offset]);

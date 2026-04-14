@@ -240,3 +240,4 @@
 - [x] Feature: Update related use cases to dynamically show top-rated use cases by AI score
 - [x] Feature: Add Previous/Next navigation buttons to use case modal for admins to quickly browse use cases
 - [x] Bug: Score not updating on card/modal after saving in admin edit dialog (cache invalidation issue)
+- [x] Bug: Score still not updating visibly after saving in admin edit dialog and closing (fixed accumulatedItems merge logic)
