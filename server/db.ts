@@ -246,7 +246,7 @@ export async function getApprovedUseCases(opts: {
 
   // Fetch AI scores (always, for badge display + optional sorting)
   const aiScoreRows = ucIds.length > 0
-    ? await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds))
+    ? await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds)).orderBy(desc(aiScores.scannedAt))
     : [];
   const aiScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
   const scoreNumMap = new Map<number, number>();
@@ -388,7 +388,7 @@ export async function getRelatedUseCases(useCaseId: number, categoryIds: number[
   const candidateIds = candidateRows.map(r => r.id);
 
   // Fetch AI scores for all candidates to sort by top-rated
-  const scoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, candidateIds));
+  const scoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, candidateIds)).orderBy(desc(aiScores.scannedAt));
   const scoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
   const scoreNumMap = new Map<number, number>();
   for (const s of scoreRows) {
@@ -484,7 +484,7 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
     const screenshotRows = await db.select().from(screenshots).where(inArray(screenshots.useCaseId, ucIds)).orderBy(asc(screenshots.sortOrder));
     const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
     for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
-    const fbScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds));
+    const fbScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds)).orderBy(desc(aiScores.scannedAt));
     const fbScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
     for (const s of fbScoreRows) { if (!fbScoreMap.has(s.useCaseId)) fbScoreMap.set(s.useCaseId, { overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore, impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning }); }
     return rows.map(uc => ({
@@ -522,7 +522,7 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
   const screenshotRows = await db.select().from(screenshots).where(inArray(screenshots.useCaseId, ucIds)).orderBy(asc(screenshots.sortOrder));
   const ssMap = new Map<number, { id: number; url: string; sortOrder: number }[]>();
   for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
-  const trScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds));
+  const trScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds)).orderBy(desc(aiScores.scannedAt));
   const trScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
   for (const s of trScoreRows) { if (!trScoreMap.has(s.useCaseId)) trScoreMap.set(s.useCaseId, { overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore, impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning }); }
 
@@ -724,7 +724,7 @@ export async function getAdminUseCases(opts: {
   for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
 
   // Fetch AI scores
-  const aiScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds));
+  const aiScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds)).orderBy(desc(aiScores.scannedAt));
   const aiScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
   for (const s of aiScoreRows) {
     // Keep the latest score per use case
@@ -1725,7 +1725,8 @@ export async function getCollectionBySlug(slug: string) {
   const scoreRows = await db
     .select()
     .from(aiScores)
-    .where(inArray(aiScores.useCaseId, ucIds));
+    .where(inArray(aiScores.useCaseId, ucIds))
+    .orderBy(desc(aiScores.scannedAt));
 
   const enriched = items.map(item => {
     const uc = ucs.find(u => u.id === item.useCaseId);
@@ -1854,7 +1855,7 @@ export async function getActiveFeaturedUseCase() {
     .where(eq(useCaseCategories.useCaseId, uc.id));
 
   // Get AI score
-  const [score] = await db.select().from(aiScores).where(eq(aiScores.useCaseId, uc.id));
+  const [score] = await db.select().from(aiScores).where(eq(aiScores.useCaseId, uc.id)).orderBy(desc(aiScores.scannedAt)).limit(1);
 
   return {
     ...row,
