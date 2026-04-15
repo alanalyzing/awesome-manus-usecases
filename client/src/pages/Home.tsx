@@ -479,7 +479,7 @@ export default function Home() {
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
   const [modalSlug, setModalSlug] = useState<string | null>(null);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
-  const [showHero, setShowHero] = useState(true);
+  // showHero removed - hero is always visible now
 
   // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -548,9 +548,8 @@ export default function Home() {
     setHighlightOnly(false);
     setOffset(0);
     setAccumulatedItems([]);
-    setShowHero(false);
     setSelectedCategories((prev) =>
-      prev.includes(catId) ? [] : [catId]
+      prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId]
     );
   }, []);
 
@@ -558,16 +557,16 @@ export default function Home() {
     setSelectedCategories([]);
     setOffset(0);
     setAccumulatedItems([]);
-    setShowHero(false);
     setHighlightOnly((prev) => !prev);
   }, []);
 
   const handleShowAll = useCallback(() => {
     setSelectedCategories([]);
     setHighlightOnly(false);
+    setMinScore(0);
+    setSearch("");
     setOffset(0);
     setAccumulatedItems([]);
-    setShowHero(true);
   }, []);
 
   const handleUpvote = useCallback(
@@ -611,10 +610,8 @@ export default function Home() {
     return () => observer.disconnect();
   }, [hasMore, useCasesQuery.isFetching, limit]);
 
-  // Hide hero when searching
-  useEffect(() => {
-    if (search) setShowHero(false);
-  }, [search]);
+  // Hide hero when searching or filtering
+  const isFiltering = search.length > 0 || selectedCategories.length > 0 || highlightOnly || minScore > 0;
 
   // Hero stats
   const heroStats = useMemo(() => {
@@ -637,7 +634,7 @@ export default function Home() {
             <PanelLeftOpen size={18} />
           </button>
 
-          <Link href="/" className="flex items-center mr-auto" onClick={() => setShowHero(true)}>
+          <Link href="/" className="flex items-center mr-auto" onClick={handleShowAll}>
             <ManusLogo size="sm" />
           </Link>
 
@@ -833,7 +830,7 @@ export default function Home() {
                           }`}
                         >
                           <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-
+                          {selectedCategories.includes(cat.id) && <span className="text-primary text-xs">✓</span>}
                         </button>
                       ))}
                     </div>
@@ -858,7 +855,7 @@ export default function Home() {
                           }`}
                         >
                           <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-
+                          {selectedCategories.includes(cat.id) && <span className="text-primary text-xs">✓</span>}
                         </button>
                       ))}
                     </div>
@@ -941,142 +938,118 @@ export default function Home() {
 
         {/* ─── Main Content ─── */}
         <main id="main-content" className="flex-1 overflow-auto h-full" tabIndex={-1}>
-          {/* ─── Hero Section ─── */}
-          <AnimatePresence>
-            {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="relative overflow-hidden border-b bg-gradient-to-br from-background via-background to-accent/30">
-                  {/* Decorative background pattern */}
-                  <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{
-                    backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-                    backgroundSize: '24px 24px',
-                  }} />
+          {/* ─── Hero Section with Search ─── */}
+          <div className="relative overflow-hidden border-b bg-gradient-to-br from-background via-background to-accent/30">
+            {/* Decorative background pattern */}
+            <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+              backgroundSize: '24px 24px',
+            }} />
 
-                  <div className="relative p-6 md:p-10 max-w-7xl mx-auto">
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
-                      {/* Left: Text content */}
-                      <div className="flex-1 space-y-4">
-                        <motion.div
-                          initial={{ opacity: 0, y: 16 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1, duration: 0.5 }}
-                        >
-                          <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
-                            {t("hero.title1")}
-                            <br />
-                            <span className="text-primary/70">{t("hero.title2")}</span>
-                          </h1>
-                        </motion.div>
-                        <motion.p
-                          initial={{ opacity: 0, y: 16 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2, duration: 0.5 }}
-                          className="text-muted-foreground text-sm md:text-base max-w-lg leading-relaxed"
-                        >
-                          {t("hero.desc")}
-                        </motion.p>
-                        <motion.div
-                          initial={{ opacity: 0, y: 16 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.3, duration: 0.5 }}
-                          className="flex gap-3 pt-1"
-                        >
-                          <Link href="/submit">
-                            <Button className="gap-2 shadow-sm">
-                              <Plus size={15} />
-                              {t("hero.submitCta")}
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="outline"
-                            className="gap-2"
-                            onClick={handleHighlightToggle}
-                          >
-                            <Sparkles size={15} />
-                            <span className="hidden sm:inline">{t("hero.highlightsCta")}</span>
-                            <span className="sm:hidden">{t("hero.highlightsCtaShort")}</span>
-                          </Button>
-                        </motion.div>
-                      </div>
+            <div className="relative p-6 md:p-8 max-w-7xl mx-auto">
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-10">
+                {/* Left: Text content */}
+                <div className="flex-1 space-y-3">
+                  <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
+                    {t("hero.title1")}
+                    <br />
+                    <span className="text-primary/70">{t("hero.title2")}</span>
+                  </h1>
+                  <p className="text-muted-foreground text-sm md:text-base max-w-lg leading-relaxed">
+                    {t("hero.desc")}
+                  </p>
+                </div>
 
-                      {/* Right: Animated stats */}
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.3, duration: 0.5 }}
-                        className="grid grid-cols-3 gap-4 md:gap-6"
-                      >
-                        <div className="text-center space-y-1">
-                          <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
-                            <Zap size={18} className="text-primary" />
-                          </div>
-                          <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
-                            <AnimatedCounter target={heroStats.total} />
-                          </div>
-                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.useCases")}</div>
-                        </div>
-                        <div className="text-center space-y-1">
-                          <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
-                            <TrendingUp size={18} className="text-primary" />
-                          </div>
-                          <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
-                            <AnimatedCounter target={heroStats.categories} />
-                          </div>
-                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.categories")}</div>
-                        </div>
-                        <div className="text-center space-y-1">
-                          <div className="w-10 h-10 mx-auto rounded-lg bg-accent flex items-center justify-center mb-1">
-                            <Users size={18} className="text-accent-foreground" />
-                          </div>
-                          <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
-                            <AnimatedCounter target={5} />
-                          </div>
-                          <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.languages")}</div>
-                        </div>
-                      </motion.div>
+                {/* Right: Animated stats */}
+                <div className="grid grid-cols-3 gap-4 md:gap-6">
+                  <div className="text-center space-y-1">
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
+                      <Zap size={18} className="text-primary" />
                     </div>
+                    <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                      <AnimatedCounter target={globalTotal} />
+                    </div>
+                    <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.useCases")}</div>
+                  </div>
+                  <div className="text-center space-y-1">
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
+                      <TrendingUp size={18} className="text-primary" />
+                    </div>
+                    <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                      <AnimatedCounter target={heroStats.categories} />
+                    </div>
+                    <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.categories")}</div>
+                  </div>
+                  <div className="text-center space-y-1">
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-accent flex items-center justify-center mb-1">
+                      <Users size={18} className="text-accent-foreground" />
+                    </div>
+                    <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                      <AnimatedCounter target={5} />
+                    </div>
+                    <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.languages")}</div>
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </div>
+
+              {/* Search Bar in Hero */}
+              <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                  <Input
+                    placeholder={t("gallery.search")}
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setOffset(0);
+                      setAccumulatedItems([]);
+                    }}
+                    className="pl-9 bg-card h-11 text-base"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Link href="/submit">
+                    <Button className="gap-2 shadow-sm h-11">
+                      <Plus size={15} />
+                      {t("hero.submitCta")}
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className={`gap-2 h-11 ${highlightOnly ? 'bg-primary/10 text-primary border-primary/30' : ''}`}
+                    onClick={handleHighlightToggle}
+                  >
+                    <Sparkles size={15} />
+                    <span className="hidden sm:inline">{t("hero.highlightsCta")}</span>
+                    <span className="sm:hidden">{t("hero.highlightsCtaShort")}</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* ─── Featured Use Case of the Week ─── */}
-          {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
+          {!isFiltering && (
             <FeaturedSection onCardClick={setModalSlug} />
           )}
 
           {/* ─── Trending This Week ─── */}
-          {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
+          {!isFiltering && (
             <TrendingSection onCardClick={setModalSlug} />
           )}
 
           {/* ─── Curated Collections ─── */}
-          {showHero && !search && selectedCategories.length === 0 && !highlightOnly && (
+          {!isFiltering && (
             <CollectionsSection onCardClick={setModalSlug} />
           )}
 
           <div className="p-6 max-w-7xl mx-auto">
-            {/* Search & Sort Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                <Input
-                  placeholder={t("gallery.search")}
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setOffset(0);
-                  }}
-                  className="pl-9 bg-card"
-                />
+            {/* Sort & Filter Controls */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <div className="flex-1 flex items-center">
+                <h2 className="font-serif font-bold text-lg">{isFiltering ? 'Search Results' : 'All Use Cases'}</h2>
               </div>
-              <Select value={sort} onValueChange={(v) => { setSort(v as any); setOffset(0); }}>
+              <Select value={sort} onValueChange={(v) => { setSort(v as any); setOffset(0); setAccumulatedItems([]); }}>
                 <SelectTrigger className="w-[180px] bg-card">
                   <SelectValue />
                 </SelectTrigger>
@@ -1105,8 +1078,15 @@ export default function Home() {
             </div>
 
             {/* Active Filters */}
-            {(selectedCategories.length > 0 || highlightOnly || minScore > 0) && (
-              <div className="flex flex-wrap gap-2 mb-4">
+            {(selectedCategories.length > 0 || highlightOnly || minScore > 0 || search) && (
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                {search && (
+                  <Badge variant="secondary" className="gap-1">
+                    <Search size={12} />
+                    "{search}"
+                    <button onClick={() => { setSearch(""); setOffset(0); setAccumulatedItems([]); }} className="ml-1 hover:opacity-70">&times;</button>
+                  </Badge>
+                )}
                 {minScore > 0 && (
                   <Badge variant="secondary" className="gap-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
                     <Star size={12} className="fill-current" />

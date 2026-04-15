@@ -189,7 +189,7 @@ export function MobileSidebar({
                 {jobFunctionCats.map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => { onCategoryToggle(cat.id); onClose(); }}
+                    onClick={() => onCategoryToggle(cat.id)}
                     className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors ${
                       selectedCategories.includes(cat.id)
                         ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
@@ -197,7 +197,7 @@ export function MobileSidebar({
                     }`}
                   >
                     <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-
+                    {selectedCategories.includes(cat.id) && <span className="text-primary text-xs">✓</span>}
                   </button>
                 ))}
               </div>
@@ -214,7 +214,7 @@ export function MobileSidebar({
                 {featureCats.map((cat) => (
                   <button
                     key={cat.id}
-                    onClick={() => { onCategoryToggle(cat.id); onClose(); }}
+                    onClick={() => onCategoryToggle(cat.id)}
                     className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors ${
                       selectedCategories.includes(cat.id)
                         ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
@@ -222,7 +222,7 @@ export function MobileSidebar({
                     }`}
                   >
                     <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-
+                    {selectedCategories.includes(cat.id) && <span className="text-primary text-xs">✓</span>}
                   </button>
                 ))}
               </div>
