@@ -187,22 +187,64 @@ export async function getApprovedUseCases(opts: {
     .where(whereClause);
   const total = countResult[0]?.count ?? 0;
 
-  let orderBy;
-  let useScoreSort = false;
-  switch (opts.sort) {
-    case "popular": orderBy = desc(useCases.upvoteCount); break;
-    case "views": orderBy = desc(useCases.viewCount); break;
-    case "score": useScoreSort = true; orderBy = desc(useCases.createdAt); break;
-    case "newest": default: orderBy = desc(useCases.createdAt); break;
+  // For score sorting, we need to join with the latest AI score at the SQL level
+  // so that ORDER BY + LIMIT/OFFSET produces globally correct pagination.
+  let rows: UseCase[];
+  if (opts.sort === "score") {
+    // Use a raw query that LEFT JOINs the latest score per use case.
+    // NOTE: We use the full table name `use_cases` (not an alias) because Drizzle's
+    // whereClause interpolates column refs as `use_cases`.`column`.
+    const rawRows = await db.execute(
+      sql`SELECT use_cases.*, COALESCE(ls.overallScore, '0') as _sortScore
+          FROM use_cases
+          LEFT JOIN (
+            SELECT useCaseId, overallScore
+            FROM ai_scores a1
+            WHERE a1.scannedAt = (
+              SELECT MAX(a2.scannedAt) FROM ai_scores a2 WHERE a2.useCaseId = a1.useCaseId
+            )
+          ) ls ON ls.useCaseId = use_cases.id
+          WHERE ${whereClause}
+          ORDER BY CAST(COALESCE(ls.overallScore, '0') AS DECIMAL(3,1)) DESC, use_cases.createdAt DESC
+          LIMIT ${opts.limit ?? 20}
+          OFFSET ${opts.offset ?? 0}`
+    );
+    // Map raw rows back to UseCase shape
+    rows = (rawRows[0] as unknown as any[]).map((r: any) => ({
+      id: r.id,
+      title: r.title,
+      slug: r.slug,
+      description: r.description,
+      sessionReplayUrl: r.sessionReplayUrl,
+      deliverableUrl: r.deliverableUrl,
+      status: r.status,
+      isHighlight: !!r.isHighlight,
+      language: r.language,
+      rejectionReason: r.rejectionReason,
+      consentToContact: !!r.consentToContact,
+      viewCount: r.viewCount,
+      upvoteCount: r.upvoteCount,
+      submitterId: r.submitterId,
+      createdAt: r.createdAt instanceof Date ? r.createdAt : new Date(r.createdAt),
+      updatedAt: r.updatedAt instanceof Date ? r.updatedAt : new Date(r.updatedAt),
+      approvedAt: r.approvedAt ? (r.approvedAt instanceof Date ? r.approvedAt : new Date(r.approvedAt)) : null,
+      aiSummary: r.aiSummary,
+    }));
+  } else {
+    let orderBy;
+    switch (opts.sort) {
+      case "popular": orderBy = desc(useCases.upvoteCount); break;
+      case "views": orderBy = desc(useCases.viewCount); break;
+      case "newest": default: orderBy = desc(useCases.createdAt); break;
+    }
+    rows = await db
+      .select()
+      .from(useCases)
+      .where(whereClause)
+      .orderBy(orderBy)
+      .limit(opts.limit ?? 20)
+      .offset(opts.offset ?? 0);
   }
-
-  const rows = await db
-    .select()
-    .from(useCases)
-    .where(whereClause)
-    .orderBy(orderBy)
-    .limit(opts.limit ?? 20)
-    .offset(opts.offset ?? 0);
 
   if (rows.length === 0) return { items: [], total };
 
@@ -270,11 +312,6 @@ export async function getApprovedUseCases(opts: {
     hasUpvoted: opts.userId ? upvoteSet.has(uc.id) : undefined,
     aiScore: aiScoreMap.get(uc.id) ?? null,
   }));
-
-  // Sort by score if requested (in-memory since scores are in a separate table)
-  if (useScoreSort) {
-    items.sort((a, b) => (scoreNumMap.get(b.id) ?? 0) - (scoreNumMap.get(a.id) ?? 0));
-  }
 
   return { items, total };
 }

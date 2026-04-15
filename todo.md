@@ -280,3 +280,6 @@
 - [x] Feature: Multi-category filtering should use AND logic (results must match ALL selected categories)
 - [x] Bug: Badge score not updating after saving scores in admin edit dialog
 - [x] Bug: Badge on use case card cover not reflecting updated scores after saving
+- [x] Delete duplicate use cases: IDs 120119, 120003, 120010 (and all related records)
+- [x] Bug: Default sorting by score must maintain correct high-to-low order across infinite scroll pages
+- [x] Check: Comprehensive duplicate detection across all use cases (by share URL, title similarity, description)
