@@ -110,15 +110,6 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
 
   // Mutations
   const updateMutation = trpc.admin.update.useMutation({
-    onSuccess: () => {
-      toast.success("Use case updated successfully");
-      utils.useCases.getBySlug.invalidate();
-      utils.useCases.list.invalidate();
-      utils.useCases.trending.invalidate();
-      utils.admin.stats.invalidate();
-      utils.admin.submissions.invalidate();
-      onSaved?.();
-    },
     onError: (err) => toast.error(err.message),
   });
 
@@ -186,40 +177,50 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
   }, [prevDescription]);
 
   const updateScoreMutation = trpc.admin.updateScore.useMutation({
-    onSuccess: () => {
-      toast.success("Score updated");
-      useCaseQuery.refetch();
-      utils.useCases.getBySlug.invalidate();
-      utils.useCases.list.invalidate();
-      utils.useCases.trending.invalidate();
-      utils.admin.stats.invalidate();
-      utils.admin.submissions.invalidate();
-      setScoresModified(false);
-      onSaved?.();
-    },
     onError: (err: any) => toast.error(`Score update failed: ${err.message}`),
   });
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const handleSave = useCallback(async () => {
     if (!uc?.id) return;
-    // Save use case fields
-    updateMutation.mutate({
-      id: uc.id,
-      title,
-      description,
-      sessionReplayUrl: sessionReplayUrl || undefined,
-      deliverableUrl: deliverableUrl || undefined,
-      categoryIds: selectedCategoryIds,
-      isHighlight,
-    });
-    // Also save scores if they were modified
-    if (scoresModified) {
-      updateScoreMutation.mutate({
-        useCaseId: uc.id,
-        ...scores,
+    setIsSaving(true);
+    try {
+      // Save use case fields first
+      await updateMutation.mutateAsync({
+        id: uc.id,
+        title,
+        description,
+        sessionReplayUrl: sessionReplayUrl || undefined,
+        deliverableUrl: deliverableUrl || undefined,
+        categoryIds: selectedCategoryIds,
+        isHighlight,
       });
+      // Then save scores sequentially so DB is updated before we invalidate
+      if (scoresModified) {
+        await updateScoreMutation.mutateAsync({
+          useCaseId: uc.id,
+          ...scores,
+        });
+        setScoresModified(false);
+      }
+      // Invalidate all queries AFTER both mutations complete
+      toast.success("Use case updated successfully");
+      await Promise.all([
+        utils.useCases.getBySlug.invalidate(),
+        utils.useCases.list.invalidate(),
+        utils.useCases.trending.invalidate(),
+        utils.admin.stats.invalidate(),
+        utils.admin.submissions.invalidate(),
+      ]);
+      useCaseQuery.refetch();
+      onSaved?.();
+    } catch {
+      // Individual mutation onError handlers will show toasts
+    } finally {
+      setIsSaving(false);
     }
-  }, [uc?.id, title, description, sessionReplayUrl, deliverableUrl, selectedCategoryIds, isHighlight, updateMutation, scoresModified, scores, updateScoreMutation]);
+  }, [uc?.id, title, description, sessionReplayUrl, deliverableUrl, selectedCategoryIds, isHighlight, updateMutation, scoresModified, scores, updateScoreMutation, utils, useCaseQuery, onSaved]);
 
   const handleAddScreenshotUrl = useCallback(async () => {
     if (!uc?.id || !screenshotUrl.trim()) return;
@@ -328,10 +329,8 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
     deleteMutation.mutate({ id: uc.id });
   }, [uc?.id, deleteMutation]);
 
-  const isSaving = updateMutation.isPending;
   const isRewriting = aiRewriteMutation.isPending;
   const isDeleting = deleteMutation.isPending;
-  const isSavingScores = updateScoreMutation.isPending;
 
   return (
     <Dialog open={!!slug} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -691,8 +690,8 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
           </AlertDialog>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSave} disabled={isSaving || isSavingScores || !title.trim()} className="gap-1.5">
-              {(isSaving || isSavingScores) ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            <Button onClick={handleSave} disabled={isSaving || !title.trim()} className="gap-1.5">
+              {isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               Save Changes
             </Button>
           </div>
