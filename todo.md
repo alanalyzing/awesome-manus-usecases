@@ -274,3 +274,4 @@
 - [x] Feature: Allow multi-select for job function and feature categories (chips with x to remove, clear all)
 - [x] UI: Move search bar into hero section on homepage
 - [x] UI: Reorganize homepage layout: hero with search → trending this week → all use cases section
+- [x] Fix: Sidebar should be single-select (clicking replaces current category), multi-select only in search/filter bar chips

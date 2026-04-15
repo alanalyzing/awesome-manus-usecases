@@ -544,6 +544,17 @@ export default function Home() {
     [categoriesQuery.data]
   );
 
+  // Sidebar: single-select (replaces current selection, or deselects if same)
+  const handleSidebarCategorySelect = useCallback((catId: number) => {
+    setHighlightOnly(false);
+    setOffset(0);
+    setAccumulatedItems([]);
+    setSelectedCategories((prev) =>
+      prev.length === 1 && prev[0] === catId ? [] : [catId]
+    );
+  }, []);
+
+  // Filter chips: multi-select toggle (add/remove from selection)
   const handleCategoryToggle = useCallback((catId: number) => {
     setHighlightOnly(false);
     setOffset(0);
@@ -822,15 +833,14 @@ export default function Home() {
                       {jobFunctionCats.map((cat) => (
                         <button
                           key={cat.id}
-                          onClick={() => handleCategoryToggle(cat.id)}
-                          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors ${
+                          onClick={() => handleSidebarCategorySelect(cat.id)}
+                          className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
                             selectedCategories.includes(cat.id)
                               ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                               : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"
                           }`}
                         >
-                          <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-                          {selectedCategories.includes(cat.id) && <span className="text-primary text-xs">✓</span>}
+                          {t(`cat.${cat.slug}` as any) || cat.name}
                         </button>
                       ))}
                     </div>
@@ -847,15 +857,14 @@ export default function Home() {
                       {featureCats.map((cat) => (
                         <button
                           key={cat.id}
-                          onClick={() => handleCategoryToggle(cat.id)}
-                          className={`w-full flex items-center justify-between px-3 py-1.5 rounded-md text-sm transition-colors ${
+                          onClick={() => handleSidebarCategorySelect(cat.id)}
+                          className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
                             selectedCategories.includes(cat.id)
                               ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                               : "hover:bg-sidebar-accent/50 text-sidebar-foreground/80"
                           }`}
                         >
-                          <span>{t(`cat.${cat.slug}` as any) || cat.name}</span>
-                          {selectedCategories.includes(cat.id) && <span className="text-primary text-xs">✓</span>}
+                          {t(`cat.${cat.slug}` as any) || cat.name}
                         </button>
                       ))}
                     </div>
@@ -1342,7 +1351,7 @@ export default function Home() {
         categories={categoriesQuery.data ?? []}
         selectedCategories={selectedCategories}
         highlightOnly={highlightOnly}
-        onCategoryToggle={handleCategoryToggle}
+        onCategoryToggle={handleSidebarCategorySelect}
         onHighlightToggle={handleHighlightToggle}
         onShowAll={handleShowAll}
       />

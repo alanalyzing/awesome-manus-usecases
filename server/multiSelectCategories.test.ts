@@ -1,25 +1,50 @@
 import { describe, it, expect } from "vitest";
 
 /**
- * Tests for multi-select category behavior.
- * Validates that the toggle logic correctly adds/removes categories
- * and that the filtering state is computed properly.
+ * Tests for category selection behavior.
+ * Sidebar = single-select (replaces current), filter chips = multi-select toggle.
  */
 
-describe("Multi-select category toggle logic", () => {
-  // Simulates the handleCategoryToggle logic from Home.tsx
+describe("Sidebar single-select category logic", () => {
+  // Simulates handleSidebarCategorySelect from Home.tsx
+  function sidebarSelect(prev: number[], catId: number): number[] {
+    return prev.length === 1 && prev[0] === catId ? [] : [catId];
+  }
+
+  it("should select a category when none is selected", () => {
+    expect(sidebarSelect([], 1)).toEqual([1]);
+  });
+
+  it("should replace current category with new one", () => {
+    expect(sidebarSelect([1], 2)).toEqual([2]);
+  });
+
+  it("should deselect when clicking the same category", () => {
+    expect(sidebarSelect([1], 1)).toEqual([]);
+  });
+
+  it("should replace even when multiple categories were previously selected (from chips)", () => {
+    expect(sidebarSelect([1, 2, 3], 5)).toEqual([5]);
+  });
+
+  it("should not deselect when clicking same category but multiple are selected", () => {
+    // If multiple are selected (from filter chips), clicking any sidebar item replaces all
+    expect(sidebarSelect([1, 2], 1)).toEqual([1]);
+  });
+});
+
+describe("Filter chip multi-select toggle logic", () => {
+  // Simulates handleCategoryToggle from Home.tsx (used by filter chip X buttons)
   function toggleCategory(prev: number[], catId: number): number[] {
     return prev.includes(catId) ? prev.filter((id) => id !== catId) : [...prev, catId];
   }
 
   it("should add a category when not already selected", () => {
-    const result = toggleCategory([], 1);
-    expect(result).toEqual([1]);
+    expect(toggleCategory([], 1)).toEqual([1]);
   });
 
   it("should remove a category when already selected", () => {
-    const result = toggleCategory([1, 2, 3], 2);
-    expect(result).toEqual([1, 3]);
+    expect(toggleCategory([1, 2, 3], 2)).toEqual([1, 3]);
   });
 
   it("should support selecting multiple categories", () => {
