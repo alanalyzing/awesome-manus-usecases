@@ -276,3 +276,4 @@
 - [x] UI: Reorganize homepage layout: hero with search → trending this week → all use cases section
 - [x] Fix: Sidebar should be single-select (clicking replaces current category), multi-select only in search/filter bar chips
 - [x] UI: Add category dropdown filter next to search bar in hero section for multi-select filtering
+- [x] UI: Fix category dropdown to two-column layout (Job Function left, Feature right)

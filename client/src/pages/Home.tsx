@@ -1038,7 +1038,7 @@ export default function Home() {
                       <ChevronDown size={14} className="opacity-50 shrink-0" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-64 p-0" align="start">
+                  <PopoverContent className="w-[480px] p-0" align="start">
                     <div className="p-2 border-b">
                       <div className="flex items-center justify-between px-2">
                         <span className="text-sm font-medium">{t("gallery.filterByCategory")}</span>
@@ -1052,8 +1052,9 @@ export default function Home() {
                         )}
                       </div>
                     </div>
-                    <ScrollArea className="max-h-[320px]">
-                      <div className="p-2">
+                    <div className="grid grid-cols-2 divide-x">
+                      {/* Left column: Job Function */}
+                      <div className="p-2 max-h-[360px] overflow-y-auto">
                         <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1">
                           {t("sidebar.byJobFunction")}
                         </div>
@@ -1073,8 +1074,10 @@ export default function Home() {
                             <span className="truncate">{t(`cat.${cat.slug}` as any) || cat.name}</span>
                           </button>
                         ))}
-
-                        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1 mt-2">
+                      </div>
+                      {/* Right column: Feature */}
+                      <div className="p-2 max-h-[360px] overflow-y-auto">
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1">
                           {t("sidebar.byFeature")}
                         </div>
                         {featureCats.map((cat) => (
@@ -1094,7 +1097,7 @@ export default function Home() {
                           </button>
                         ))}
                       </div>
-                    </ScrollArea>
+                    </div>
                   </PopoverContent>
                 </Popover>
 
