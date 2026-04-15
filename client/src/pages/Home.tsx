@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -51,6 +53,9 @@ import {
   Star,
   Pencil,
   Loader2,
+  Filter,
+  Check,
+  X,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -1016,6 +1021,83 @@ export default function Home() {
                     className="pl-9 bg-card h-11 text-base"
                   />
                 </div>
+
+                {/* Category Filter Dropdown */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="gap-2 h-11 min-w-[140px] justify-between">
+                      <Filter size={15} />
+                      <span className="truncate">
+                        {selectedCategories.length === 0
+                          ? t("gallery.allCategories")
+                          : selectedCategories.length === 1
+                            ? (t(`cat.${categoriesQuery.data?.find(c => c.id === selectedCategories[0])?.slug}` as any) || categoriesQuery.data?.find(c => c.id === selectedCategories[0])?.name || "1 filter")
+                            : `${selectedCategories.length} filters`
+                        }
+                      </span>
+                      <ChevronDown size={14} className="opacity-50 shrink-0" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-0" align="start">
+                    <div className="p-2 border-b">
+                      <div className="flex items-center justify-between px-2">
+                        <span className="text-sm font-medium">{t("gallery.filterByCategory")}</span>
+                        {selectedCategories.length > 0 && (
+                          <button
+                            onClick={() => { setSelectedCategories([]); setOffset(0); setAccumulatedItems([]); }}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <ScrollArea className="max-h-[320px]">
+                      <div className="p-2">
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1">
+                          {t("sidebar.byJobFunction")}
+                        </div>
+                        {jobFunctionCats.map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => handleCategoryToggle(cat.id)}
+                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors"
+                          >
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                              selectedCategories.includes(cat.id)
+                                ? "bg-primary border-primary text-primary-foreground"
+                                : "border-input"
+                            }`}>
+                              {selectedCategories.includes(cat.id) && <Check size={12} />}
+                            </div>
+                            <span className="truncate">{t(`cat.${cat.slug}` as any) || cat.name}</span>
+                          </button>
+                        ))}
+
+                        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 py-1 mt-2">
+                          {t("sidebar.byFeature")}
+                        </div>
+                        {featureCats.map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => handleCategoryToggle(cat.id)}
+                            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-sm hover:bg-accent transition-colors"
+                          >
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                              selectedCategories.includes(cat.id)
+                                ? "bg-primary border-primary text-primary-foreground"
+                                : "border-input"
+                            }`}>
+                              {selectedCategories.includes(cat.id) && <Check size={12} />}
+                            </div>
+                            <span className="truncate">{t(`cat.${cat.slug}` as any) || cat.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </PopoverContent>
+                </Popover>
+
                 <div className="flex gap-2">
                   <Link href="/submit">
                     <Button className="gap-2 shadow-sm h-11">

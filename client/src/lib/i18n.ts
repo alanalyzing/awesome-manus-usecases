@@ -60,6 +60,8 @@ type TranslationKeys = {
   "gallery.loadMore": string;
   "gallery.upvote": string;
   "gallery.views": string;
+  "gallery.allCategories": string;
+  "gallery.filterByCategory": string;
   // Detail
   "detail.sessionReplay": string;
   "detail.deliverable": string;
@@ -190,6 +192,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.loadMore": "Load More",
     "gallery.upvote": "Upvote",
     "gallery.views": "views",
+    "gallery.allCategories": "All Categories",
+    "gallery.filterByCategory": "Filter by Category",
     "detail.sessionReplay": "Session Replay",
     "detail.deliverable": "View Deliverable",
     "detail.share": "Share",
@@ -311,6 +315,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.loadMore": "加载更多",
     "gallery.upvote": "点赞",
     "gallery.views": "浏览",
+    "gallery.allCategories": "所有分类",
+    "gallery.filterByCategory": "按分类筛选",
     "detail.sessionReplay": "会话回放",
     "detail.deliverable": "查看成果",
     "detail.share": "分享",
@@ -432,6 +438,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.loadMore": "もっと見る",
     "gallery.upvote": "いいね",
     "gallery.views": "閲覧",
+    "gallery.allCategories": "すべてのカテゴリ",
+    "gallery.filterByCategory": "カテゴリで絞り込む",
     "detail.sessionReplay": "セッションリプレイ",
     "detail.deliverable": "成果物を見る",
     "detail.share": "共有",
@@ -553,6 +561,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.loadMore": "더 보기",
     "gallery.upvote": "추천",
     "gallery.views": "조회",
+    "gallery.allCategories": "모든 카테고리",
+    "gallery.filterByCategory": "카테고리 필터",
     "detail.sessionReplay": "세션 리플레이",
     "detail.deliverable": "결과물 보기",
     "detail.share": "공유",
@@ -674,6 +684,8 @@ const translations: Record<Locale, TranslationKeys> = {
     "gallery.loadMore": "Carregar Mais",
     "gallery.upvote": "Votar",
     "gallery.views": "visualizações",
+    "gallery.allCategories": "Todas as Categorias",
+    "gallery.filterByCategory": "Filtrar por Categoria",
     "detail.sessionReplay": "Replay da Sessão",
     "detail.deliverable": "Ver Entrega",
     "detail.share": "Compartilhar",
