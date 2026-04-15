@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ArrowLeft } from "lucide-react";
+import { CheckCircle2, ArrowLeft, Plus } from "lucide-react";
 import { Link } from "wouter";
 
 export default function SubmitSuccessPage() {
@@ -16,12 +16,20 @@ export default function SubmitSuccessPage() {
         </div>
         <h1 className="font-serif text-2xl font-bold mb-3">{t("submit.success")}</h1>
         <p className="text-muted-foreground mb-8 leading-relaxed">{t("submit.successDesc")}</p>
-        <Link href="/">
-          <Button className="gap-2">
-            <ArrowLeft size={16} />
-            {t("submit.backToGallery")}
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link href="/submit">
+            <Button variant="outline" className="gap-2 w-full sm:w-auto">
+              <Plus size={16} />
+              Submit Another Use Case
+            </Button>
+          </Link>
+          <Link href="/">
+            <Button className="gap-2 w-full sm:w-auto">
+              <ArrowLeft size={16} />
+              {t("submit.backToGallery")}
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

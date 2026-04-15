@@ -486,7 +486,7 @@ export function AdminEditDialog({ slug, onClose, onSaved }: AdminEditDialogProps
                     id="edit-session"
                     value={sessionReplayUrl}
                     onChange={(e) => setSessionReplayUrl(e.target.value)}
-                    placeholder="https://manus.im/share/..."
+                    placeholder="https://manus.im/share/... or any manus.space URL"
                   />
                 </div>
 

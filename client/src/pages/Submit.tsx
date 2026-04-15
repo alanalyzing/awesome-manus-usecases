@@ -247,9 +247,10 @@ export default function SubmitPage() {
         toast.error("Session Replay URL is required");
         return;
       }
-      if (!sessionReplayUrl.trim().startsWith("https://manus.im/share/")) {
+      const trimmedUrl = sessionReplayUrl.trim();
+      if (!trimmedUrl.includes("manus.space") && !trimmedUrl.includes("manus.im/share/")) {
         toast.error(
-          "Session Replay URL must start with https://manus.im/share/. To get this link, open your Manus task, click the Share button in the top-right corner, and copy the share link.",
+          "Session Replay URL must contain manus.im/share/ or manus.space. To get this link, open your Manus task, click the Share button in the top-right corner, and copy the share link.",
           { duration: 8000 }
         );
         return;
@@ -333,11 +334,11 @@ export default function SubmitPage() {
               type="url"
               value={sessionReplayUrl}
               onChange={(e) => setSessionReplayUrl(e.target.value)}
-              placeholder="https://manus.im/share/..."
-              className={`bg-card ${sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? "border-destructive focus-visible:ring-destructive" : ""}`}
+              placeholder="https://manus.im/share/... or any manus.space URL"
+              className={`bg-card ${sessionReplayUrl.trim() && !sessionReplayUrl.trim().includes("manus.space") && !sessionReplayUrl.trim().includes("manus.im/share/") ? "border-destructive focus-visible:ring-destructive" : ""}`}
             />
-            {sessionReplayUrl.trim() && !sessionReplayUrl.trim().startsWith("https://manus.im/share/") ? (
-              <p className="text-xs text-destructive">URL must start with https://manus.im/share/. Open your Manus task, click Share (top-right), and copy the link.</p>
+            {sessionReplayUrl.trim() && !sessionReplayUrl.trim().includes("manus.space") && !sessionReplayUrl.trim().includes("manus.im/share/") ? (
+              <p className="text-xs text-destructive">URL must contain manus.im/share/ or manus.space. Open your Manus task, click Share (top-right), and copy the link.</p>
             ) : (
               <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
             )}
@@ -358,7 +359,7 @@ export default function SubmitPage() {
           </div>
 
           {/* AI Summarize Button */}
-          {sessionReplayUrl.trim().startsWith("https://manus.im/share/") && (
+          {(sessionReplayUrl.trim().includes("manus.space") || sessionReplayUrl.trim().includes("manus.im/share/")) && (
             <div className="rounded-lg border bg-card p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
