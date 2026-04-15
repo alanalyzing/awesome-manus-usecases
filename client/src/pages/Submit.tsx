@@ -31,8 +31,9 @@ import {
   ImageIcon,
   LinkIcon,
   Sparkles,
+  AlertTriangle,
 } from "lucide-react";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
 import { LOCALES } from "@/lib/i18n";
@@ -118,6 +119,17 @@ export default function SubmitPage() {
   const uploadMutation = trpc.useCases.uploadScreenshot.useMutation();
   const submitMutation = trpc.useCases.submit.useMutation();
   const aiSummarizeMutation = trpc.useCases.aiSummarize.useMutation();
+
+  // Duplicate URL detection - debounced via stable input
+  const isValidManusUrl = useMemo(() => {
+    const url = sessionReplayUrl.trim();
+    return url.length > 10 && (url.includes("manus.space") || url.includes("manus.im/share/"));
+  }, [sessionReplayUrl]);
+
+  const duplicateCheck = trpc.useCases.checkDuplicateUrl.useQuery(
+    { sessionReplayUrl: sessionReplayUrl.trim() },
+    { enabled: isValidManusUrl, retry: false, staleTime: 30000 }
+  );
 
   const jobFunctionCats = (categoriesQuery.data ?? []).filter((c) => c.type === "job_function");
   const featureCats = (categoriesQuery.data ?? []).filter((c) => c.type === "feature");
@@ -341,6 +353,20 @@ export default function SubmitPage() {
               <p className="text-xs text-destructive">URL must contain manus.im/share/ or manus.space. Open your Manus task, click Share (top-right), and copy the link.</p>
             ) : (
               <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
+            )}
+            {duplicateCheck.data?.isDuplicate && (
+              <div className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-3 mt-2">
+                <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <p className="font-medium text-amber-800 dark:text-amber-300">This session replay URL already exists in the library</p>
+                  <p className="text-amber-700 dark:text-amber-400 mt-1">
+                    Existing use case: <Link href={`/use-case/${duplicateCheck.data.existingSlug}`} className="underline font-medium hover:text-amber-900 dark:hover:text-amber-200">{duplicateCheck.data.existingTitle}</Link>
+                    {duplicateCheck.data.existingStatus === "pending" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-amber-400">Pending Review</Badge>}
+                    {duplicateCheck.data.existingStatus === "approved" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-green-400">Approved</Badge>}
+                  </p>
+                  <p className="text-amber-600 dark:text-amber-500 mt-1">You can still submit if you believe this is a different use case.</p>
+                </div>
+              </div>
             )}
           </div>
 

@@ -72,6 +72,7 @@ import {
   getActiveFeaturedUseCase,
   removeFeaturedUseCase,
   deleteUseCase,
+  checkDuplicateSessionUrl,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -255,6 +256,17 @@ export const appRouter = router({
         const fileKey = `use-cases/${ctx.user.id}/${nanoid()}.${ext}`;
         const { url } = await storagePut(fileKey, buffer, input.contentType);
         return { url, fileKey };
+      }),
+
+    // ─── Check Duplicate URL (for submission form) ─────────────────
+    checkDuplicateUrl: publicProcedure
+      .input(z.object({ sessionReplayUrl: z.string().min(1) }))
+      .query(async ({ input }) => {
+        const existing = await checkDuplicateSessionUrl(input.sessionReplayUrl.trim());
+        if (existing) {
+          return { isDuplicate: true, existingTitle: existing.title, existingSlug: existing.slug, existingStatus: existing.status };
+        }
+        return { isDuplicate: false, existingTitle: null, existingSlug: null, existingStatus: null };
       }),
 
     // ─── AI Summarize (for submission form) ────────────────────────

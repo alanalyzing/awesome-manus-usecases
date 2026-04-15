@@ -285,3 +285,4 @@
 - [x] Check: Comprehensive duplicate detection across all use cases (by share URL, title similarity, description)
 - [x] Relax session replay URL validation: accept any URL with "manus.space" or "manus.im/share/" instead of strict format
 - [x] Add "Submit Another" button after successful use case submission
+- [x] Auto-detect duplicate session replay URLs on submission: warn users if URL already exists in DB

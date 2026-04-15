@@ -327,6 +327,43 @@ export async function getUseCaseBySessionUrl(sessionUrl: string): Promise<{ id: 
   return rows.length > 0 ? rows[0] : null;
 }
 
+/** Check if a session replay URL (or its base share ID) already exists in the database.
+ * Normalizes the URL by extracting the share ID and checking both exact and variant matches.
+ * Returns the existing use case info if found, null otherwise. */
+export async function checkDuplicateSessionUrl(sessionUrl: string): Promise<{ id: number; slug: string; title: string; status: string } | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  // First try exact match
+  const exact = await db.select({ id: useCases.id, slug: useCases.slug, title: useCases.title, status: useCases.status })
+    .from(useCases)
+    .where(eq(useCases.sessionReplayUrl, sessionUrl))
+    .limit(1);
+  if (exact.length > 0) return exact[0];
+
+  // Extract base share ID from URL and check variants
+  // Handles: https://manus.im/share/ABC123, https://manus.im/share/ABC123?replay=1
+  // Also handles: https://xxx.manus.space/...
+  let baseShareId: string | null = null;
+  try {
+    const url = new URL(sessionUrl);
+    if (url.hostname === 'manus.im' && url.pathname.startsWith('/share/')) {
+      baseShareId = url.pathname.split('/share/')[1]?.split('?')[0]?.split('/')[0] || null;
+    }
+  } catch { /* not a valid URL, skip variant matching */ }
+
+  if (baseShareId) {
+    // Check for any URL containing this share ID
+    const variant = await db.select({ id: useCases.id, slug: useCases.slug, title: useCases.title, status: useCases.status })
+      .from(useCases)
+      .where(like(useCases.sessionReplayUrl, `%${baseShareId}%`))
+      .limit(1);
+    if (variant.length > 0) return variant[0];
+  }
+
+  return null;
+}
+
 /** Lightweight fetch for OG meta injection — does NOT increment view count or log view events */
 export async function getUseCaseMetaBySlug(slug: string): Promise<{ title: string; description: string; screenshots: { url: string }[] } | null> {
   const db = await getDb();
