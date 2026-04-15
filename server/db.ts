@@ -167,10 +167,13 @@ export async function getApprovedUseCases(opts: {
 
   let filteredIds: number[] | undefined;
   if (opts.categoryIds && opts.categoryIds.length > 0) {
+    // AND logic: use case must match ALL selected categories
     const matchingUcIds = await db
       .select({ useCaseId: useCaseCategories.useCaseId })
       .from(useCaseCategories)
-      .where(inArray(useCaseCategories.categoryId, opts.categoryIds));
+      .where(inArray(useCaseCategories.categoryId, opts.categoryIds))
+      .groupBy(useCaseCategories.useCaseId)
+      .having(sql`count(DISTINCT ${useCaseCategories.categoryId}) = ${opts.categoryIds.length}`);
     filteredIds = Array.from(new Set(matchingUcIds.map(r => r.useCaseId)));
     if (filteredIds.length === 0) return { items: [], total: 0 };
     conditions.push(inArray(useCases.id, filteredIds));
