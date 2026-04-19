@@ -73,6 +73,7 @@ import {
   removeFeaturedUseCase,
   deleteUseCase,
   checkDuplicateSessionUrl,
+  checkDuplicateDeliverableUrl,
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
@@ -263,6 +264,17 @@ export const appRouter = router({
       .input(z.object({ sessionReplayUrl: z.string().min(1) }))
       .query(async ({ input }) => {
         const existing = await checkDuplicateSessionUrl(input.sessionReplayUrl.trim());
+        if (existing) {
+          return { isDuplicate: true, existingTitle: existing.title, existingSlug: existing.slug, existingStatus: existing.status };
+        }
+        return { isDuplicate: false, existingTitle: null, existingSlug: null, existingStatus: null };
+      }),
+
+    // ─── Check Duplicate Deliverable URL (for submission form) ─────
+    checkDuplicateDeliverable: publicProcedure
+      .input(z.object({ deliverableUrl: z.string().min(1) }))
+      .query(async ({ input }) => {
+        const existing = await checkDuplicateDeliverableUrl(input.deliverableUrl.trim());
         if (existing) {
           return { isDuplicate: true, existingTitle: existing.title, existingSlug: existing.slug, existingStatus: existing.status };
         }

@@ -131,6 +131,17 @@ export default function SubmitPage() {
     { enabled: isValidManusUrl, retry: false, staleTime: 30000 }
   );
 
+  // Duplicate deliverable URL detection
+  const isValidDeliverableUrl = useMemo(() => {
+    const url = deliverableUrl.trim();
+    return url.length > 10 && (url.startsWith("http://") || url.startsWith("https://"));
+  }, [deliverableUrl]);
+
+  const deliverableDuplicateCheck = trpc.useCases.checkDuplicateDeliverable.useQuery(
+    { deliverableUrl: deliverableUrl.trim() },
+    { enabled: isValidDeliverableUrl, retry: false, staleTime: 30000 }
+  );
+
   const jobFunctionCats = (categoriesQuery.data ?? []).filter((c) => c.type === "job_function");
   const featureCats = (categoriesQuery.data ?? []).filter((c) => c.type === "feature");
 
@@ -382,6 +393,20 @@ export default function SubmitPage() {
               className="bg-card"
             />
             <p className="text-xs text-muted-foreground">{t("submit.deliverableHint")}</p>
+            {deliverableDuplicateCheck.data?.isDuplicate && (
+              <div className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-3 mt-2">
+                <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <p className="font-medium text-amber-800 dark:text-amber-300">This deliverable URL already exists in the library</p>
+                  <p className="text-amber-700 dark:text-amber-400 mt-1">
+                    Existing use case: <Link href={`/use-case/${deliverableDuplicateCheck.data.existingSlug}`} className="underline font-medium hover:text-amber-900 dark:hover:text-amber-200">{deliverableDuplicateCheck.data.existingTitle}</Link>
+                    {deliverableDuplicateCheck.data.existingStatus === "pending" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-amber-400">Pending Review</Badge>}
+                    {deliverableDuplicateCheck.data.existingStatus === "approved" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-green-400">Approved</Badge>}
+                  </p>
+                  <p className="text-amber-600 dark:text-amber-500 mt-1">You can still submit if you believe this is a different use case.</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* AI Summarize Button */}

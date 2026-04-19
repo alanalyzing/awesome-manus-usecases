@@ -364,6 +364,37 @@ export async function checkDuplicateSessionUrl(sessionUrl: string): Promise<{ id
   return null;
 }
 
+/** Check if a deliverable URL already exists in the database.
+ * Returns the existing use case info if found, null otherwise. */
+export async function checkDuplicateDeliverableUrl(deliverableUrl: string): Promise<{ id: number; slug: string; title: string; status: string } | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  // Try exact match
+  const exact = await db.select({ id: useCases.id, slug: useCases.slug, title: useCases.title, status: useCases.status })
+    .from(useCases)
+    .where(eq(useCases.deliverableUrl, deliverableUrl))
+    .limit(1);
+  if (exact.length > 0) return exact[0];
+
+  // Normalize: strip trailing slashes and query params for comparison
+  let normalizedUrl: string | null = null;
+  try {
+    const url = new URL(deliverableUrl);
+    normalizedUrl = `${url.origin}${url.pathname.replace(/\/+$/, '')}`;
+  } catch { /* not a valid URL, skip */ }
+
+  if (normalizedUrl) {
+    const variant = await db.select({ id: useCases.id, slug: useCases.slug, title: useCases.title, status: useCases.status })
+      .from(useCases)
+      .where(like(useCases.deliverableUrl, `${normalizedUrl}%`))
+      .limit(1);
+    if (variant.length > 0) return variant[0];
+  }
+
+  return null;
+}
+
 /** Lightweight fetch for OG meta injection — does NOT increment view count or log view events */
 export async function getUseCaseMetaBySlug(slug: string): Promise<{ title: string; description: string; screenshots: { url: string }[] } | null> {
   const db = await getDb();

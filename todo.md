@@ -288,3 +288,4 @@
 - [x] Auto-detect duplicate session replay URLs on submission: warn users if URL already exists in DB
 - [x] Allow search by URL slug from session replay and deliverable URLs (already supported via LIKE matching on both fields)
 - [x] Rename category "Public Services" to "Smart Cities" (name + slug)
+- [x] Add duplicate detection for deliverable URL in submission form
