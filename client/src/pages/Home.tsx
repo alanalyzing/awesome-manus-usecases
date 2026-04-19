@@ -253,6 +253,7 @@ function FeaturedSection({ onCardClick }: { onCardClick: (slug: string) => void 
 
 /** Collections section — horizontal scrollable strip of curated collections */
 function CollectionsSection({ onCardClick }: { onCardClick: (slug: string) => void }) {
+  const { t } = useI18n();
   const collectionsQuery = trpc.useCases.collections.useQuery({ publishedOnly: true });
   const cols = collectionsQuery.data ?? [];
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
@@ -284,7 +285,7 @@ function CollectionsSection({ onCardClick }: { onCardClick: (slug: string) => vo
                 <p className="text-[11px] text-muted-foreground line-clamp-2 mb-2">{col.description}</p>
               )}
               <div className="text-[10px] text-muted-foreground">
-                {col.useCaseCount} use case{col.useCaseCount !== 1 ? "s" : ""}
+                {col.useCaseCount} {col.useCaseCount !== 1 ? t("sidebar.useCasesCount") : t("sidebar.useCaseCount")}
               </div>
             </div>
           ))}
@@ -383,6 +384,7 @@ function AnimatedCounter({ target, duration = 1200 }: { target: number; duration
 
 /** Contributor Leaderboard Widget for sidebar */
 function LeaderboardWidget() {
+  const { t } = useI18n();
   const leaderboardQuery = trpc.admin.contributorLeaderboard.useQuery({ limit: 5 });
   const entries = leaderboardQuery.data ?? [];
 
@@ -391,7 +393,7 @@ function LeaderboardWidget() {
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
           <Trophy size={12} />
-          Top Contributors
+          {t("sidebar.topContributors")}
         </h3>
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -413,7 +415,7 @@ function LeaderboardWidget() {
     <div>
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
         <Trophy size={12} />
-        Top Contributors
+        {t("sidebar.topContributors")}
       </h3>
       <div className="space-y-0.5">
         {entries.map((entry: any, index: number) => (
@@ -447,10 +449,10 @@ function LeaderboardWidget() {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium truncate">{entry.name || "Anonymous"}</div>
+              <div className="text-xs font-medium truncate">{entry.name || t("common.anonymous")}</div>
             </div>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground shrink-0">
-              <span className="tabular-nums">{entry.approvedCount} use case{entry.approvedCount !== 1 ? "s" : ""}</span>
+              <span className="tabular-nums">{entry.approvedCount} {entry.approvedCount !== 1 ? t("sidebar.useCasesCount") : t("sidebar.useCaseCount")}</span>
               <span className="flex items-center gap-0.5 tabular-nums">
                 <ArrowUp size={9} />
                 {entry.totalUpvotes}
@@ -460,7 +462,7 @@ function LeaderboardWidget() {
         ))}
       </div>
       <Link href="/leaderboard" className="block mt-2 px-2">
-        <span className="text-[11px] text-primary hover:underline">View full leaderboard →</span>
+        <span className="text-[11px] text-primary hover:underline">{t("sidebar.viewLeaderboard")} →</span>
       </Link>
     </div>
   );
@@ -777,7 +779,7 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden">
         {/* ─── Sidebar ─── */}
         <AnimatePresence mode="wait">
           {sidebarOpen && (
@@ -786,7 +788,8 @@ export default function Home() {
               animate={{ width: 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="border-r bg-sidebar text-sidebar-foreground overflow-hidden shrink-0 hidden lg:block h-full"
+              className="border-r bg-sidebar text-sidebar-foreground overflow-hidden shrink-0 hidden lg:block"
+              style={{ height: 'calc(100vh - 3.5rem)' }}
             >
               <ScrollArea className="h-[calc(100vh-3.5rem)]">
                 <div className="p-4 space-y-5">
@@ -951,7 +954,7 @@ export default function Home() {
         )}
 
         {/* ─── Main Content ─── */}
-        <main id="main-content" className="flex-1 overflow-auto h-full" tabIndex={-1}>
+        <main id="main-content" className="flex-1 overflow-auto" style={{ height: 'calc(100vh - 3.5rem)' }} tabIndex={-1}>
           {/* ─── Hero Section with Search ─── */}
           <div className="relative overflow-hidden border-b bg-gradient-to-br from-background via-background to-accent/30">
             {/* Decorative background pattern */}
@@ -1141,7 +1144,7 @@ export default function Home() {
             {/* Sort & Filter Controls */}
             <div className="flex flex-col sm:flex-row gap-3 mb-4">
               <div className="flex-1 flex items-center">
-                <h2 className="font-serif font-bold text-lg">{isFiltering ? 'Search Results' : 'All Use Cases'}</h2>
+                <h2 className="font-serif font-bold text-lg">{isFiltering ? t('gallery.searchResults') : t('gallery.allUseCases')}</h2>
               </div>
               <Select value={sort} onValueChange={(v) => { setSort(v as any); setOffset(0); setAccumulatedItems([]); }}>
                 <SelectTrigger className="w-[180px] bg-card">
@@ -1158,15 +1161,15 @@ export default function Home() {
                 <SelectTrigger className="w-[160px] bg-card">
                   <div className="flex items-center gap-1.5">
                     <Star size={14} className="text-amber-500 fill-amber-500" />
-                    <span>{minScore > 0 ? `${minScore}+ Score` : "All Scores"}</span>
+                    <span>{minScore > 0 ? `${minScore}+ ${t("gallery.scoreAbove")}` : t("gallery.allScores")}</span>
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">All Scores</SelectItem>
-                  <SelectItem value="3">3.0+ Score</SelectItem>
-                  <SelectItem value="3.5">3.5+ Score</SelectItem>
-                  <SelectItem value="4">4.0+ Score</SelectItem>
-                  <SelectItem value="4.5">4.5+ Score</SelectItem>
+                  <SelectItem value="0">{t("gallery.allScores")}</SelectItem>
+                  <SelectItem value="3">3.0+ {t("gallery.scoreAbove")}</SelectItem>
+                  <SelectItem value="3.5">3.5+ {t("gallery.scoreAbove")}</SelectItem>
+                  <SelectItem value="4">4.0+ {t("gallery.scoreAbove")}</SelectItem>
+                  <SelectItem value="4.5">4.5+ {t("gallery.scoreAbove")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1184,7 +1187,7 @@ export default function Home() {
                 {minScore > 0 && (
                   <Badge variant="secondary" className="gap-1 bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20">
                     <Star size={12} className="fill-current" />
-                    {minScore}+ Score
+                    {minScore}+ {t("gallery.scoreAbove")}
                     <button onClick={() => { setMinScore(0); setOffset(0); setAccumulatedItems([]); }} className="ml-1 hover:opacity-70">&times;</button>
                   </Badge>
                 )}
@@ -1205,7 +1208,7 @@ export default function Home() {
                   ) : null;
                 })}
                 <button onClick={handleShowAll} className="text-xs text-muted-foreground hover:text-foreground underline">
-                  Clear all
+                  {t("gallery.clearAll")}
                 </button>
               </div>
             )}
@@ -1213,7 +1216,7 @@ export default function Home() {
             {/* Result count */}
             {!useCasesQuery.isLoading && items.length > 0 && (
               <p className="text-xs text-muted-foreground mb-4">
-                Showing {items.length} of {total} use case{total !== 1 ? "s" : ""}
+                {t("gallery.showingOf").replace("{0}", String(items.length)).replace("{1}", String(total))}
               </p>
             )}
 
@@ -1393,7 +1396,7 @@ export default function Home() {
                   <div ref={sentinelRef} className="flex justify-center py-8">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                      Loading more...
+                      {t("common.loading")}
                     </div>
                   </div>
                 )}
@@ -1402,7 +1405,7 @@ export default function Home() {
                 {!hasMore && items.length > 0 && (
                   <div className="text-center py-8">
                     <p className="text-xs text-muted-foreground">
-                      You've seen all {total} use case{total !== 1 ? "s" : ""}
+                      {t("gallery.seenAll").replace("{0}", String(total))}
                     </p>
                   </div>
                 )}

@@ -291,3 +291,10 @@
 - [x] Add duplicate detection for deliverable URL in submission form
 - [x] SEO: Add meta keywords to the homepage at /
 - [x] Fix favicon: add white background so Manus glyph is visible on dark browser tabs
+- [x] Bug: Left sidebar not reaching bottom of page (gap below footer content)
+- [x] QA: Homepage layout, infinite scroll, sorting, filtering, trending
+- [x] QA: Subpages (use case detail, submit, about, admin, leaderboard)
+- [x] QA: Internationalization - all 5 languages for missing/broken translations (added 10+ missing i18n keys across all 5 locales)
+- [x] QA: Mobile responsiveness and UI/UX across breakpoints
+- [x] QA: Fix all discovered bugs for launch readiness
+- [x] Add anti-scraping protections: robots.txt, API rate limiting, meta tags, honeypot detection

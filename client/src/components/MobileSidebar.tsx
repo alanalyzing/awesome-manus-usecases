@@ -39,6 +39,7 @@ interface MobileSidebarProps {
 }
 
 function MobileLeaderboard() {
+  const { t } = useI18n();
   const leaderboardQuery = trpc.admin.contributorLeaderboard.useQuery({ limit: 5 });
   const entries = leaderboardQuery.data ?? [];
 
@@ -47,7 +48,7 @@ function MobileLeaderboard() {
       <div>
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
           <Trophy size={12} />
-          Top Contributors
+          {t("sidebar.topContributors")}
         </h3>
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -69,7 +70,7 @@ function MobileLeaderboard() {
     <div>
       <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
         <Trophy size={12} />
-        Top Contributors
+        {t("sidebar.topContributors")}
       </h3>
       <div className="space-y-0.5">
         {entries.map((entry: any, index: number) => (
@@ -103,7 +104,7 @@ function MobileLeaderboard() {
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium truncate">{entry.name || "Anonymous"}</div>
+              <div className="text-xs font-medium truncate">{entry.name || t("common.anonymous")}</div>
             </div>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground shrink-0">
               <span className="tabular-nums">{entry.approvedCount}</span>
@@ -116,7 +117,7 @@ function MobileLeaderboard() {
         ))}
       </div>
       <Link href="/leaderboard" className="block mt-2 px-2">
-        <span className="text-[11px] text-primary hover:underline">View full leaderboard →</span>
+        <span className="text-[11px] text-primary hover:underline">{t("sidebar.viewLeaderboard")} →</span>
       </Link>
     </div>
   );

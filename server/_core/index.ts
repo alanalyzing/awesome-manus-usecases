@@ -5,6 +5,7 @@ import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
+import { rateLimit } from "./rateLimit";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -42,6 +43,20 @@ async function startServer() {
   registerStorageProxy(app);
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  // Rate limiting for API endpoints
+  app.use("/api/trpc", rateLimit({
+    name: "trpc",
+    windowMs: 60_000, // 1 minute
+    max: 120, // 120 requests per minute per IP
+    message: "Too many API requests. Please slow down.",
+  }));
+  app.use("/api/submit", rateLimit({
+    name: "submit",
+    windowMs: 3600_000, // 1 hour
+    max: 30, // 30 submissions per hour per IP
+    message: "Too many submissions. Please try again later.",
+    skipLocalhost: process.env.NODE_ENV === "development",
+  }));
   // Public API routes (for programmatic submission)
   app.use("/api", apiRouter);
   app.use("/api", rssRouter);

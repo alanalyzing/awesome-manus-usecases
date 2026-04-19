@@ -136,6 +136,21 @@ type TranslationKeys = {
   "sidebar.learnMore": string;
   "sidebar.aboutPortal": string;
   "sidebar.trendingThisWeek": string;
+  // Gallery extra
+  "gallery.allUseCases": string;
+  "gallery.searchResults": string;
+  "gallery.allScores": string;
+  "gallery.scoreAbove": string;
+  "gallery.showingOf": string;
+  "gallery.seenAll": string;
+  // Sidebar leaderboard
+  "sidebar.viewLeaderboard": string;
+  "sidebar.useCaseCount": string;
+  "sidebar.useCasesCount": string;
+  "sidebar.likes": string;
+  "sidebar.topContributors": string;
+  "gallery.clearAll": string;
+  "common.anonymous": string;
   // Common
   "common.loading": string;
   "common.error": string;
@@ -269,6 +284,19 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.learnMore": "Learn More",
     "sidebar.aboutPortal": "About This Portal",
     "sidebar.trendingThisWeek": "Trending This Week",
+    "gallery.allUseCases": "All Use Cases",
+    "gallery.searchResults": "Search Results",
+    "gallery.allScores": "All Scores",
+    "gallery.scoreAbove": "Score",
+    "gallery.showingOf": "Showing {0} of {1} use cases",
+    "gallery.seenAll": "You've seen all {0} use cases",
+    "sidebar.viewLeaderboard": "View full leaderboard",
+    "sidebar.useCaseCount": "use case",
+    "sidebar.useCasesCount": "use cases",
+    "sidebar.likes": "likes",
+    "sidebar.topContributors": "Top Contributors",
+    "gallery.clearAll": "Clear all",
+    "common.anonymous": "Anonymous",
   },
   zh: {
     "nav.useCaseLibrary": "Awesome Manus 用例",
@@ -392,6 +420,19 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.learnMore": "了解更多",
     "sidebar.aboutPortal": "关于本站",
     "sidebar.trendingThisWeek": "本周热门",
+    "gallery.allUseCases": "全部用例",
+    "gallery.searchResults": "搜索结果",
+    "gallery.allScores": "所有评分",
+    "gallery.scoreAbove": "分以上",
+    "gallery.showingOf": "显示 {1} 个用例中的 {0} 个",
+    "gallery.seenAll": "已浏览全部 {0} 个用例",
+    "sidebar.viewLeaderboard": "查看完整排行榜",
+    "sidebar.useCaseCount": "个用例",
+    "sidebar.useCasesCount": "个用例",
+    "sidebar.likes": "个赞",
+    "sidebar.topContributors": "最佳贡献者",
+    "gallery.clearAll": "清除全部",
+    "common.anonymous": "匿名",
   },
   ja: {
     "nav.useCaseLibrary": "Awesome Manus ユースケース",
@@ -515,6 +556,19 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.learnMore": "詳しく見る",
     "sidebar.aboutPortal": "このポータルについて",
     "sidebar.trendingThisWeek": "今週のトレンド",
+    "gallery.allUseCases": "すべてのユースケース",
+    "gallery.searchResults": "検索結果",
+    "gallery.allScores": "すべてのスコア",
+    "gallery.scoreAbove": "以上",
+    "gallery.showingOf": "{1}件中{0}件を表示",
+    "gallery.seenAll": "全{0}件を表示しました",
+    "sidebar.viewLeaderboard": "全ランキングを見る",
+    "sidebar.useCaseCount": "件",
+    "sidebar.useCasesCount": "件",
+    "sidebar.likes": "いいね",
+    "sidebar.topContributors": "トップコントリビューター",
+    "gallery.clearAll": "すべてクリア",
+    "common.anonymous": "匿名",
   },
   ko: {
     "nav.useCaseLibrary": "Awesome Manus 유스케이스",
@@ -638,6 +692,19 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.learnMore": "더 알아보기",
     "sidebar.aboutPortal": "이 포털 소개",
     "sidebar.trendingThisWeek": "이번 주 트렌드",
+    "gallery.allUseCases": "모든 유스케이스",
+    "gallery.searchResults": "검색 결과",
+    "gallery.allScores": "모든 점수",
+    "gallery.scoreAbove": "점 이상",
+    "gallery.showingOf": "{1}개 중 {0}개 표시",
+    "gallery.seenAll": "전체 {0}개를 모두 확인했습니다",
+    "sidebar.viewLeaderboard": "전체 리더보드 보기",
+    "sidebar.useCaseCount": "건",
+    "sidebar.useCasesCount": "건",
+    "sidebar.likes": "추천",
+    "sidebar.topContributors": "톱 기여자",
+    "gallery.clearAll": "모두 지우기",
+    "common.anonymous": "익명",
   },
   "pt-BR": {
     "nav.useCaseLibrary": "Awesome Manus Use Cases",
@@ -761,6 +828,19 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.learnMore": "Saiba Mais",
     "sidebar.aboutPortal": "Sobre Este Portal",
     "sidebar.trendingThisWeek": "Tendências da Semana",
+    "gallery.allUseCases": "Todos os Casos de Uso",
+    "gallery.searchResults": "Resultados da Pesquisa",
+    "gallery.allScores": "Todas as Pontuações",
+    "gallery.scoreAbove": "Pontuação",
+    "gallery.showingOf": "Mostrando {0} de {1} casos de uso",
+    "gallery.seenAll": "Você viu todos os {0} casos de uso",
+    "sidebar.viewLeaderboard": "Ver ranking completo",
+    "sidebar.useCaseCount": "caso de uso",
+    "sidebar.useCasesCount": "casos de uso",
+    "sidebar.likes": "votos",
+    "sidebar.topContributors": "Maiores Contribuidores",
+    "gallery.clearAll": "Limpar tudo",
+    "common.anonymous": "Anônimo",
   },
 };
 
