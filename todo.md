@@ -290,3 +290,4 @@
 - [x] Rename category "Public Services" to "Smart Cities" (name + slug)
 - [x] Add duplicate detection for deliverable URL in submission form
 - [x] SEO: Add meta keywords to the homepage at /
+- [x] Fix favicon: add white background so Manus glyph is visible on dark browser tabs
