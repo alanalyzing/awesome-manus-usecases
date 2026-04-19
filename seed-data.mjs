@@ -165,7 +165,7 @@ const sampleUseCases = [
     upvoteCount: 37,
     viewCount: 800,
     language: "en",
-    categoryIds: [10, 12, 13], // Public Services, SMBs, Web Development
+    categoryIds: [10, 12, 13], // Smart Cities, SMBs, Web Development
   },
   {
     title: "AI-Powered Customer Onboarding Flow",

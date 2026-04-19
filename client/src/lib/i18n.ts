@@ -32,7 +32,7 @@ type TranslationKeys = {
   "cat.vc-pe": string;
   "cat.e-commerce": string;
   "cat.commercial-real-estate": string;
-  "cat.public-services": string;
+  "cat.smart-cities": string;
   "cat.startups": string;
   "cat.others-job": string;
   "cat.others-feature": string;
@@ -166,7 +166,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.vc-pe": "VC / PE",
     "cat.e-commerce": "E-commerce",
     "cat.commercial-real-estate": "Commercial Real Estate",
-    "cat.public-services": "Public Services",
+    "cat.smart-cities": "Smart Cities",
     "cat.startups": "Startups",
     "cat.others-job": "Others",
     "cat.others-feature": "Others",
@@ -289,7 +289,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.vc-pe": "风投/私募",
     "cat.e-commerce": "电子商务",
     "cat.commercial-real-estate": "商业地产",
-    "cat.public-services": "公共服务",
+    "cat.smart-cities": "智慧城市",
     "cat.startups": "创业公司",
     "cat.others-job": "其他",
     "cat.others-feature": "其他",
@@ -412,7 +412,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.vc-pe": "VC / PE",
     "cat.e-commerce": "Eコマース",
     "cat.commercial-real-estate": "商業不動産",
-    "cat.public-services": "公共サービス",
+    "cat.smart-cities": "スマートシティ",
     "cat.startups": "スタートアップ",
     "cat.others-job": "その他",
     "cat.others-feature": "その他",
@@ -535,7 +535,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.vc-pe": "VC / PE",
     "cat.e-commerce": "이커머스",
     "cat.commercial-real-estate": "상업용 부동산",
-    "cat.public-services": "공공 서비스",
+    "cat.smart-cities": "스마트 시티",
     "cat.startups": "스타트업",
     "cat.others-job": "기타",
     "cat.others-feature": "기타",
@@ -658,7 +658,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "cat.vc-pe": "VC / PE",
     "cat.e-commerce": "E-commerce",
     "cat.commercial-real-estate": "Imóveis Comerciais",
-    "cat.public-services": "Serviços Públicos",
+    "cat.smart-cities": "Cidades Inteligentes",
     "cat.startups": "Startups",
     "cat.others-job": "Outros",
     "cat.others-feature": "Outros",
