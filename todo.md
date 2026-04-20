@@ -301,3 +301,5 @@
 - [x] Show AI score on use case popup/modal card
 - [x] Add dynamic sitemap.xml endpoint for all approved use cases
 - [x] Fix related use cases to recommend top-scored items from same categories (already implemented - sorts by AI score desc, upvotes as tiebreaker)
+- [x] Add JSON-LD structured data (schema.org) to use case detail pages for richer Google search results
+- [x] Auto-generate Open Graph preview images for use case pages (branded card with title, score, category)

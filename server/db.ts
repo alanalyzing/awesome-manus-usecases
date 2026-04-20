@@ -396,7 +396,16 @@ export async function checkDuplicateDeliverableUrl(deliverableUrl: string): Prom
 }
 
 /** Lightweight fetch for OG meta injection — does NOT increment view count or log view events */
-export async function getUseCaseMetaBySlug(slug: string): Promise<{ title: string; description: string; screenshots: { url: string }[] } | null> {
+export async function getUseCaseMetaBySlug(slug: string): Promise<{
+  title: string;
+  description: string;
+  screenshots: { url: string }[];
+  categories: string[];
+  aiScore: string | null;
+  submitterName: string | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+} | null> {
   const db = await getDb();
   if (!db) return null;
 
@@ -406,10 +415,25 @@ export async function getUseCaseMetaBySlug(slug: string): Promise<{ title: strin
 
   const screenshotRows = await db.select({ url: screenshots.url }).from(screenshots).where(eq(screenshots.useCaseId, uc.id)).orderBy(asc(screenshots.sortOrder)).limit(1);
 
+  const ucCats = await db
+    .select({ name: categories.name })
+    .from(useCaseCategories)
+    .innerJoin(categories, eq(useCaseCategories.categoryId, categories.id))
+    .where(eq(useCaseCategories.useCaseId, uc.id));
+
+  const aiScoreRows = await db.select({ overallScore: aiScores.overallScore }).from(aiScores).where(eq(aiScores.useCaseId, uc.id)).orderBy(desc(aiScores.scannedAt)).limit(1);
+
+  const submitterRows = await db.select({ name: users.name }).from(users).where(eq(users.id, uc.submitterId)).limit(1);
+
   return {
     title: uc.title,
     description: uc.description ?? '',
     screenshots: screenshotRows,
+    categories: ucCats.map(c => c.name),
+    aiScore: aiScoreRows.length > 0 ? aiScoreRows[0].overallScore : null,
+    submitterName: submitterRows[0]?.name ?? null,
+    createdAt: uc.createdAt,
+    updatedAt: uc.updatedAt,
   };
 }
 

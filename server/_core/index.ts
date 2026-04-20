@@ -14,6 +14,7 @@ import { rssRouter } from "../rssFeed";
 import { updateRouter } from "../apiUpdate";
 import { extensionRouter } from "../apiExtension";
 import { sitemapRouter } from "../sitemap";
+import { ogImageRouter } from "../ogImage";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -65,6 +66,8 @@ async function startServer() {
   app.use("/api", extensionRouter);
   // Sitemap for SEO
   app.use(sitemapRouter);
+  // OG image generation
+  app.use("/api", ogImageRouter);
   // tRPC API
   app.use(
     "/api/trpc",
