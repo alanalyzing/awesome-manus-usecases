@@ -199,7 +199,7 @@ updateRouter.patch("/update", async (req: Request, res: Response) => {
     }
   } catch (error: any) {
     console.error("[API Update] Error:", error);
-    return res.status(500).json({ error: "Internal server error", message: error.message });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -275,7 +275,7 @@ updateRouter.patch("/update/bulk", async (req: Request, res: Response) => {
           ...(result.warnings.length > 0 && { warnings: result.warnings }),
         });
       } catch (err: any) {
-        results.push({ index: i, success: false, error: err.message || "Unexpected error" });
+        results.push({ index: i, success: false, error: "Unexpected error processing this item" });
       }
     }
 
@@ -288,7 +288,7 @@ updateRouter.patch("/update/bulk", async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("[API Bulk Update] Error:", error);
-    return res.status(500).json({ error: "Internal server error", message: error.message });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

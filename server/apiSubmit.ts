@@ -181,7 +181,7 @@ apiRouter.post("/submit", async (req: Request, res: Response) => {
     console.error("[API Submit] Error:", error);
     return res.status(500).json({
       error: "Internal server error",
-      message: error.message || "An unexpected error occurred",
+      message: "An unexpected error occurred",
     });
   }
 });
@@ -303,7 +303,7 @@ apiRouter.post("/submit/bulk", async (req: Request, res: Response) => {
           ...(unmatchedSlugs.length > 0 && { warnings: [`Skipped unknown slugs: ${unmatchedSlugs.join(", ")}`] }),
         });
       } catch (err: any) {
-        results.push({ index: i, success: false, error: err.message || "Unexpected error" });
+        results.push({ index: i, success: false, error: "Unexpected error processing this item" });
       }
     }
 
@@ -326,7 +326,7 @@ apiRouter.post("/submit/bulk", async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("[API Bulk Submit] Error:", error);
-    return res.status(500).json({ error: "Internal server error", message: error.message });
+    return res.status(500).json({ error: "Internal server error" });
   }
 });
 

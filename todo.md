@@ -305,3 +305,9 @@
 - [x] Auto-generate Open Graph preview images for use case pages (branded card with title, score, category)
 - [x] Enhance Share button on use case modal with social media dropdown (LinkedIn, X/Twitter, Facebook, copy link)
 - [x] Change upvote arrow icon to heart shape across all components
+- [x] Security audit: check for hardcoded secrets, API keys, credentials in source files
+- [x] Security audit: verify no source maps exposed in production build
+- [x] Security audit: check for AI thinking process leakage and debug artifacts
+- [x] Security audit: verify environment variable handling (no sensitive vars in VITE_ prefix)
+- [x] Security audit: verify API endpoint security and no data over-exposure — fixed: stripped AI reasoning from public API, removed email from public profile, sanitized 500 error responses
+- [x] Security audit: verify deployed site has no client-side leakage

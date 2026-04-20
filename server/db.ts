@@ -296,7 +296,7 @@ export async function getApprovedUseCases(opts: {
     if (!aiScoreMap.has(s.useCaseId)) {
       aiScoreMap.set(s.useCaseId, {
         overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore,
-        impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning,
+        impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: null, // Strip reasoning from public API
       });
       scoreNumMap.set(s.useCaseId, parseFloat(s.overallScore));
     }
@@ -466,7 +466,7 @@ export async function getUseCaseBySlug(slug: string, userId?: number): Promise<U
     hasUpvoted = upvoteRow.length > 0;
   }
 
-  // Fetch AI score
+  // Fetch AI score (strip reasoning from public API)
   const aiScoreRows = await db.select().from(aiScores).where(eq(aiScores.useCaseId, uc.id)).orderBy(desc(aiScores.scannedAt)).limit(1);
   const aiScoreData = aiScoreRows.length > 0 ? {
     overall: aiScoreRows[0].overallScore,
@@ -475,7 +475,7 @@ export async function getUseCaseBySlug(slug: string, userId?: number): Promise<U
     impact: aiScoreRows[0].impactScore,
     complexity: aiScoreRows[0].complexityScore,
     presentation: aiScoreRows[0].presentationScore,
-    reasoning: aiScoreRows[0].reasoning,
+    reasoning: null, // Reasoning is internal — only visible in admin panel
   } : null;
 
   return {
@@ -524,7 +524,7 @@ export async function getRelatedUseCases(useCaseId: number, categoryIds: number[
     if (!scoreMap.has(s.useCaseId)) {
       scoreMap.set(s.useCaseId, {
         overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore,
-        impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning,
+        impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: null, // Strip reasoning from public API
       });
       scoreNumMap.set(s.useCaseId, parseFloat(s.overallScore));
     }
@@ -615,7 +615,7 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
     for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
     const fbScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds)).orderBy(desc(aiScores.scannedAt));
     const fbScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
-    for (const s of fbScoreRows) { if (!fbScoreMap.has(s.useCaseId)) fbScoreMap.set(s.useCaseId, { overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore, impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning }); }
+    for (const s of fbScoreRows) { if (!fbScoreMap.has(s.useCaseId)) fbScoreMap.set(s.useCaseId, { overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore, impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: null }); }
     return rows.map(uc => ({
       ...uc,
       submitterName: submitterMap.get(uc.submitterId) ?? null,
@@ -653,7 +653,7 @@ export async function getTrendingUseCases(limit = 6): Promise<UseCaseWithDetails
   for (const s of screenshotRows) { if (!ssMap.has(s.useCaseId)) ssMap.set(s.useCaseId, []); ssMap.get(s.useCaseId)!.push({ id: s.id, url: s.url, sortOrder: s.sortOrder }); }
   const trScoreRows = await db.select().from(aiScores).where(inArray(aiScores.useCaseId, ucIds)).orderBy(desc(aiScores.scannedAt));
   const trScoreMap = new Map<number, { overall: string; completeness: string; innovativeness: string; impact: string; complexity: string; presentation: string; reasoning: string | null }>();
-  for (const s of trScoreRows) { if (!trScoreMap.has(s.useCaseId)) trScoreMap.set(s.useCaseId, { overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore, impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning }); }
+  for (const s of trScoreRows) { if (!trScoreMap.has(s.useCaseId)) trScoreMap.set(s.useCaseId, { overall: s.overallScore, completeness: s.completenessScore, innovativeness: s.innovativenessScore, impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: null }); }
 
   // Sort by recent upvote count
   const trendingMap = new Map(trendingIds.map(r => [r.useCaseId, r.recentUpvotes]));
@@ -862,10 +862,7 @@ export async function getAdminUseCases(opts: {
         overall: s.overallScore,
         completeness: s.completenessScore,
         innovativeness: s.innovativenessScore,
-        impact: s.impactScore,
-        complexity: s.complexityScore,
-        presentation: s.presentationScore,
-        reasoning: s.reasoning,
+        impact: s.impactScore, complexity: s.complexityScore, presentation: s.presentationScore, reasoning: s.reasoning, // Admin can see reasoning
       });
     }
   }
@@ -1358,7 +1355,7 @@ export async function getProfileByUserId(userId: number): Promise<(UserProfile &
 
 export async function getProfileByUsername(username: string): Promise<(UserProfile & {
   socialHandles: UserSocialHandle[];
-  user: { id: number; name: string | null; email: string | null; createdAt: Date };
+  user: { id: number; name: string | null; createdAt: Date };
   stats: { approvedCount: number; totalUpvotes: number; totalViews: number };
   useCases: (UseCase & { categories: { id: number; name: string; slug: string; type: string }[]; screenshots: { id: number; url: string; sortOrder: number }[] })[];
 }) | null> {
@@ -1374,7 +1371,9 @@ export async function getProfileByUsername(username: string): Promise<(UserProfi
   const userRows = await db.select({
     id: users.id, name: users.name, email: users.email, createdAt: users.createdAt,
   }).from(users).where(eq(users.id, profile.userId)).limit(1);
-  const user = userRows[0] ?? { id: profile.userId, name: null, email: null, createdAt: new Date() };
+  const rawUser = userRows[0] ?? { id: profile.userId, name: null, email: null, createdAt: new Date() };
+  // Strip email from public profile response
+  const user = { id: rawUser.id, name: rawUser.name, createdAt: rawUser.createdAt };
 
   // Get approved use cases by this user
   const ucRows = await db.select().from(useCases)
