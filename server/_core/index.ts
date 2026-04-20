@@ -13,6 +13,7 @@ import { apiRouter } from "../apiSubmit";
 import { rssRouter } from "../rssFeed";
 import { updateRouter } from "../apiUpdate";
 import { extensionRouter } from "../apiExtension";
+import { sitemapRouter } from "../sitemap";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -62,6 +63,8 @@ async function startServer() {
   app.use("/api", rssRouter);
   app.use("/api", updateRouter);
   app.use("/api", extensionRouter);
+  // Sitemap for SEO
+  app.use(sitemapRouter);
   // tRPC API
   app.use(
     "/api/trpc",

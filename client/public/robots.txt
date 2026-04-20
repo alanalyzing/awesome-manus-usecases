@@ -3,6 +3,7 @@
 
 User-agent: *
 Allow: /
+Allow: /sitemap.xml
 Disallow: /admin
 Disallow: /api/
 
@@ -52,3 +53,6 @@ Disallow: /
 
 # Crawl-delay for all bots
 Crawl-delay: 10
+
+# Sitemap
+Sitemap: /sitemap.xml

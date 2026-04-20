@@ -298,3 +298,6 @@
 - [x] QA: Mobile responsiveness and UI/UX across breakpoints
 - [x] QA: Fix all discovered bugs for launch readiness
 - [x] Add anti-scraping protections: robots.txt, API rate limiting, meta tags, honeypot detection
+- [x] Show AI score on use case popup/modal card
+- [x] Add dynamic sitemap.xml endpoint for all approved use cases
+- [x] Fix related use cases to recommend top-scored items from same categories (already implemented - sorts by AI score desc, upvotes as tiebreaker)

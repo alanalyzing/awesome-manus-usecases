@@ -24,6 +24,7 @@ import {
   ChevronRight,
   X,
   Pencil,
+  Star,
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import { AdminEditDialog } from "@/components/AdminEditDialog";
@@ -219,6 +220,12 @@ export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseMod
 
                 {/* Meta */}
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-5">
+                  {uc.aiScore && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold text-xs">
+                      <Star size={12} className="fill-amber-500 text-amber-500" />
+                      {Number(uc.aiScore.overall).toFixed(1)}
+                    </span>
+                  )}
                   <span className="flex items-center gap-1">
                     <Calendar size={14} />
                     {new Date(uc.createdAt).toLocaleDateString()}
