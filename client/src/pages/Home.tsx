@@ -33,7 +33,6 @@ import {
   Sparkles,
   ExternalLink,
   Shield,
-  ArrowUp,
   Bell,
   TrendingUp,
   Users,
@@ -171,7 +170,7 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
                   </h3>
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <ArrowUp size={10} />
+                      <Heart size={10} />
                       {uc.upvoteCount}
                     </span>
                     <span className="flex items-center gap-1">
@@ -454,7 +453,7 @@ function LeaderboardWidget() {
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground shrink-0">
               <span className="tabular-nums">{entry.approvedCount} {entry.approvedCount !== 1 ? t("sidebar.useCasesCount") : t("sidebar.useCaseCount")}</span>
               <span className="flex items-center gap-0.5 tabular-nums">
-                <ArrowUp size={9} />
+                <Heart size={9} />
                 {entry.totalUpvotes}
               </span>
             </div>
@@ -1380,7 +1379,7 @@ export default function Home() {
                                 whileTap={{ scale: 1.3, rotate: -10 }}
                                 transition={{ type: "spring", stiffness: 400 }}
                               >
-                                <ArrowUp size={13} className={uc.hasUpvoted ? "text-primary" : ""} />
+                                <Heart size={13} className={uc.hasUpvoted ? "fill-current text-primary" : ""} />
                               </motion.div>
                               <span className="tabular-nums">{uc.upvoteCount}</span>
                             </button>

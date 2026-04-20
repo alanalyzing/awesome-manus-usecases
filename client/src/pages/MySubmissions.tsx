@@ -15,7 +15,7 @@ import {
   XCircle,
   Clock,
   Eye,
-  ArrowUp,
+  Heart,
 } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
@@ -143,8 +143,8 @@ export default function MySubmissions() {
                           {uc.viewCount} views
                         </span>
                         <span className="flex items-center gap-1">
-                          <ArrowUp size={11} />
-                          {uc.upvoteCount} upvotes
+<Heart size={11} />
+                           {uc.upvoteCount} upvotes
                         </span>
                         <span>
                           Submitted {new Date(uc.createdAt).toLocaleDateString()}

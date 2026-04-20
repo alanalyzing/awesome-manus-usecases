@@ -2,7 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { ManusLogo } from "@/components/ManusLogo";
-import { Trophy, ArrowUp, ArrowLeft, FileText, Heart, UserCircle } from "lucide-react";
+import { Trophy, ArrowLeft, FileText, Heart, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -193,7 +193,7 @@ export default function LeaderboardPage() {
                     {/* Secondary Stat */}
                     <div className="shrink-0 text-right hidden sm:block w-16">
                       <div className="text-sm font-medium tabular-nums text-muted-foreground flex items-center justify-end gap-0.5">
-                        {sortBy === "usecases" ? <ArrowUp size={12} /> : <FileText size={12} />}
+                        {sortBy === "usecases" ? <Heart size={12} /> : <FileText size={12} />}
                         {secondaryStat}
                       </div>
                       <div className="text-[10px] text-muted-foreground">

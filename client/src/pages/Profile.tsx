@@ -13,7 +13,6 @@ import {
   Briefcase,
   Calendar,
   Eye,
-  ArrowUp,
   Award,
   Loader2,
   Twitter,
@@ -445,7 +444,7 @@ function UseCasesTab({ useCases, isOwnProfile }: { useCases: any[]; isOwnProfile
                 )}
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <ArrowUp size={12} /> {uc.upvoteCount}
+                    <Heart size={12} /> {uc.upvoteCount}
                   </span>
                   <span className="flex items-center gap-1">
                     <Eye size={12} /> {uc.viewCount}
@@ -507,7 +506,7 @@ function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <div className="flex items-center gap-3">
                     <span className="flex items-center gap-1">
-                      <ArrowUp size={12} /> {uc.upvoteCount}
+                      <Heart size={12} /> {uc.upvoteCount}
                     </span>
                     <span className="flex items-center gap-1">
                       <Eye size={12} /> {uc.viewCount}

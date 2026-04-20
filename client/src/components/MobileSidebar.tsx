@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, ExternalLink, X, Trophy, ArrowUp, BookOpen, Info } from "lucide-react";
+import { Sparkles, ExternalLink, X, Trophy, Heart, BookOpen, Info } from "lucide-react";
 import { Link } from "wouter";
 import { MadeWithManusBadge } from "./ManusLogo";
 
@@ -109,7 +109,7 @@ function MobileLeaderboard() {
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground shrink-0">
               <span className="tabular-nums">{entry.approvedCount}</span>
               <span className="flex items-center gap-0.5 tabular-nums">
-                <ArrowUp size={9} />
+                <Heart size={9} />
                 {entry.totalUpvotes}
               </span>
             </div>

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   ArrowLeft,
-  ArrowUp,
+  Heart,
   Eye,
   Calendar,
   ExternalLink,
@@ -164,7 +164,7 @@ export default function UseCaseDetailPage() {
               whileTap={{ scale: 1.3, rotate: -10 }}
               transition={{ type: "spring", stiffness: 400 }}
             >
-              <ArrowUp size={14} />
+              <Heart size={14} className={uc.hasUpvoted ? "fill-current" : ""} />
             </motion.div>
             {uc.upvoteCount}
           </button>

@@ -304,3 +304,4 @@
 - [x] Add JSON-LD structured data (schema.org) to use case detail pages for richer Google search results
 - [x] Auto-generate Open Graph preview images for use case pages (branded card with title, score, category)
 - [x] Enhance Share button on use case modal with social media dropdown (LinkedIn, X/Twitter, Facebook, copy link)
+- [x] Change upvote arrow icon to heart shape across all components

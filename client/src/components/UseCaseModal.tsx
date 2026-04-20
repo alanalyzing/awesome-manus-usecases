@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  ArrowUp,
+  Heart,
   Eye,
   Calendar,
   Share2,
@@ -219,7 +219,7 @@ export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseMod
                 whileTap={{ scale: 1.3, rotate: -10 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
-                <ArrowUp size={14} />
+                <Heart size={14} className={uc?.hasUpvoted ? "fill-current" : ""} />
               </motion.div>
               {uc?.upvoteCount ?? 0}
             </button>

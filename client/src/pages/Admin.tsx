@@ -25,7 +25,7 @@ import {
   Clock,
   Sparkles,
   Eye,
-  ArrowUp,
+  Heart,
   FileText,
   Loader2,
   BarChart3,
@@ -666,7 +666,7 @@ export default function AdminPage() {
                               <span>{uc.submitterEmail}</span>
                               <span>{new Date(uc.createdAt).toLocaleDateString()}</span>
                               <span className="flex items-center gap-0.5"><Eye size={11} /> {uc.viewCount}</span>
-                              <span className="flex items-center gap-0.5"><ArrowUp size={11} /> {uc.upvoteCount}</span>
+                              <span className="flex items-center gap-0.5"><Heart size={11} /> {uc.upvoteCount}</span>
                             </div>
                             {/* Categories */}
                             <div className="flex flex-wrap gap-1 mt-2">
@@ -1050,7 +1050,7 @@ export default function AdminPage() {
             {/* Upvote Trends Chart */}
             <div className="bg-card rounded-xl border p-5">
               <h3 className="font-serif font-bold text-sm mb-4 flex items-center gap-2">
-                <ArrowUp size={16} />
+                <Heart size={16} />
                 Upvote Trends (Last 30 Days)
               </h3>
               {(upvoteTrendsQuery.data?.length ?? 0) > 0 ? (
