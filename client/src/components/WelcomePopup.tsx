@@ -54,9 +54,6 @@ export function WelcomePopup() {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden border-border/50 gap-0">
-        {/* Header accent bar */}
-        <div className="h-1.5 bg-foreground/90 w-full" />
-
         <div className="px-6 pt-6 pb-2">
           <DialogHeader className="space-y-3 text-left">
             <div className="flex items-center gap-2">
