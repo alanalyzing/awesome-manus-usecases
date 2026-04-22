@@ -65,7 +65,7 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { useState, useMemo, useCallback, useEffect, useRef } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { LOCALES, type Locale } from "@/lib/i18n";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -471,6 +471,7 @@ export default function Home() {
   const { t, locale, setLocale } = useI18n();
   const { theme, toggleTheme } = useTheme();
   const [, navigate] = useLocation();
+  const searchString = useSearch();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -479,6 +480,9 @@ export default function Home() {
   const [highlightOnly, setHighlightOnly] = useState(false);
   const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">("score");
   const [minScore, setMinScore] = useState<number>(0);
+  const [urlInitialized, setUrlInitialized] = useState(false);
+  // Capture the initial URL search string on first render (before wouter clears it)
+  const initialSearchRef = useRef(window.location.search);
   const [limit] = useState(40);
   const [offset, setOffset] = useState(0);
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
@@ -548,6 +552,60 @@ export default function Home() {
     () => (categoriesQuery.data ?? []).filter((c) => c.type === "feature"),
     [categoriesQuery.data]
   );
+
+  // --- URL query param sync ---
+  // On mount: read ?category=slug from URL and apply to state
+  useEffect(() => {
+    if (!categoriesQuery.data || urlInitialized) return;
+    const params = new URLSearchParams(initialSearchRef.current);
+    const catSlug = params.get("category");
+    const highlightParam = params.get("highlight");
+    const sortParam = params.get("sort") as typeof sort | null;
+    const searchParam = params.get("search");
+
+    if (catSlug) {
+      const found = categoriesQuery.data.find((c) => c.slug === catSlug);
+      if (found) {
+        setSelectedCategories([found.id]);
+        setOffset(0);
+        setAccumulatedItems([]);
+      }
+    }
+    if (highlightParam === "true") {
+      setHighlightOnly(true);
+      setOffset(0);
+      setAccumulatedItems([]);
+    }
+    if (sortParam && ["popular", "newest", "views", "score"].includes(sortParam)) {
+      setSort(sortParam);
+    }
+    if (searchParam) {
+      setSearch(searchParam);
+    }
+    setUrlInitialized(true);
+  }, [categoriesQuery.data, urlInitialized]);
+
+  // Sync state → URL (after initialization)
+  const syncUrlRef = useRef(false);
+  useEffect(() => {
+    if (!urlInitialized || !categoriesQuery.data) return;
+    // Skip the first render after initialization to avoid double-push
+    if (!syncUrlRef.current) {
+      syncUrlRef.current = true;
+      return;
+    }
+    const params = new URLSearchParams();
+    if (selectedCategories.length === 1) {
+      const cat = categoriesQuery.data.find((c) => c.id === selectedCategories[0]);
+      if (cat) params.set("category", cat.slug);
+    }
+    if (highlightOnly) params.set("highlight", "true");
+    if (sort !== "score") params.set("sort", sort);
+    if (search) params.set("search", search);
+    const qs = params.toString();
+    const newUrl = qs ? `/?${qs}` : "/";
+    window.history.replaceState(null, "", newUrl);
+  }, [selectedCategories, highlightOnly, sort, search, urlInitialized, categoriesQuery.data]);
 
   // Sidebar: single-select (replaces current selection, or deselects if same)
   const handleSidebarCategorySelect = useCallback((catId: number) => {
