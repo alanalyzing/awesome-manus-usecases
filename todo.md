@@ -329,3 +329,8 @@
 - [x] Frontend: Wire onboarding triggers into upvote, search, and submit actions
 - [x] Bug: AI chatbot shows "[blocked]" instead of clickable links — fixed: LLM now generates absolute URLs using window.location.origin, rehype-harden allows https links
 - [x] UI: Remove 3-step Getting Started onboarding progress bar from profile dropdown
+- [x] AI chatbot: Restrict to use-case-related questions only, reject off-topic queries
+- [x] AI chatbot: Always append Team Plan CTA (https://manus.im/team) at end of responses
+- [x] AI chatbot: Add more default shortcut suggestions on opening page (6 total: marketing, real estate, finance, e-commerce video, competitive intel, sales prospecting)
+- [x] AI chatbot: Add rate limiting to prevent over-usage (20 requests per 10 minutes per IP)
+- [x] UI: Make Ask AI button more visible with "Ask AI" text label + Sparkles icon next to Highlights

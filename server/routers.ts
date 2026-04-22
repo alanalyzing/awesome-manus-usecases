@@ -1,10 +1,14 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { notifyOwner } from "./_core/notification";
 import { invokeLLM } from "./_core/llm";
+
+// Rate limiter for AI chat: Map<IP, timestamp[]>
+const aiChatRateLimits = new Map<string, number[]>();
 import { storagePut } from "./storage";
 import { nanoid } from "nanoid";
 import { createHash } from "crypto";
@@ -1533,7 +1537,28 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
           content: z.string(),
         })).max(10).optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
+        // Rate limiting: 20 requests per IP per 10 minutes
+        const clientIp = ctx.req.ip || ctx.req.headers["x-forwarded-for"] as string || "unknown";
+        const now = Date.now();
+        const windowMs = 10 * 60 * 1000; // 10 minutes
+        const maxRequests = 20;
+        if (!aiChatRateLimits.has(clientIp)) {
+          aiChatRateLimits.set(clientIp, []);
+        }
+        const timestamps = aiChatRateLimits.get(clientIp)!;
+        // Remove expired timestamps
+        while (timestamps.length > 0 && timestamps[0] < now - windowMs) {
+          timestamps.shift();
+        }
+        if (timestamps.length >= maxRequests) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "You've reached the AI chat limit. Please try again in a few minutes.",
+          });
+        }
+        timestamps.push(now);
+
         // Fetch approved use cases for context
         const result = await getApprovedUseCases({ limit: 200, offset: 0 });
         const siteOrigin = input.origin || "https://manuslib-jnjq5dyo.manus.space";
@@ -1542,19 +1567,23 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
           return `- "${uc.title}" (slug: ${uc.slug}, url: ${siteOrigin}/use-case/${uc.slug}) — ${uc.description?.slice(0, 120) || ""} [Categories: ${cats}] [Score: ${uc.aiScore?.overall || "N/A"}]`;
         }).join("\n");
 
-        const systemPrompt = `You are a helpful assistant for the Manus Use Case Library. Your job is to help users find the most relevant use cases based on their needs.
+        const systemPrompt = `You are the AI Use Case Finder for the Manus Use Case Library. You ONLY help users discover and learn about Manus use cases.
 
 Here is the full catalog of approved use cases:
 ${useCaseList}
 
-Rules:
-1. When a user describes what they want to do, recommend 1-5 most relevant use cases from the catalog above.
-2. For each recommendation, include a clickable link using the full URL provided in the catalog (e.g. [Use Case Title](${siteOrigin}/use-case/SLUG)). ALWAYS use the full absolute URL, never a relative path.
-3. Briefly explain WHY each use case is relevant to their question (1-2 sentences).
-4. If no use cases match well, say so honestly and suggest they submit their own use case.
-5. Keep responses concise and helpful. Do not make up use cases that are not in the catalog.
-6. You can answer follow-up questions about specific use cases using the information provided.
-7. Respond in the same language the user writes in.`;
+STRICT RULES:
+1. You MUST ONLY answer questions related to Manus use cases, what Manus can do, and how people use Manus. If a user asks about anything unrelated (e.g., coding help, general knowledge, personal advice, math, jokes), politely decline and redirect them: "I'm designed to help you discover Manus use cases. Could you tell me what you'd like to build or accomplish with Manus?"
+2. When a user describes what they want to do, recommend 1-5 most relevant use cases from the catalog above.
+3. For each recommendation, include a clickable link using the full URL provided in the catalog (e.g. [Use Case Title](${siteOrigin}/use-case/SLUG)). ALWAYS use the full absolute URL, never a relative path.
+4. Briefly explain WHY each use case is relevant to their question (1-2 sentences).
+5. If no use cases match well, say so honestly and suggest they submit their own use case at ${siteOrigin}/submit.
+6. Keep responses concise and helpful. Do not make up use cases that are not in the catalog.
+7. You can answer follow-up questions about specific use cases using the information provided.
+8. Respond in the same language the user writes in.
+9. ALWAYS end your response with this line on a new paragraph:
+---
+Interested in Manus for your team? [Learn about Team Plan](https://manus.im/team)`;
 
         const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
           { role: "system", content: systemPrompt },

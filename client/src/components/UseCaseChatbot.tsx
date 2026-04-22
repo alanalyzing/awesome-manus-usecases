@@ -10,13 +10,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { MessageCircle } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const SYSTEM_MESSAGE: Message = {
   role: "system",
@@ -35,12 +29,15 @@ export function UseCaseChatbot() {
         { role: "assistant", content: data.answer },
       ]);
     },
-    onError: () => {
+    onError: (error) => {
+      const isRateLimit = error.message?.includes("limit") || error.data?.code === "TOO_MANY_REQUESTS";
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "Sorry, something went wrong. Please try again.",
+          content: isRateLimit
+            ? "You've reached the AI chat limit (20 messages per 10 minutes). Please try again shortly."
+            : "Sorry, something went wrong. Please try again.",
         },
       ]);
     },
@@ -69,34 +66,28 @@ export function UseCaseChatbot() {
     t("chatbot.suggest1"),
     t("chatbot.suggest2"),
     t("chatbot.suggest3"),
+    t("chatbot.suggest4"),
+    t("chatbot.suggest5"),
+    t("chatbot.suggest6"),
   ];
 
   return (
     <>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-11 w-11 shrink-0"
-              onClick={() => setOpen(true)}
-              aria-label={t("chatbot.title")}
-            >
-              <MessageCircle size={16} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t("chatbot.tooltip")}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Button
+        variant="outline"
+        size="sm"
+        className="gap-1.5 text-xs h-11 px-3 shrink-0"
+        onClick={() => setOpen(true)}
+      >
+        <Sparkles size={14} />
+        <span>{t("chatbot.askAi")}</span>
+      </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="w-full sm:max-w-lg p-0 flex flex-col">
           <SheetHeader className="px-4 pt-4 pb-3 border-b shrink-0">
             <SheetTitle className="flex items-center gap-2 text-base">
-              <MessageCircle size={18} />
+              <Sparkles size={18} />
               {t("chatbot.title")}
             </SheetTitle>
             <SheetDescription className="text-xs">

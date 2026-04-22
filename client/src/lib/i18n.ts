@@ -166,6 +166,10 @@ type TranslationKeys = {
   "chatbot.suggest1": string;
   "chatbot.suggest2": string;
   "chatbot.suggest3": string;
+  "chatbot.suggest4": string;
+  "chatbot.suggest5": string;
+  "chatbot.suggest6": string;
+  "chatbot.askAi": string;
   "onboarding.title": string;
   "onboarding.step.upvote": string;
   "onboarding.step.search": string;
@@ -332,6 +336,10 @@ const translations: Record<Locale, TranslationKeys> = {
     "chatbot.suggest1": "Marketing analytics dashboard",
     "chatbot.suggest2": "Real estate property analysis",
     "chatbot.suggest3": "Financial data visualization",
+    "chatbot.suggest4": "E-commerce product video creation",
+    "chatbot.suggest5": "Competitive intelligence research",
+    "chatbot.suggest6": "Sales prospecting automation",
+    "chatbot.askAi": "Ask AI",
     "onboarding.title": "Getting Started",
     "onboarding.step.upvote": "Upvote a use case",
     "onboarding.step.search": "Search for use cases",
@@ -488,6 +496,10 @@ const translations: Record<Locale, TranslationKeys> = {
     "chatbot.suggest1": "营销分析仪表板",
     "chatbot.suggest2": "房地产物业分析",
     "chatbot.suggest3": "金融数据可视化",
+    "chatbot.suggest4": "电商产品视频制作",
+    "chatbot.suggest5": "竞争情报研究",
+    "chatbot.suggest6": "销售线索自动化",
+    "chatbot.askAi": "问 AI",
     "onboarding.title": "开始使用",
     "onboarding.step.upvote": "为用例点赞",
     "onboarding.step.search": "搜索用例",
@@ -644,6 +656,10 @@ const translations: Record<Locale, TranslationKeys> = {
     "chatbot.suggest1": "マーケティング分析ダッシュボード",
     "chatbot.suggest2": "不動産物件分析",
     "chatbot.suggest3": "金融データの可視化",
+    "chatbot.suggest4": "EC商品動画の作成",
+    "chatbot.suggest5": "競合インテリジェンス調査",
+    "chatbot.suggest6": "営業リード自動化",
+    "chatbot.askAi": "AIに聞く",
     "onboarding.title": "はじめよう",
     "onboarding.step.upvote": "ユースケースに投票",
     "onboarding.step.search": "ユースケースを検索",
@@ -800,6 +816,10 @@ const translations: Record<Locale, TranslationKeys> = {
     "chatbot.suggest1": "마케팅 분석 대시보드",
     "chatbot.suggest2": "부동산 물건 분석",
     "chatbot.suggest3": "금융 데이터 시각화",
+    "chatbot.suggest4": "이커머스 제품 영상 제작",
+    "chatbot.suggest5": "경쟁 인텔리전스 리서치",
+    "chatbot.suggest6": "영업 리드 자동화",
+    "chatbot.askAi": "AI에게 물어보기",
     "onboarding.title": "시작하기",
     "onboarding.step.upvote": "사용 사례에 투표",
     "onboarding.step.search": "사용 사례 검색",
@@ -956,6 +976,10 @@ const translations: Record<Locale, TranslationKeys> = {
     "chatbot.suggest1": "Painel de análise de marketing",
     "chatbot.suggest2": "Análise de propriedades imobiliárias",
     "chatbot.suggest3": "Visualização de dados financeiros",
+    "chatbot.suggest4": "Criação de vídeos de produtos e-commerce",
+    "chatbot.suggest5": "Pesquisa de inteligência competitiva",
+    "chatbot.suggest6": "Automação de prospecção de vendas",
+    "chatbot.askAi": "Perguntar à IA",
     "onboarding.title": "Primeiros Passos",
     "onboarding.step.upvote": "Votar em um caso de uso",
     "onboarding.step.search": "Pesquisar casos de uso",
