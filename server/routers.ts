@@ -1513,13 +1513,64 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
         return { success: true };
       }),
   }),
-
-  // ── Blurhash ──────────────────────────────────────────────────
+  // ── Blurhash ──────────────────────────────────────────────────────────
   blurhash: router({
     backfill: adminProcedure
       .mutation(async () => {
         const result = await backfillBlurhashes(10);
         return result;
+      }),
+  }),
+
+  // ── AI Use Case Discovery Chat ─────────────────────────────────────────
+  aiChat: router({
+    ask: publicProcedure
+      .input(z.object({
+        question: z.string().min(1).max(500),
+        conversationHistory: z.array(z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string(),
+        })).max(10).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        // Fetch approved use cases for context
+        const result = await getApprovedUseCases({ limit: 200, offset: 0 });
+        const useCaseList = result.items.map(uc => {
+          const cats = uc.categories?.map((c: any) => c.name).join(", ") || "";
+          return `- "${uc.title}" (slug: ${uc.slug}) — ${uc.description?.slice(0, 120) || ""} [Categories: ${cats}] [Score: ${uc.aiScore?.overall || "N/A"}]`;
+        }).join("\n");
+
+        const systemPrompt = `You are a helpful assistant for the Manus Use Case Library. Your job is to help users find the most relevant use cases based on their needs.
+
+Here is the full catalog of approved use cases:
+${useCaseList}
+
+Rules:
+1. When a user describes what they want to do, recommend 1-5 most relevant use cases from the catalog above.
+2. For each recommendation, format it as a clickable link using this exact markdown format: [Use Case Title](/use-case/SLUG)
+3. Briefly explain WHY each use case is relevant to their question (1-2 sentences).
+4. If no use cases match well, say so honestly and suggest they submit their own use case.
+5. Keep responses concise and helpful. Do not make up use cases that are not in the catalog.
+6. You can answer follow-up questions about specific use cases using the information provided.
+7. Respond in the same language the user writes in.`;
+
+        const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+          { role: "system", content: systemPrompt },
+        ];
+
+        // Add conversation history
+        if (input.conversationHistory) {
+          for (const msg of input.conversationHistory) {
+            messages.push({ role: msg.role, content: msg.content });
+          }
+        }
+
+        messages.push({ role: "user", content: input.question });
+
+        const response = await invokeLLM({ messages });
+        const rawContent = response.choices?.[0]?.message?.content;
+        const answer = typeof rawContent === "string" ? rawContent : "Sorry, I could not process your request.";
+        return { answer };
       }),
   }),
 

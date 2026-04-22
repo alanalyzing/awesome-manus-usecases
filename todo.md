@@ -316,3 +316,14 @@
 - [x] Feature: Support multi-category URL params (?category=marketing,advertising) for sharing combined filters
 - [x] Feature: First-visit-only welcome popup on homepage with CTAs for Share Use Case and Team Plan, dismiss to resume browsing
 - [x] UI: Remove "Official Use Cases" box (5th item) from Learn More section on About page
+- [x] UI: Remove duplicate "Share your use case" CTA from hero section (keep only navbar Submit Use Case)
+- [x] Feature: AI chatbot for use case discovery — entry point next to search bar, matches relevant use cases via LLM
+- [x] UI: Rename "Only Possible with Manus" to "Highlights" across all pages, sidebar, filters, badges, and translations
+- [x] UI: Update search bar placeholder to "Search use cases by categories"
+- [x] QA Pass 1: Functional testing — bugs, broken links, data consistency, score/badge accuracy
+- [x] QA Pass 2: UI/UX review — layout, spacing, responsiveness, accessibility, translations
+- [x] QA Pass 3: Content review — top use cases coverage, translation completeness, edge cases
+- [x] Feature: Onboarding progress tracker in profile dropdown — track 3 steps (upvote, search, submit) via localStorage
+- [x] Frontend: Create useOnboarding hook with localStorage persistence
+- [x] Frontend: Add progress bar/checklist UI in profile dropdown menu
+- [x] Frontend: Wire onboarding triggers into upvote, search, and submit actions

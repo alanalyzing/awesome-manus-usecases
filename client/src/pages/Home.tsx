@@ -1,5 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { WelcomePopup } from "@/components/WelcomePopup";
+import { UseCaseChatbot } from "@/components/UseCaseChatbot";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { stripMarkdown } from "@/components/MarkdownContent";
 import BlurhashImage from "@/components/BlurhashImage";
 import { getLoginUrl } from "@/const";
@@ -56,6 +58,9 @@ import {
   Filter,
   Check,
   X,
+  MessageCircle,
+  CircleCheck,
+  Target,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -474,6 +479,8 @@ export default function Home() {
   const [, navigate] = useLocation();
   const searchString = useSearch();
 
+  const onboarding = useOnboarding();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -663,8 +670,9 @@ export default function Home() {
         return;
       }
       toggleUpvote.mutate({ useCaseId });
+      onboarding.markComplete("upvote");
     },
-    [toggleUpvote, isAuthenticated]
+    [toggleUpvote, isAuthenticated, onboarding]
   );
 
   // Notification count for logged-in users
@@ -774,7 +782,7 @@ export default function Home() {
           </a>
 
           {/* Submit */}
-          <Link href="/submit">
+          <Link href="/submit" onClick={() => onboarding.markComplete("submit")}>
             <Button size="sm" className="gap-1.5 text-xs">
               <Plus size={14} />
               <span className="hidden sm:inline">{t("nav.submit")}</span>
@@ -838,6 +846,68 @@ export default function Home() {
                       <Settings size={14} className="mr-2" />
                       Edit Profile
                     </DropdownMenuItem>
+                  )}
+                  {/* Onboarding Progress */}
+                  {!onboarding.isComplete && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <div className="px-2 py-2">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{t("onboarding.title")}</span>
+                          <span className="text-[11px] font-medium text-muted-foreground">{onboarding.completedCount}/{onboarding.totalSteps}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden mb-2">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all duration-500"
+                            style={{ width: `${onboarding.progressPercent}%` }}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <button
+                            onClick={() => { if (!onboarding.state.upvote) { toast.info(t("onboarding.toast.upvote")); } }}
+                            className="flex items-center gap-2 w-full text-left py-0.5 group"
+                          >
+                            {onboarding.state.upvote ? (
+                              <CircleCheck size={13} className="text-primary shrink-0" />
+                            ) : (
+                              <div className="w-[13px] h-[13px] rounded-full border border-muted-foreground/40 shrink-0" />
+                            )}
+                            <span className={`text-xs ${onboarding.state.upvote ? 'text-muted-foreground line-through' : 'text-foreground group-hover:text-primary'}`}>{t("onboarding.step.upvote")}</span>
+                          </button>
+                          <button
+                            onClick={() => { if (!onboarding.state.search) { document.querySelector<HTMLInputElement>('input[placeholder]')?.focus(); } }}
+                            className="flex items-center gap-2 w-full text-left py-0.5 group"
+                          >
+                            {onboarding.state.search ? (
+                              <CircleCheck size={13} className="text-primary shrink-0" />
+                            ) : (
+                              <div className="w-[13px] h-[13px] rounded-full border border-muted-foreground/40 shrink-0" />
+                            )}
+                            <span className={`text-xs ${onboarding.state.search ? 'text-muted-foreground line-through' : 'text-foreground group-hover:text-primary'}`}>{t("onboarding.step.search")}</span>
+                          </button>
+                          <button
+                            onClick={() => { if (!onboarding.state.submit) { navigate('/submit'); onboarding.markComplete('submit'); } }}
+                            className="flex items-center gap-2 w-full text-left py-0.5 group"
+                          >
+                            {onboarding.state.submit ? (
+                              <CircleCheck size={13} className="text-primary shrink-0" />
+                            ) : (
+                              <div className="w-[13px] h-[13px] rounded-full border border-muted-foreground/40 shrink-0" />
+                            )}
+                            <span className={`text-xs ${onboarding.state.submit ? 'text-muted-foreground line-through' : 'text-foreground group-hover:text-primary'}`}>{t("onboarding.step.submit")}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {onboarding.isComplete && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <div className="px-2 py-1.5 flex items-center gap-2">
+                        <CircleCheck size={13} className="text-primary" />
+                        <span className="text-xs text-muted-foreground">{t("onboarding.complete")}</span>
+                      </div>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { logout(); }} className="text-destructive focus:text-destructive">
@@ -1098,6 +1168,7 @@ export default function Home() {
                       setSearch(e.target.value);
                       setOffset(0);
                       setAccumulatedItems([]);
+                      if (e.target.value.length > 0) onboarding.markComplete("search");
                     }}
                     className="pl-9 bg-card h-11 text-base"
                   />
@@ -1182,23 +1253,18 @@ export default function Home() {
                   </PopoverContent>
                 </Popover>
 
-                <div className="flex gap-2">
-                  <Link href="/submit">
-                    <Button className="gap-2 shadow-sm h-11">
-                      <Plus size={15} />
-                      {t("hero.submitCta")}
-                    </Button>
-                  </Link>
-                  <Button
-                    variant="outline"
-                    className={`gap-2 h-11 ${highlightOnly ? 'bg-primary/10 text-primary border-primary/30' : ''}`}
-                    onClick={handleHighlightToggle}
-                  >
-                    <Sparkles size={15} />
-                    <span className="hidden sm:inline">{t("hero.highlightsCta")}</span>
-                    <span className="sm:hidden">{t("hero.highlightsCtaShort")}</span>
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  className={`gap-2 h-11 ${highlightOnly ? 'bg-primary/10 text-primary border-primary/30' : ''}`}
+                  onClick={handleHighlightToggle}
+                >
+                  <Sparkles size={15} />
+                  <span className="hidden sm:inline">{t("hero.highlightsCta")}</span>
+                  <span className="sm:hidden">{t("hero.highlightsCtaShort")}</span>
+                </Button>
+
+                {/* AI Chatbot */}
+                <UseCaseChatbot />
               </div>
             </div>
           </div>
