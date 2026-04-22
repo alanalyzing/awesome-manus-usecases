@@ -254,19 +254,6 @@ export default function About() {
               </p>
             </a>
             <a
-              href="https://manus.im/use-cases"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-card border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
-            >
-              <div className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                Official Use Cases
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Featured examples from Manus
-              </p>
-            </a>
-            <a
               href="/submit"
               className="bg-card border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
             >

@@ -315,3 +315,4 @@
 - [x] Feature: Sync sidebar category selection to URL query params (?category=slug) so filter state is shareable
 - [x] Feature: Support multi-category URL params (?category=marketing,advertising) for sharing combined filters
 - [x] Feature: First-visit-only welcome popup on homepage with CTAs for Share Use Case and Team Plan, dismiss to resume browsing
+- [x] UI: Remove "Official Use Cases" box (5th item) from Learn More section on About page
