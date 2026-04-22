@@ -344,7 +344,6 @@ function CollectionsSection({ onCardClick }: { onCardClick: (slug: string) => vo
 }
 
 const LEARN_MORE_LINKS = [
-  { name: "Team Plan", url: "https://manus.im/team" },
   { name: "Trust Center", url: "https://trust.manus.im/" },
   { name: "API Docs", url: "/api-docs" },
 ];
@@ -693,6 +692,19 @@ export default function Home() {
               </Button>
             </Link>
           )}
+
+          {/* Team Plan CTA - desktop only */}
+          <a
+            href="https://manus.im/team"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:inline-flex"
+          >
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <Users size={14} />
+              Team Plan
+            </Button>
+          </a>
 
           {/* Submit */}
           <Link href="/submit">
