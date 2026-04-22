@@ -58,6 +58,7 @@ export function UseCaseChatbot() {
 
       askMutation.mutate({
         question: content,
+        origin: window.location.origin,
         conversationHistory: history,
       });
     },

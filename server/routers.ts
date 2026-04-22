@@ -1527,6 +1527,7 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
     ask: publicProcedure
       .input(z.object({
         question: z.string().min(1).max(500),
+        origin: z.string().url().optional(),
         conversationHistory: z.array(z.object({
           role: z.enum(["user", "assistant"]),
           content: z.string(),
@@ -1535,9 +1536,10 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
       .mutation(async ({ input }) => {
         // Fetch approved use cases for context
         const result = await getApprovedUseCases({ limit: 200, offset: 0 });
+        const siteOrigin = input.origin || "https://manuslib-jnjq5dyo.manus.space";
         const useCaseList = result.items.map(uc => {
           const cats = uc.categories?.map((c: any) => c.name).join(", ") || "";
-          return `- "${uc.title}" (slug: ${uc.slug}) — ${uc.description?.slice(0, 120) || ""} [Categories: ${cats}] [Score: ${uc.aiScore?.overall || "N/A"}]`;
+          return `- "${uc.title}" (slug: ${uc.slug}, url: ${siteOrigin}/use-case/${uc.slug}) — ${uc.description?.slice(0, 120) || ""} [Categories: ${cats}] [Score: ${uc.aiScore?.overall || "N/A"}]`;
         }).join("\n");
 
         const systemPrompt = `You are a helpful assistant for the Manus Use Case Library. Your job is to help users find the most relevant use cases based on their needs.
@@ -1547,7 +1549,7 @@ ${useCaseList}
 
 Rules:
 1. When a user describes what they want to do, recommend 1-5 most relevant use cases from the catalog above.
-2. For each recommendation, format it as a clickable link using this exact markdown format: [Use Case Title](/use-case/SLUG)
+2. For each recommendation, include a clickable link using the full URL provided in the catalog (e.g. [Use Case Title](${siteOrigin}/use-case/SLUG)). ALWAYS use the full absolute URL, never a relative path.
 3. Briefly explain WHY each use case is relevant to their question (1-2 sentences).
 4. If no use cases match well, say so honestly and suggest they submit their own use case.
 5. Keep responses concise and helpful. Do not make up use cases that are not in the catalog.

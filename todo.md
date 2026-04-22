@@ -327,3 +327,4 @@
 - [x] Frontend: Create useOnboarding hook with localStorage persistence
 - [x] Frontend: Add progress bar/checklist UI in profile dropdown menu
 - [x] Frontend: Wire onboarding triggers into upvote, search, and submit actions
+- [x] Bug: AI chatbot shows "[blocked]" instead of clickable links — fixed: LLM now generates absolute URLs using window.location.origin, rehype-harden allows https links
