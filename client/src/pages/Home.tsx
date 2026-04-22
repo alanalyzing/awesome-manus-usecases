@@ -564,9 +564,13 @@ export default function Home() {
     const searchParam = params.get("search");
 
     if (catSlug) {
-      const found = categoriesQuery.data.find((c) => c.slug === catSlug);
-      if (found) {
-        setSelectedCategories([found.id]);
+      const slugs = catSlug.split(",").map((s) => s.trim()).filter(Boolean);
+      const foundIds = slugs
+        .map((s) => categoriesQuery.data!.find((c) => c.slug === s))
+        .filter(Boolean)
+        .map((c) => c!.id);
+      if (foundIds.length > 0) {
+        setSelectedCategories(foundIds);
         setOffset(0);
         setAccumulatedItems([]);
       }
@@ -595,9 +599,12 @@ export default function Home() {
       return;
     }
     const params = new URLSearchParams();
-    if (selectedCategories.length === 1) {
-      const cat = categoriesQuery.data.find((c) => c.id === selectedCategories[0]);
-      if (cat) params.set("category", cat.slug);
+    if (selectedCategories.length > 0) {
+      const slugs = selectedCategories
+        .map((id) => categoriesQuery.data!.find((c) => c.id === id))
+        .filter(Boolean)
+        .map((c) => c!.slug);
+      if (slugs.length > 0) params.set("category", slugs.join(","));
     }
     if (highlightOnly) params.set("highlight", "true");
     if (sort !== "score") params.set("sort", sort);
