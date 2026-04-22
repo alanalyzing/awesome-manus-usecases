@@ -314,3 +314,4 @@
 - [x] UI: Move Team Plan CTA from left sidebar to top navbar (desktop), next to Submit Use Case button
 - [x] Feature: Sync sidebar category selection to URL query params (?category=slug) so filter state is shareable
 - [x] Feature: Support multi-category URL params (?category=marketing,advertising) for sharing combined filters
+- [x] Feature: First-visit-only welcome popup on homepage with CTAs for Share Use Case and Team Plan, dismiss to resume browsing

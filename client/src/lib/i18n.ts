@@ -151,6 +151,13 @@ type TranslationKeys = {
   "sidebar.topContributors": string;
   "gallery.clearAll": string;
   "common.anonymous": string;
+  // Welcome popup
+  "welcome.title": string;
+  "welcome.subtitle": string;
+  "welcome.desc": string;
+  "welcome.shareBtn": string;
+  "welcome.teamBtn": string;
+  "welcome.dismiss": string;
   // Common
   "common.loading": string;
   "common.error": string;
@@ -297,6 +304,12 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.topContributors": "Top Contributors",
     "gallery.clearAll": "Clear all",
     "common.anonymous": "Anonymous",
+    "welcome.title": "Welcome to the Awesome Use Case Library!",
+    "welcome.subtitle": "Discover what the Manus community is building",
+    "welcome.desc": "Browse real-world use cases, get inspired, and share your own creations with the community.",
+    "welcome.shareBtn": "Share Your Use Case",
+    "welcome.teamBtn": "Learn About Team Plan",
+    "welcome.dismiss": "Start Browsing",
   },
   zh: {
     "nav.useCaseLibrary": "Awesome Manus 用例",
@@ -433,6 +446,12 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.topContributors": "最佳贡献者",
     "gallery.clearAll": "清除全部",
     "common.anonymous": "匿名",
+    "welcome.title": "欢迎来到 Awesome 用例库！",
+    "welcome.subtitle": "探索 Manus 社区正在构建的精彩作品",
+    "welcome.desc": "浏览真实用例，获取灵感，并与社区分享你的创作。",
+    "welcome.shareBtn": "分享你的用例",
+    "welcome.teamBtn": "了解团队版",
+    "welcome.dismiss": "开始浏览",
   },
   ja: {
     "nav.useCaseLibrary": "Awesome Manus ユースケース",
@@ -569,6 +588,12 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.topContributors": "トップコントリビューター",
     "gallery.clearAll": "すべてクリア",
     "common.anonymous": "匿名",
+    "welcome.title": "Awesome ユースケースライブラリへようこそ！",
+    "welcome.subtitle": "Manus コミュニティが構築しているものを発見",
+    "welcome.desc": "実際のユースケースを閲覧し、インスピレーションを得て、あなたの作品をコミュニティと共有しましょう。",
+    "welcome.shareBtn": "ユースケースを共有",
+    "welcome.teamBtn": "チームプランについて",
+    "welcome.dismiss": "ブラウジングを開始",
   },
   ko: {
     "nav.useCaseLibrary": "Awesome Manus 유스케이스",
@@ -705,6 +730,12 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.topContributors": "톱 기여자",
     "gallery.clearAll": "모두 지우기",
     "common.anonymous": "익명",
+    "welcome.title": "Awesome 유스케이스 라이브러리에 오신 것을 환영합니다!",
+    "welcome.subtitle": "Manus 커뮤니티가 만들고 있는 것을 발견하세요",
+    "welcome.desc": "실제 유스케이스를 탐색하고, 영감을 얻고, 커뮤니티와 여러분의 창작물을 공유하세요.",
+    "welcome.shareBtn": "유스케이스 공유",
+    "welcome.teamBtn": "팀 플랜 알아보기",
+    "welcome.dismiss": "둘러보기 시작",
   },
   "pt-BR": {
     "nav.useCaseLibrary": "Awesome Manus Use Cases",
@@ -841,6 +872,12 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.topContributors": "Maiores Contribuidores",
     "gallery.clearAll": "Limpar tudo",
     "common.anonymous": "Anônimo",
+    "welcome.title": "Bem-vindo à Biblioteca de Casos de Uso!",
+    "welcome.subtitle": "Descubra o que a comunidade Manus está construindo",
+    "welcome.desc": "Navegue por casos de uso reais, inspire-se e compartilhe suas criações com a comunidade.",
+    "welcome.shareBtn": "Compartilhe Seu Caso de Uso",
+    "welcome.teamBtn": "Conheça o Plano Team",
+    "welcome.dismiss": "Começar a Navegar",
   },
 };
 

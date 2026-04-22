@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { WelcomePopup } from "@/components/WelcomePopup";
 import { stripMarkdown } from "@/components/MarkdownContent";
 import BlurhashImage from "@/components/BlurhashImage";
 import { getLoginUrl } from "@/const";
@@ -704,6 +705,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <WelcomePopup />
       {/* ─── Top Navigation ─── */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="w-full px-4 sm:px-6 flex h-14 items-center gap-2 sm:gap-4">
