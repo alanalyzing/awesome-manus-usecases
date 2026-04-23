@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
-import { getUseCaseMetaBySlug, getCategoryOgScreenshot, getProfileOgScreenshot, getCollectionOgScreenshot, getTopUseCaseScreenshot } from "../db";
+import { getUseCaseMetaBySlug } from "../db";
 
 /** Build an absolute site URL from the request or fallback to known domain */
 function getSiteOrigin(req?: express.Request): string {
@@ -19,7 +19,7 @@ function getSiteOrigin(req?: express.Request): string {
 
 const SITE_NAME = "Awesome Manus Use Cases";
 const DEFAULT_DESC = "Discover, share, and celebrate awesome things built with Manus. Browse use cases by industry, feature, and more.";
-const DEFAULT_IMAGE = "https://d2xsxph8kpxj0f.cloudfront.net/310519663249428057/jnjQ5dYouig6ULcXneQuMs/manus-glyph-black_0940bf1e.png";
+const DEFAULT_IMAGE = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663249428057/irFogdbwAhLjdhsN.png";
 
 /** Static subpage SEO definitions */
 const SUBPAGE_SEO: Record<string, { title: string; description: string; priority?: string }> = {
@@ -52,14 +52,12 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
   const profileMatch = pathname.match(/^\/profile\/([^?#/]+)/);
   if (profileMatch) {
     const username = decodeURIComponent(profileMatch[1]);
-    const profileScreenshot = await getProfileOgScreenshot(username);
     return injectSubpageMeta(html, {
       title: `${username}'s Profile — ${SITE_NAME}`,
       description: `Explore use cases submitted by ${username} on the Awesome Manus Use Cases portal. See their AI automation projects, community contributions, and expertise.`,
       canonicalUrl: `${origin}/profile/${encodeURIComponent(username)}`,
       origin,
       type: "profile",
-      image: profileScreenshot || undefined,
     });
   }
 
@@ -68,14 +66,12 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
   if (colMatch) {
     const slug = decodeURIComponent(colMatch[1]);
     const readableTitle = slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-    const collectionScreenshot = await getCollectionOgScreenshot(slug);
     return injectSubpageMeta(html, {
       title: `${readableTitle} — Collections — ${SITE_NAME}`,
       description: `Browse the "${readableTitle}" collection on Awesome Manus Use Cases. A curated set of AI automation examples and real-world projects built with Manus.`,
       canonicalUrl: `${origin}/collections/${encodeURIComponent(slug)}`,
       origin,
       type: "website",
-      image: collectionScreenshot || undefined,
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
@@ -89,7 +85,6 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
   // ── Static subpages (about, leaderboard, submit) ──
   const subpageSeo = SUBPAGE_SEO[pathname];
   if (subpageSeo) {
-    const staticScreenshot = await getTopUseCaseScreenshot();
     const jsonLd: Record<string, any> | undefined = pathname === "/about" ? {
       "@context": "https://schema.org",
       "@type": "AboutPage",
@@ -118,7 +113,6 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
       canonicalUrl: `${origin}${pathname}`,
       origin,
       type: "website",
-      image: staticScreenshot || undefined,
       jsonLd: jsonLd,
     });
   }
@@ -128,14 +122,12 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
   const categoryParam = searchParams.get("category");
   if (categoryParam && pathname === "/") {
     const readableCat = categoryParam.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-    const categoryScreenshot = await getCategoryOgScreenshot(categoryParam);
     return injectSubpageMeta(html, {
       title: `${readableCat} Use Cases — ${SITE_NAME}`,
       description: `Browse ${readableCat.toLowerCase()} use cases built with Manus. Discover real-world AI automation examples in ${readableCat.toLowerCase()}.`,
       canonicalUrl: `${origin}/?category=${encodeURIComponent(categoryParam)}`,
       origin,
       type: "website",
-      image: categoryScreenshot || undefined,
     });
   }
 
@@ -155,9 +147,8 @@ async function injectUseCaseMeta(html: string, rawSlug: string, origin: string):
     const screenshot = uc.screenshots?.[0]?.url || '';
     const canonicalUrl = `${origin}/use-case/${encodeURIComponent(slug)}`;
 
-    // Use auto-generated OG image, fall back to screenshot
-    const ogImageUrl = `${origin}/api/og-image/${encodeURIComponent(slug)}`;
-    const image = ogImageUrl;
+    // Use the same global OG image across all pages
+    const image = DEFAULT_IMAGE;
 
     const ogTags = [
       `<meta property="og:title" content="${title} \u2014 ${SITE_NAME}" />`,

@@ -396,3 +396,4 @@
 - [x] UX: Add notification badge (red dot) on profile icon in navbar when logged-in user hasn't set up their profile
 - [x] OG: Create homepage OG image with Manus brand logo and "Awesome Manus Use Cases" title on oil painting background
 - [x] OG: Update og:image and twitter:image meta tags with new OG image
+- [x] OG: Use the same OG image (oil painting background) across all pages including individual use case pages
