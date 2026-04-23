@@ -364,6 +364,27 @@ type TranslationKeys = {
   "footer.ugcDisclaimer": string;
   "footer.copyright": string;
   "footer.terms": string;
+  // MySubmissions page
+  "mySub.loading": string;
+  "mySub.signInTitle": string;
+  "mySub.signInDesc": string;
+  "mySub.signInBtn": string;
+  "mySub.back": string;
+  "mySub.title": string;
+  "mySub.tabSubmissions": string;
+  "mySub.tabNotifications": string;
+  "mySub.noSubmissions": string;
+  "mySub.noSubmissionsDesc": string;
+  "mySub.submitCta": string;
+  "mySub.approved": string;
+  "mySub.rejected": string;
+  "mySub.pendingReview": string;
+  "mySub.views": string;
+  "mySub.upvotes": string;
+  "mySub.submitted": string;
+  "mySub.reason": string;
+  "mySub.noNotifications": string;
+  "mySub.noNotificationsDesc": string;
 };
 
 const translations: Record<Locale, TranslationKeys> = {
@@ -697,9 +718,30 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.trustCenter": "Trust Center",
     "sidebar.apiDocs": "API Docs",
     "sidebar.featuredThisWeek": "Featured This Week",
+    // MySubmissions page
+    "mySub.loading": "Loading...",
+    "mySub.signInTitle": "Sign in to view your submissions",
+    "mySub.signInDesc": "You need to be logged in to see your submissions and notifications.",
+    "mySub.signInBtn": "Sign In with Manus",
+    "mySub.back": "Back",
+    "mySub.title": "My Submissions",
+    "mySub.tabSubmissions": "Submissions",
+    "mySub.tabNotifications": "Notifications",
+    "mySub.noSubmissions": "No submissions yet",
+    "mySub.noSubmissionsDesc": "Share your first Manus use case with the community!",
+    "mySub.submitCta": "Submit a Use Case",
+    "mySub.approved": "Approved",
+    "mySub.rejected": "Rejected",
+    "mySub.pendingReview": "Pending Review",
+    "mySub.views": "views",
+    "mySub.upvotes": "upvotes",
+    "mySub.submitted": "Submitted",
+    "mySub.reason": "Reason:",
+    "mySub.noNotifications": "No notifications",
+    "mySub.noNotificationsDesc": "You'll receive notifications when your submissions are reviewed.",
   },
   zh: {
-    "nav.useCaseLibrary": "Awesome Manus 用例",
+    "nav.useCaseLibrary": "Manus 精选用例集",
     "nav.submit": "提交用例",
     "nav.admin": "管理后台",
     "nav.login": "登录",
@@ -1028,6 +1070,27 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.trustCenter": "信任中心",
     "sidebar.apiDocs": "API 文档",
     "sidebar.featuredThisWeek": "本周精选",
+    // MySubmissions page
+    "mySub.loading": "加载中...",
+    "mySub.signInTitle": "登录后查看您的提交",
+    "mySub.signInDesc": "您需要登录才能查看提交记录和通知。",
+    "mySub.signInBtn": "通过 Manus 登录",
+    "mySub.back": "返回",
+    "mySub.title": "我的提交",
+    "mySub.tabSubmissions": "提交记录",
+    "mySub.tabNotifications": "通知",
+    "mySub.noSubmissions": "暂无提交记录",
+    "mySub.noSubmissionsDesc": "与社区分享您的第一个 Manus 用例！",
+    "mySub.submitCta": "提交用例",
+    "mySub.approved": "已通过",
+    "mySub.rejected": "已拒绝",
+    "mySub.pendingReview": "待审核",
+    "mySub.views": "浏览",
+    "mySub.upvotes": "点赞",
+    "mySub.submitted": "提交于",
+    "mySub.reason": "原因：",
+    "mySub.noNotifications": "暂无通知",
+    "mySub.noNotificationsDesc": "您的提交被审核后将收到通知。",
   },
   ja: {
     "nav.useCaseLibrary": "Manus厳選実用例集",
@@ -1359,6 +1422,27 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.trustCenter": "トラストセンター",
     "sidebar.apiDocs": "API ドキュメント",
     "sidebar.featuredThisWeek": "今週の注目",
+    // MySubmissions page
+    "mySub.loading": "読み込み中...",
+    "mySub.signInTitle": "ログインして投稿を確認",
+    "mySub.signInDesc": "投稿履歴と通知を確認するにはログインが必要です。",
+    "mySub.signInBtn": "Manus でログイン",
+    "mySub.back": "戻る",
+    "mySub.title": "私の投稿",
+    "mySub.tabSubmissions": "投稿履歴",
+    "mySub.tabNotifications": "通知",
+    "mySub.noSubmissions": "投稿はまだありません",
+    "mySub.noSubmissionsDesc": "コミュニティと初めての Manus ユースケースを共有しましょう！",
+    "mySub.submitCta": "ユースケースを投稿",
+    "mySub.approved": "承認済み",
+    "mySub.rejected": "却下",
+    "mySub.pendingReview": "審査中",
+    "mySub.views": "閲覧",
+    "mySub.upvotes": "いいね",
+    "mySub.submitted": "投稿日",
+    "mySub.reason": "理由：",
+    "mySub.noNotifications": "通知はありません",
+    "mySub.noNotificationsDesc": "投稿が審査されると通知が届きます。",
   },
   ko: {
     "nav.useCaseLibrary": "Awesome Manus 유스케이스",
@@ -1690,6 +1774,27 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.trustCenter": "트러스트 센터",
     "sidebar.apiDocs": "API 문서",
     "sidebar.featuredThisWeek": "금주의 추천",
+    // MySubmissions page
+    "mySub.loading": "로딩 중...",
+    "mySub.signInTitle": "로그인하여 제출 내역 확인",
+    "mySub.signInDesc": "제출 내역과 알림을 확인하려면 로그인이 필요합니다.",
+    "mySub.signInBtn": "Manus로 로그인",
+    "mySub.back": "뒤로",
+    "mySub.title": "내 제출",
+    "mySub.tabSubmissions": "제출 내역",
+    "mySub.tabNotifications": "알림",
+    "mySub.noSubmissions": "제출 내역이 없습니다",
+    "mySub.noSubmissionsDesc": "커뮤니티와 첫 번째 Manus 유스케이스를 공유해 보세요!",
+    "mySub.submitCta": "유스케이스 제출",
+    "mySub.approved": "승인됨",
+    "mySub.rejected": "반려됨",
+    "mySub.pendingReview": "검토 중",
+    "mySub.views": "조회",
+    "mySub.upvotes": "추천",
+    "mySub.submitted": "제출일",
+    "mySub.reason": "사유:",
+    "mySub.noNotifications": "알림이 없습니다",
+    "mySub.noNotificationsDesc": "제출물이 검토되면 알림을 받게 됩니다.",
   },
   "pt-BR": {
     "nav.useCaseLibrary": "Awesome Manus Use Cases",
@@ -2021,6 +2126,27 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.trustCenter": "Central de Confiança",
     "sidebar.apiDocs": "Docs da API",
     "sidebar.featuredThisWeek": "Destaque da Semana",
+    // MySubmissions page
+    "mySub.loading": "Carregando...",
+    "mySub.signInTitle": "Faça login para ver seus envios",
+    "mySub.signInDesc": "Você precisa estar logado para ver seus envios e notificações.",
+    "mySub.signInBtn": "Entrar com Manus",
+    "mySub.back": "Voltar",
+    "mySub.title": "Meus Envios",
+    "mySub.tabSubmissions": "Envios",
+    "mySub.tabNotifications": "Notificações",
+    "mySub.noSubmissions": "Nenhum envio ainda",
+    "mySub.noSubmissionsDesc": "Compartilhe seu primeiro caso de uso Manus com a comunidade!",
+    "mySub.submitCta": "Enviar Caso de Uso",
+    "mySub.approved": "Aprovado",
+    "mySub.rejected": "Rejeitado",
+    "mySub.pendingReview": "Em Revisão",
+    "mySub.views": "visualizações",
+    "mySub.upvotes": "curtidas",
+    "mySub.submitted": "Enviado em",
+    "mySub.reason": "Motivo:",
+    "mySub.noNotifications": "Sem notificações",
+    "mySub.noNotificationsDesc": "Você receberá notificações quando seus envios forem revisados.",
   },
 };
 

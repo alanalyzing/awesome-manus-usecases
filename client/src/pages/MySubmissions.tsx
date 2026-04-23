@@ -47,7 +47,7 @@ export default function MySubmissions() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="animate-pulse text-muted-foreground">{t("mySub.loading")}</div>
       </div>
     );
   }
@@ -56,10 +56,10 @@ export default function MySubmissions() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground gap-4">
         <Bell size={48} className="text-muted-foreground/30" />
-        <h2 className="font-serif text-xl font-bold">Sign in to view your submissions</h2>
-        <p className="text-muted-foreground text-sm">You need to be logged in to see your submissions and notifications.</p>
+        <h2 className="font-serif text-xl font-bold">{t("mySub.signInTitle")}</h2>
+        <p className="text-muted-foreground text-sm">{t("mySub.signInDesc")}</p>
         <a href={getLoginUrl()}>
-          <Button>Sign In with Manus</Button>
+          <Button>{t("mySub.signInBtn")}</Button>
         </a>
       </div>
     );
@@ -78,9 +78,9 @@ export default function MySubmissions() {
 
   const statusBadge = (status: string) => {
     switch (status) {
-      case "approved": return <Badge className="bg-primary/10 text-primary border-primary/20">Approved</Badge>;
-      case "rejected": return <Badge className="bg-muted text-muted-foreground border-border">Rejected</Badge>;
-      default: return <Badge className="bg-muted text-muted-foreground/80 border-border">Pending Review</Badge>;
+      case "approved": return <Badge className="bg-primary/10 text-primary border-primary/20">{t("mySub.approved")}</Badge>;
+      case "rejected": return <Badge className="bg-muted text-muted-foreground border-border">{t("mySub.rejected")}</Badge>;
+      default: return <Badge className="bg-muted text-muted-foreground/80 border-border">{t("mySub.pendingReview")}</Badge>;
     }
   };
 
@@ -92,10 +92,10 @@ export default function MySubmissions() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-1.5">
               <ArrowLeft size={16} />
-              Back
+              {t("mySub.back")}
             </Button>
           </Link>
-          <h1 className="font-serif font-bold text-lg">My Submissions</h1>
+          <h1 className="font-serif font-bold text-lg">{t("mySub.title")}</h1>
         </div>
       </header>
 
@@ -104,11 +104,11 @@ export default function MySubmissions() {
           <TabsList className="mb-6">
             <TabsTrigger value="submissions" className="gap-1.5">
               <FileText size={14} />
-              Submissions ({submissions.length})
+              {t("mySub.tabSubmissions")} ({submissions.length})
             </TabsTrigger>
             <TabsTrigger value="notifications" className="gap-1.5">
               <Bell size={14} />
-              Notifications ({notifications.length})
+              {t("mySub.tabNotifications")} ({notifications.length})
             </TabsTrigger>
           </TabsList>
 
@@ -117,10 +117,10 @@ export default function MySubmissions() {
             {submissions.length === 0 ? (
               <div className="text-center py-16">
                 <FileText size={48} className="mx-auto text-muted-foreground/30 mb-4" />
-                <h3 className="font-serif text-lg font-bold mb-2">No submissions yet</h3>
-                <p className="text-muted-foreground text-sm mb-6">Share your first Manus use case with the community!</p>
+                <h3 className="font-serif text-lg font-bold mb-2">{t("mySub.noSubmissions")}</h3>
+                <p className="text-muted-foreground text-sm mb-6">{t("mySub.noSubmissionsDesc")}</p>
                 <Link href="/submit">
-                  <Button>Submit a Use Case</Button>
+                  <Button>{t("mySub.submitCta")}</Button>
                 </Link>
               </div>
             ) : (
@@ -142,14 +142,14 @@ export default function MySubmissions() {
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Eye size={11} />
-                          {uc.viewCount} views
+                          {uc.viewCount} {t("mySub.views")}
                         </span>
                         <span className="flex items-center gap-1">
-<Heart size={11} />
-                           {uc.upvoteCount} upvotes
+                          <Heart size={11} />
+                          {uc.upvoteCount} {t("mySub.upvotes")}
                         </span>
                         <span>
-                          Submitted {new Date(uc.createdAt).toLocaleDateString()}
+                          {t("mySub.submitted")} {new Date(uc.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                       {/* Categories */}
@@ -163,7 +163,7 @@ export default function MySubmissions() {
                       {/* Rejection reason */}
                       {uc.status === "rejected" && uc.rejectionReason && (
                         <div className="mt-2 p-2 bg-muted border border-border rounded text-xs text-muted-foreground">
-                          <strong>Reason:</strong> {uc.rejectionReason}
+                          <strong>{t("mySub.reason")}</strong> {uc.rejectionReason}
                         </div>
                       )}
                     </div>
@@ -178,8 +178,8 @@ export default function MySubmissions() {
             {notifications.length === 0 ? (
               <div className="text-center py-16">
                 <BellOff size={48} className="mx-auto text-muted-foreground/30 mb-4" />
-                <h3 className="font-serif text-lg font-bold mb-2">No notifications</h3>
-                <p className="text-muted-foreground text-sm">You'll receive notifications when your submissions are reviewed.</p>
+                <h3 className="font-serif text-lg font-bold mb-2">{t("mySub.noNotifications")}</h3>
+                <p className="text-muted-foreground text-sm">{t("mySub.noNotificationsDesc")}</p>
               </div>
             ) : (
               <div className="space-y-2">

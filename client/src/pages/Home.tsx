@@ -1156,6 +1156,17 @@ export default function Home() {
                   <p className="text-muted-foreground text-sm md:text-base max-w-lg leading-relaxed">
                     {t("hero.desc")}
                   </p>
+                  <p className="text-muted-foreground/60 text-[10px] md:text-xs max-w-lg leading-relaxed">
+                    {t("footer.ugcDisclaimer")}{" "}
+                    <a
+                      href="https://manus.im/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-foreground transition-colors"
+                    >
+                      {t("footer.terms")}
+                    </a>
+                  </p>
                 </div>
 
                 {/* Right: Animated stats */}
@@ -1615,25 +1626,7 @@ export default function Home() {
           </div>
           </>)}
 
-          {/* ─── Footer: UGC Disclaimer & Copyright ─── */}
-          <footer className="border-t bg-muted/30 px-6 py-6 mt-8">
-            <div className="max-w-7xl mx-auto space-y-2 text-center">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {t("footer.ugcDisclaimer")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("footer.copyright")}{" "}
-                <a
-                  href="https://manus.im/terms"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-foreground transition-colors"
-                >
-                  {t("footer.terms")}
-                </a>
-              </p>
-            </div>
-          </footer>
+
         </main>
       </div>
 

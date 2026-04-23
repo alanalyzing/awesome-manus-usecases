@@ -420,3 +420,7 @@
 - [x] Legal: Add submission agreement checkbox on submit page (rights confirmation + interview consent kept as separate optional checkbox)
 - [x] Legal: Add UGC disclaimer in footer ("user-generated / user-inspired")
 - [x] Legal: Add copyright notice in footer linking to https://manus.im/terms
+- [x] i18n: Translate MySubmissions page — all hardcoded English strings (tab labels, empty states, status badges, headers, metadata) into ZH, JA, KO, PT-BR
+- [ ] UI: Move UGC disclaimer from footer into hero section (below subtitle)
+- [x] UI: Move UGC disclaimer from footer into hero section (below subtitle, with Terms of Service link)
+- [x] i18n: Fix CN header title from "Awesome Manus 用例" to "Manus 精选用例集"
