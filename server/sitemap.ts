@@ -19,7 +19,7 @@ sitemapRouter.get("/sitemap.xml", async (req: Request, res: Response) => {
     }
 
     const protocol = req.headers["x-forwarded-proto"] || "https";
-    const host = req.headers["x-forwarded-host"] || req.headers.host || "localhost:3000";
+    const host = req.headers["x-forwarded-host"] || ((req.headers.host && !req.headers.host.includes("run.app")) ? req.headers.host : "awesome.manus.space");
     const baseUrl = `${protocol}://${host}`;
 
     // Fetch all approved use cases

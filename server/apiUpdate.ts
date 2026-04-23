@@ -165,7 +165,7 @@ async function applyUpdate(
  * sessionReplayUrl itself by providing a new value — the lookup happens first.
  *
  * Example curl:
- * curl -X PATCH https://manuslib-jnjq5dyo.manus.space/api/update \
+ * curl -X PATCH https://awesome.manus.space/api/update \
  *   -H "Authorization: Bearer YOUR_API_KEY" \
  *   -H "Content-Type: application/json" \
  *   -d '{"sessionReplayUrl":"https://manus.im/share/abc","deliverableUrl":"https://example.com/result"}'
@@ -223,7 +223,7 @@ updateRouter.patch("/update", async (req: Request, res: Response) => {
  * }
  *
  * Example curl:
- * curl -X PATCH https://manuslib-jnjq5dyo.manus.space/api/update/bulk \
+ * curl -X PATCH https://awesome.manus.space/api/update/bulk \
  *   -H "Authorization: Bearer YOUR_API_KEY" \
  *   -H "Content-Type: application/json" \
  *   -d '{"items":[{"sessionReplayUrl":"https://manus.im/share/abc","deliverableUrl":"https://example.com/result"}]}'

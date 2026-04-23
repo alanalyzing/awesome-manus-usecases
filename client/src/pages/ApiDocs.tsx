@@ -136,7 +136,7 @@ export default function ApiDocsPage() {
               <Globe size={12} className="text-primary" />
               <span className="font-semibold">Base URL:</span>
               <code className="font-mono bg-accent px-1.5 py-0.5 rounded text-[11px]">
-                https://manuslib-jnjq5dyo.manus.space
+                https://awesome.manus.space
               </code>
             </div>
             <div className="flex items-center gap-2 text-xs">
@@ -175,7 +175,7 @@ export default function ApiDocsPage() {
     }
   ]
 }`}
-            example={`curl https://manuslib-jnjq5dyo.manus.space/api/categories`}
+            example={`curl https://awesome.manus.space/api/categories`}
           />
 
           {/* POST /api/submit */}
@@ -206,7 +206,7 @@ export default function ApiDocsPage() {
     "status": "pending"
   }
 }`}
-            example={`curl -X POST https://manuslib-jnjq5dyo.manus.space/api/submit \\
+            example={`curl -X POST https://awesome.manus.space/api/submit \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -256,7 +256,7 @@ export default function ApiDocsPage() {
     "failed": 0
   }
 }`}
-            example={`curl -X POST https://manuslib-jnjq5dyo.manus.space/api/submit/bulk \\
+            example={`curl -X POST https://awesome.manus.space/api/submit/bulk \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"items": [{"title": "Use Case 1", "description": "..."}]}'`}
@@ -288,7 +288,7 @@ export default function ApiDocsPage() {
     "title": "Updated Title"
   }
 }`}
-            example={`curl -X PATCH https://manuslib-jnjq5dyo.manus.space/api/update \\
+            example={`curl -X PATCH https://awesome.manus.space/api/update \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -332,7 +332,7 @@ export default function ApiDocsPage() {
     "failed": 0
   }
 }`}
-            example={`curl -X PATCH https://manuslib-jnjq5dyo.manus.space/api/update/bulk \\
+            example={`curl -X PATCH https://awesome.manus.space/api/update/bulk \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"items": [{"id": 42, "updates": {"deliverableUrl": "https://..."}}]}'`}
@@ -350,13 +350,13 @@ export default function ApiDocsPage() {
     <description>Latest approved use cases</description>
     <item>
       <title>Market Research Report</title>
-      <link>https://manuslib-jnjq5dyo.manus.space/use-case/...</link>
+      <link>https://awesome.manus.space/use-case/...</link>
       <description>...</description>
       <pubDate>Mon, 14 Apr 2026 00:00:00 GMT</pubDate>
     </item>
   </channel>
 </rss>`}
-            example={`curl https://manuslib-jnjq5dyo.manus.space/api/rss`}
+            example={`curl https://awesome.manus.space/api/rss`}
             notes={["Returns XML with content-type application/rss+xml.", "Feed includes the 50 most recently approved use cases."]}
           />
         </section>

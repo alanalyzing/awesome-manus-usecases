@@ -334,3 +334,7 @@
 - [x] AI chatbot: Add more default shortcut suggestions on opening page (6 total: marketing, real estate, finance, e-commerce video, competitive intel, sales prospecting)
 - [x] AI chatbot: Add rate limiting to prevent over-usage (20 requests per 10 minutes per IP)
 - [x] UI: Make Ask AI button more visible with "Ask AI" text label + Sparkles icon next to Highlights
+- [x] Audit: Replace all old domain references (manuslib-jnjq5dyo.manus.space) with new custom domain (awesome.manus.space)
+- [x] Audit: Check all i18n translations for hardcoded old domain URLs (none found)
+- [x] Audit: Verify chatbot generates links using dynamic origin (window.location.origin) ✓
+- [x] Audit: Verify share links, OG meta, sitemap, RSS feed, JSON-LD use correct domain (fallbacks updated)

@@ -14,7 +14,7 @@ function getSiteOrigin(req?: express.Request): string {
     const host = req.headers["x-forwarded-host"] || req.headers.host;
     if (host) return `${proto}://${host}`;
   }
-  return "https://manuslib-jnjq5dyo.manus.space";
+  return "https://awesome.manus.space";
 }
 
 /** Inject dynamic OG meta tags and JSON-LD structured data for /use-case/:slug pages */

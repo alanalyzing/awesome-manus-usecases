@@ -1561,7 +1561,7 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
 
         // Fetch approved use cases for context
         const result = await getApprovedUseCases({ limit: 200, offset: 0 });
-        const siteOrigin = input.origin || "https://manuslib-jnjq5dyo.manus.space";
+        const siteOrigin = input.origin || "https://awesome.manus.space";
         const useCaseList = result.items.map(uc => {
           const cats = uc.categories?.map((c: any) => c.name).join(", ") || "";
           return `- "${uc.title}" (slug: ${uc.slug}, url: ${siteOrigin}/use-case/${uc.slug}) — ${uc.description?.slice(0, 120) || ""} [Categories: ${cats}] [Score: ${uc.aiScore?.overall || "N/A"}]`;

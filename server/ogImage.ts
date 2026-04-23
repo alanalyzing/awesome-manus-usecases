@@ -122,7 +122,7 @@ function generateOgSvg(params: {
 
   <!-- Bottom bar -->
   <rect x="0" y="590" width="1200" height="40" fill="#1a1a1a" />
-  <text x="80" y="616" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#999">manus.im</text>
+  <text x="80" y="616" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#999">awesome.manus.space</text>
   <text x="1120" y="616" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#999" text-anchor="end">Awesome Manus Use Cases</text>
 </svg>`;
 }

@@ -36,7 +36,7 @@ rssRouter.get("/rss", async (_req: Request, res: Response) => {
 
     // Get the base URL from the request
     const protocol = _req.headers["x-forwarded-proto"] || "https";
-    const host = _req.headers["x-forwarded-host"] || _req.headers.host || "localhost:3000";
+    const host = _req.headers["x-forwarded-host"] || ((_req.headers.host && !_req.headers.host.includes("run.app")) ? _req.headers.host : "awesome.manus.space");
     const baseUrl = `${protocol}://${host}`;
 
     // Build RSS XML
