@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -22,6 +23,7 @@ import { useEffect } from "react";
 
 export default function MySubmissions() {
   const { user, isAuthenticated, loading } = useAuth();
+  const { t } = useI18n();
 
   const notificationsQuery = trpc.user.notifications.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -154,7 +156,7 @@ export default function MySubmissions() {
                       <div className="flex flex-wrap gap-1 mt-2">
                         {uc.categories.slice(0, 4).map((cat) => (
                           <Badge key={cat.id} variant="secondary" className="text-[10px] px-1.5 py-0">
-                            {cat.name}
+                            {t(`cat.${cat.slug}` as any) || cat.name}
                           </Badge>
                         ))}
                       </div>

@@ -36,7 +36,7 @@ import {
 import { useState, useCallback, useRef, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
-import { LOCALES } from "@/lib/i18n";
+import { LOCALES, type Locale } from "@/lib/i18n";
 
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -54,10 +54,10 @@ const GUIDE_ICONS = [LinkIcon, Sparkles, ImageIcon, PenLine];
 function SubmissionGuidelines() {
   const { t } = useI18n();
   const steps = [
-    { title: "Paste your session replay link", desc: "Start by pasting your Manus session replay URL. This is the most important field and helps reviewers verify your work." },
-    { title: "Let AI write your title & description", desc: "Click the AI Summarize button to automatically generate a title and description from your session replay. You can edit the result afterwards." },
-    { title: "Add compelling screenshots", desc: t("submit.guideStep3Desc") },
-    { title: "Review and refine", desc: "Double-check the AI-generated content, select relevant categories, and add any additional details before submitting." },
+    { title: t("submit.guideStep1Title"), desc: t("submit.guideStep1Desc") },
+    { title: t("submit.guideStep2Title"), desc: t("submit.guideStep2Desc") },
+    { title: t("submit.guideStep3Title"), desc: t("submit.guideStep3Desc") },
+    { title: t("submit.guideStep4Title"), desc: t("submit.guideStep4Desc") },
   ];
 
   return (
@@ -149,10 +149,10 @@ export default function SubmitPage() {
     const url = screenshotUrl.trim();
     if (!url) return;
     if (uploadedFiles.length >= MAX_FILES) {
-      toast.error(`Maximum ${MAX_FILES} screenshots allowed`);
+      toast.error(t("submit.maxScreenshots"));
       return;
     }
-    try { new URL(url); } catch { toast.error("Please enter a valid URL"); return; }
+    try { new URL(url); } catch { toast.error(t("submit.invalidUrl")); return; }
     setUploadedFiles((prev) => [
       ...prev,
       { url, fileKey: "", name: url.split("/").pop() || "screenshot", preview: url },
@@ -169,11 +169,11 @@ export default function SubmitPage() {
       const file = imageItem.getAsFile();
       if (!file) return;
       if (uploadedFiles.length >= MAX_FILES) {
-        toast.error(`Maximum ${MAX_FILES} screenshots allowed`);
+        toast.error(t("submit.maxScreenshots"));
         return;
       }
       if (file.size > MAX_FILE_SIZE) {
-        toast.error(`File too large (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`);
+        toast.error(t("submit.maxScreenshots"));
         return;
       }
       setUploading(true);
@@ -192,9 +192,9 @@ export default function SubmitPage() {
           ...prev,
           { url: result.url, fileKey: result.fileKey, name: `pasted-image`, preview: result.url },
         ]);
-        toast.success("Image pasted successfully");
+        toast.success(t("submit.imagePasted"));
       } catch (err: any) {
-        toast.error("Failed to upload pasted image");
+        toast.error(t("submit.pasteError"));
       } finally {
         setUploading(false);
       }
@@ -206,17 +206,17 @@ export default function SubmitPage() {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
       if (uploadedFiles.length + files.length > MAX_FILES) {
-        toast.error(`Maximum ${MAX_FILES} files allowed`);
+        toast.error(t("submit.maxScreenshots"));
         return;
       }
 
       for (const file of files) {
         if (!ALLOWED_TYPES.includes(file.type)) {
-          toast.error(`${file.name}: Only PNG, JPG, WebP, and GIF allowed`);
+          toast.error(`${file.name}: PNG, JPG, WebP, GIF`);
           continue;
         }
         if (file.size > MAX_FILE_SIZE) {
-          toast.error(`${file.name}: File exceeds 5MB limit`);
+          toast.error(`${file.name}: max 5MB`);
           continue;
         }
 
@@ -255,25 +255,25 @@ export default function SubmitPage() {
     async (e: React.FormEvent) => {
       e.preventDefault();
       if (!title.trim() || !description.trim()) {
-        toast.error("Title and description are required");
+        toast.error(t("submit.titleRequired"));
         return;
       }
       if (selectedJobFunctions.length === 0 && selectedFeatures.length === 0) {
-        toast.error("Please select at least one category");
+        toast.error(t("submit.categoryRequired"));
         return;
       }
       if (uploadedFiles.length === 0) {
-        toast.error("Please upload at least one screenshot");
+        toast.error(t("submit.screenshotRequired"));
         return;
       }
       if (!sessionReplayUrl.trim()) {
-        toast.error("Session Replay URL is required");
+        toast.error(t("submit.replayRequired"));
         return;
       }
       const trimmedUrl = sessionReplayUrl.trim();
       if (!trimmedUrl.includes("manus.space") && !trimmedUrl.includes("manus.im/share/")) {
         toast.error(
-          "Session Replay URL must contain manus.im/share/ or manus.space. To get this link, open your Manus task, click the Share button in the top-right corner, and copy the share link.",
+          t("submit.replayUrlHint"),
           { duration: 8000 }
         );
         return;
@@ -293,7 +293,7 @@ export default function SubmitPage() {
         });
         navigate("/submit/success");
       } catch (err: any) {
-        toast.error(err.message || "Submission failed");
+        toast.error(err.message || t("submit.submitFailed"));
       }
       setSubmitting(false);
     },
@@ -329,7 +329,7 @@ export default function SubmitPage() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
               <ArrowLeft size={14} />
-              Back
+              {t("submit.back")}
             </Button>
           </Link>
           <h1 className="font-serif font-bold text-sm">{t("submit.title")}</h1>
@@ -361,7 +361,7 @@ export default function SubmitPage() {
               className={`bg-card ${sessionReplayUrl.trim() && !sessionReplayUrl.trim().includes("manus.space") && !sessionReplayUrl.trim().includes("manus.im/share/") ? "border-destructive focus-visible:ring-destructive" : ""}`}
             />
             {sessionReplayUrl.trim() && !sessionReplayUrl.trim().includes("manus.space") && !sessionReplayUrl.trim().includes("manus.im/share/") ? (
-              <p className="text-xs text-destructive">URL must contain manus.im/share/ or manus.space. Open your Manus task, click Share (top-right), and copy the link.</p>
+              <p className="text-xs text-destructive">{t("submit.replayUrlHint")}</p>
             ) : (
               <p className="text-xs text-muted-foreground">{t("submit.sessionReplayHint")}</p>
             )}
@@ -369,13 +369,13 @@ export default function SubmitPage() {
               <div className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-3 mt-2">
                 <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <p className="font-medium text-amber-800 dark:text-amber-300">This session replay URL already exists in the library</p>
+                  <p className="font-medium text-amber-800 dark:text-amber-300">{t("submit.duplicateReplay")}</p>
                   <p className="text-amber-700 dark:text-amber-400 mt-1">
-                    Existing use case: <Link href={`/use-case/${duplicateCheck.data.existingSlug}`} className="underline font-medium hover:text-amber-900 dark:hover:text-amber-200">{duplicateCheck.data.existingTitle}</Link>
-                    {duplicateCheck.data.existingStatus === "pending" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-amber-400">Pending Review</Badge>}
-                    {duplicateCheck.data.existingStatus === "approved" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-green-400">Approved</Badge>}
+                    {t("submit.existingUseCase")}: <Link href={`/use-case/${duplicateCheck.data.existingSlug}`} className="underline font-medium hover:text-amber-900 dark:hover:text-amber-200">{duplicateCheck.data.existingTitle}</Link>
+                    {duplicateCheck.data.existingStatus === "pending" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-amber-400">{t("submit.pendingReview")}</Badge>}
+                    {duplicateCheck.data.existingStatus === "approved" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-green-400">{t("submit.approvedBadge")}</Badge>}
                   </p>
-                  <p className="text-amber-600 dark:text-amber-500 mt-1">You can still submit if you believe this is a different use case.</p>
+                  <p className="text-amber-600 dark:text-amber-500 mt-1">{t("submit.canStillSubmit")}</p>
                 </div>
               </div>
             )}
@@ -397,13 +397,13 @@ export default function SubmitPage() {
               <div className="flex items-start gap-2 rounded-lg border border-amber-500/50 bg-amber-50 dark:bg-amber-950/20 p-3 mt-2">
                 <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div className="text-xs">
-                  <p className="font-medium text-amber-800 dark:text-amber-300">This deliverable URL already exists in the library</p>
+                  <p className="font-medium text-amber-800 dark:text-amber-300">{t("submit.duplicateDeliverable")}</p>
                   <p className="text-amber-700 dark:text-amber-400 mt-1">
-                    Existing use case: <Link href={`/use-case/${deliverableDuplicateCheck.data.existingSlug}`} className="underline font-medium hover:text-amber-900 dark:hover:text-amber-200">{deliverableDuplicateCheck.data.existingTitle}</Link>
-                    {deliverableDuplicateCheck.data.existingStatus === "pending" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-amber-400">Pending Review</Badge>}
-                    {deliverableDuplicateCheck.data.existingStatus === "approved" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-green-400">Approved</Badge>}
+                    {t("submit.existingUseCase")}: <Link href={`/use-case/${deliverableDuplicateCheck.data.existingSlug}`} className="underline font-medium hover:text-amber-900 dark:hover:text-amber-200">{deliverableDuplicateCheck.data.existingTitle}</Link>
+                    {deliverableDuplicateCheck.data.existingStatus === "pending" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-amber-400">{t("submit.pendingReview")}</Badge>}
+                    {deliverableDuplicateCheck.data.existingStatus === "approved" && <Badge variant="outline" className="ml-1.5 text-[10px] py-0 px-1.5 border-green-400">{t("submit.approvedBadge")}</Badge>}
                   </p>
-                  <p className="text-amber-600 dark:text-amber-500 mt-1">You can still submit if you believe this is a different use case.</p>
+                  <p className="text-amber-600 dark:text-amber-500 mt-1">{t("submit.canStillSubmit")}</p>
                 </div>
               </div>
             )}
@@ -415,7 +415,7 @@ export default function SubmitPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sparkles size={16} className="text-amber-500" />
-                  <span className="text-sm font-medium">AI can write your title and description</span>
+                  <span className="text-sm font-medium">{t("submit.aiCanWrite")}</span>
                 </div>
                 <Button
                   type="button"
@@ -430,9 +430,9 @@ export default function SubmitPage() {
                       });
                       if (result.title) setTitle(result.title);
                       if (result.description) setDescription(result.description);
-                      toast.success("AI generated title and description. Feel free to edit!");
+                      toast.success(t("submit.aiSuccess"));
                     } catch (err: any) {
-                      toast.error(err.message || "AI summarize failed");
+                      toast.error(err.message || t("submit.aiError"));
                     } finally {
                       setAiSummarizing(false);
                     }
@@ -441,13 +441,13 @@ export default function SubmitPage() {
                   className="gap-1.5"
                 >
                   {aiSummarizing ? (
-                    <><Loader2 size={14} className="animate-spin" /> Generating...</>
+                    <><Loader2 size={14} className="animate-spin" /> {t("submit.aiGenerating")}</>
                   ) : (
-                    <><Sparkles size={14} /> AI Summarize</>
+                    <><Sparkles size={14} /> {t("submit.aiSummarize")}</>
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">Generates a title and description based on your session replay. You can edit the result.</p>
+              <p className="text-xs text-muted-foreground mt-2">{t("submit.aiGeneratedHint")}</p>
             </div>
           )}
 
@@ -487,7 +487,7 @@ export default function SubmitPage() {
               <span className="float-right">{description.length}/5000</span>
             </p>
             <p className="text-xs text-muted-foreground/60 mt-1">
-              Supports Markdown: **bold**, *italic*, [links](url), lists, and more
+              {t("submit.markdownHint")}
             </p>
           </div>
 
@@ -510,7 +510,7 @@ export default function SubmitPage() {
                       : "bg-card hover:bg-accent border-border"
                   }`}
                 >
-                  {cat.name}
+                  {t(`cat.${cat.slug}` as any) || cat.name}
                 </button>
               ))}
             </div>
@@ -535,7 +535,7 @@ export default function SubmitPage() {
                       : "bg-card hover:bg-accent border-border"
                   }`}
                 >
-                  {cat.name}
+                  {t(`cat.${cat.slug}` as any) || cat.name}
                 </button>
               ))}
             </div>
@@ -559,7 +559,7 @@ export default function SubmitPage() {
                     </button>
                     {i === 0 && (
                       <Badge className="absolute bottom-1 left-1 text-[10px] bg-primary/90 text-primary-foreground border-0">
-                        Cover
+                        {t("submit.coverBadge")}
                       </Badge>
                     )}
                   </div>
@@ -572,7 +572,7 @@ export default function SubmitPage() {
                   value={screenshotUrl}
                   onChange={(e) => setScreenshotUrl(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddScreenshotUrl(); } }}
-                  placeholder="Paste screenshot URL or paste image (Ctrl+V)"
+                  placeholder={t("submit.screenshotUrlPlaceholder")}
                   className="flex-1"
                 />
                 <Button
@@ -583,7 +583,7 @@ export default function SubmitPage() {
                   disabled={!screenshotUrl.trim()}
                   className="gap-1 shrink-0"
                 >
-                  + Add
+                  {t("submit.addBtn")}
                 </Button>
               </div>
             )}
@@ -598,9 +598,9 @@ export default function SubmitPage() {
                   className="gap-1.5"
                 >
                   {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-                  Upload File
+                  {t("submit.uploadFile")}
                 </Button>
-                <span className="text-xs text-muted-foreground">You can also paste images directly into this form (Ctrl/Cmd+V)</span>
+                <span className="text-xs text-muted-foreground">{t("submit.pasteHint")}</span>
               </div>
             )}
             <input

@@ -1,6 +1,7 @@
 
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { useI18n } from "@/lib/i18n";
 import { getLoginUrl } from "@/const";
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocation, useSearch } from "wouter";
@@ -21,18 +22,19 @@ type SocialHandle = {
 const MAX_AVATAR_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 
-const PROFICIENCY_LABELS: Record<string, { label: string; description: string }> = {
-  beginner: { label: "Beginner", description: "Just getting started with Manus" },
-  intermediate: { label: "Intermediate", description: "Comfortable with common workflows" },
-  advanced: { label: "Advanced", description: "Power user with complex automations" },
-  expert: { label: "Expert", description: "Deep expertise, pushing boundaries" },
-};
-
 export default function ProfileSetup() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { t } = useI18n();
   const [, navigate] = useLocation();
   const searchString = useSearch();
   const isEditMode = new URLSearchParams(searchString).get("edit") === "1";
+
+  const PROFICIENCY_LABELS: Record<string, { label: string; description: string }> = {
+    beginner: { label: t("profileSetup.beginner"), description: t("profileSetup.beginnerDesc") },
+    intermediate: { label: t("profileSetup.intermediate"), description: t("profileSetup.intermediateDesc") },
+    advanced: { label: t("profileSetup.advanced"), description: t("profileSetup.advancedDesc") },
+    expert: { label: t("profileSetup.expert"), description: t("profileSetup.expertDesc") },
+  };
 
   const profileQuery = trpc.profile.me.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -104,7 +106,7 @@ export default function ProfileSetup() {
     onSuccess: (data) => {
       setAvatarUrl(data.url);
       setAvatarUploading(false);
-      toast.success("Avatar uploaded!");
+      toast.success(t("profileSetup.avatarUploaded"));
     },
     onError: (err) => {
       setAvatarUploading(false);
@@ -115,7 +117,7 @@ export default function ProfileSetup() {
 
   const createProfile = trpc.profile.create.useMutation({
     onSuccess: () => {
-      toast.success("Profile created successfully!");
+      toast.success(t("profileSetup.profileCreated"));
       navigate("/", { replace: true });
     },
     onError: (err) => {
@@ -125,7 +127,7 @@ export default function ProfileSetup() {
 
   const updateProfile = trpc.profile.update.useMutation({
     onSuccess: () => {
-      toast.success("Profile updated successfully!");
+      toast.success(t("profileSetup.profileUpdated"));
       const uname = profileQuery.data?.username || username;
       navigate(`/profile/${uname}`, { replace: true });
     },
@@ -139,11 +141,11 @@ export default function ProfileSetup() {
     if (!file) return;
 
     if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
-      toast.error("Only PNG, JPG, WebP, and GIF files are allowed");
+      toast.error(t("profileSetup.fileTypeError"));
       return;
     }
     if (file.size > MAX_AVATAR_SIZE) {
-      toast.error("File size exceeds 10MB limit");
+      toast.error(t("profileSetup.fileSizeError"));
       return;
     }
 
@@ -165,7 +167,7 @@ export default function ProfileSetup() {
 
     // Reset input so same file can be re-selected
     e.target.value = "";
-  }, [uploadAvatar]);
+  }, [uploadAvatar, t]);
 
   const removeAvatar = useCallback(() => {
     setAvatarPreview(null);
@@ -246,12 +248,12 @@ export default function ProfileSetup() {
         <Card className="max-w-md w-full">
           <CardHeader className="text-center">
             <ManusLogo className="h-8 mx-auto mb-4" />
-            <CardTitle>Sign in to create your profile</CardTitle>
-            <CardDescription>You need to be logged in to set up your contributor profile.</CardDescription>
+            <CardTitle>{t("profileSetup.signInTitle")}</CardTitle>
+            <CardDescription>{t("profileSetup.signInDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button className="w-full" onClick={() => { window.location.href = getLoginUrl(); }}>
-              Sign In with Manus
+              {t("profileSetup.signInBtn")}
             </Button>
           </CardContent>
         </Card>
@@ -266,12 +268,10 @@ export default function ProfileSetup() {
         <div className="text-center mb-8">
           <ManusLogo className="h-8 mx-auto mb-4" />
           <h1 className="text-3xl font-serif font-bold text-foreground mb-2">
-            {isEditMode ? "Edit Your Profile" : "Set Up Your Profile"}
+            {isEditMode ? t("profileSetup.editTitle") : t("profileSetup.createTitle")}
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            {isEditMode
-              ? "Update your contributor profile information."
-              : "Create your contributor profile to showcase your Manus use cases and connect with the community."}
+            {isEditMode ? t("profileSetup.editDesc") : t("profileSetup.createDesc")}
           </p>
         </div>
 
@@ -284,8 +284,8 @@ export default function ProfileSetup() {
                   <Camera className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Profile Photo</CardTitle>
-                  <CardDescription>Upload an avatar (optional, max 10MB)</CardDescription>
+                  <CardTitle className="text-lg">{t("profileSetup.photoTitle")}</CardTitle>
+                  <CardDescription>{t("profileSetup.photoDesc")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -326,20 +326,20 @@ export default function ProfileSetup() {
                     {avatarUploading ? (
                       <>
                         <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                        Uploading...
+                        {t("profileSetup.uploading")}
                       </>
                     ) : avatarPreview ? (
-                      "Change photo"
+                      t("profileSetup.changePhoto")
                     ) : (
-                      "Upload photo"
+                      t("profileSetup.uploadPhoto")
                     )}
                   </Button>
                   <p className="text-xs text-muted-foreground mt-2">
-                    PNG, JPG, WebP, or GIF. Max 10MB.
+                    {t("profileSetup.photoHelp")}
                   </p>
                   {avatarUrl && (
                     <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                      <Check className="h-3 w-3" /> Uploaded successfully
+                      <Check className="h-3 w-3" /> {t("profileSetup.uploadSuccess")}
                     </p>
                   )}
                 </div>
@@ -362,8 +362,8 @@ export default function ProfileSetup() {
                   <User className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Choose a Username</CardTitle>
-                  <CardDescription>This will be your unique profile URL</CardDescription>
+                  <CardTitle className="text-lg">{t("profileSetup.usernameTitle")}</CardTitle>
+                  <CardDescription>{t("profileSetup.usernameDesc")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -372,7 +372,7 @@ export default function ProfileSetup() {
                 <Input
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}
-                  placeholder="your-username"
+                  placeholder={t("profileSetup.usernamePlaceholder")}
                   maxLength={32}
                   className="pr-10"
                 />
@@ -396,15 +396,15 @@ export default function ProfileSetup() {
               {debouncedUsername.length >= 3 && !(isEditMode && profileQuery.data?.username === debouncedUsername) && usernameCheck.data && (
                 <p className={`text-xs ${usernameCheck.data.available ? "text-green-600" : "text-red-600"}`}>
                   {usernameCheck.data.available
-                    ? `\u2713 /profile/${debouncedUsername} is available`
+                    ? `\u2713 ${t("profileSetup.usernameAvailable").replace("{0}", debouncedUsername)}`
                     : usernameCheck.data.reason}
                 </p>
               )}
               {isEditMode && profileQuery.data?.username === debouncedUsername && debouncedUsername.length >= 3 && (
-                <p className="text-xs text-green-600">{"\u2713"} Current username</p>
+                <p className="text-xs text-green-600">{"\u2713"} {t("profileSetup.currentUsername")}</p>
               )}
               {username.length > 0 && username.length < 3 && (
-                <p className="text-xs text-muted-foreground">Username must be at least 3 characters</p>
+                <p className="text-xs text-muted-foreground">{t("profileSetup.usernameMinLength")}</p>
               )}
               {isEditMode && profileQuery.data && (() => {
                 const changeCount = profileQuery.data.usernameChangeCount ?? 0;
@@ -415,9 +415,9 @@ export default function ProfileSetup() {
                   <div className={`text-xs mt-1 ${isAtLimit && !isCurrentUsername ? "text-red-600" : "text-muted-foreground"}`}>
                     {isAtLimit
                       ? isCurrentUsername
-                        ? "You have used all 5 username changes"
-                        : "You have reached the maximum of 5 username changes"
-                      : `${remaining} username change${remaining === 1 ? "" : "s"} remaining`}
+                        ? t("profileSetup.usernameChangesUsed")
+                        : t("profileSetup.usernameChangesMax")
+                      : t("profileSetup.usernameChangesRemaining").replace("{0}", String(remaining))}
                   </div>
                 );
               })()}
@@ -432,8 +432,8 @@ export default function ProfileSetup() {
                   <Share2 className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Social Handles</CardTitle>
-                  <CardDescription>Add at least one social profile so others can connect with you</CardDescription>
+                  <CardTitle className="text-lg">{t("profileSetup.socialTitle")}</CardTitle>
+                  <CardDescription>{t("profileSetup.socialDesc")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -492,7 +492,7 @@ export default function ProfileSetup() {
               ))}
               {socialHandles.length < 4 && (
                 <Button type="button" variant="outline" size="sm" onClick={addSocialHandle} className="mt-2">
-                  <Plus className="h-3 w-3 mr-1" /> Add another
+                  <Plus className="h-3 w-3 mr-1" /> {t("profileSetup.addAnother")}
                 </Button>
               )}
             </CardContent>
@@ -506,8 +506,8 @@ export default function ProfileSetup() {
                   <Award className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Manus Proficiency</CardTitle>
-                  <CardDescription>How would you rate your experience with Manus?</CardDescription>
+                  <CardTitle className="text-lg">{t("profileSetup.proficiencyTitle")}</CardTitle>
+                  <CardDescription>{t("profileSetup.proficiencyDesc")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -521,7 +521,7 @@ export default function ProfileSetup() {
                     className={`text-left p-3 rounded-lg border-2 transition-all ${
                       proficiency === key
                         ? "border-primary bg-primary/5"
-                        : "border-border hover:border-muted-foreground/30"
+                        : "border-border hover:border-primary/30"
                     }`}
                   >
                     <div className="font-medium text-sm">{label}</div>
@@ -540,38 +540,38 @@ export default function ProfileSetup() {
                   <Briefcase className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Additional Info</CardTitle>
-                  <CardDescription>Optional — helps others learn more about you</CardDescription>
+                  <CardTitle className="text-lg">{t("profileSetup.additionalTitle")}</CardTitle>
+                  <CardDescription>{t("profileSetup.additionalDesc")}</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Job Title</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("profileSetup.jobTitle")}</label>
                   <Input
                     value={jobTitle}
                     onChange={(e) => setJobTitle(e.target.value)}
-                    placeholder="e.g., Product Manager"
+                    placeholder={t("profileSetup.jobTitlePlaceholder")}
                     maxLength={128}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">Company / Organization</label>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">{t("profileSetup.company")}</label>
                   <Input
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    placeholder="e.g., Acme Corp"
+                    placeholder={t("profileSetup.companyPlaceholder")}
                     maxLength={128}
                   />
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Bio</label>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">{t("profileSetup.bio")}</label>
                 <Textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell the community a bit about yourself and how you use Manus..."
+                  placeholder={t("profileSetup.bioPlaceholder")}
                   maxLength={500}
                   rows={3}
                 />
@@ -593,7 +593,7 @@ export default function ProfileSetup() {
                 }
               }}
             >
-              {isEditMode ? "Cancel" : "Skip for now"}
+              {isEditMode ? t("profileSetup.cancel") : t("profileSetup.skipForNow")}
             </Button>
             <Button
               type="submit"
@@ -603,10 +603,10 @@ export default function ProfileSetup() {
               {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  {isEditMode ? "Saving..." : "Creating..."}
+                  {isEditMode ? t("profileSetup.saving") : t("profileSetup.creating")}
                 </>
               ) : (
-                isEditMode ? "Save Changes" : "Create Profile"
+                isEditMode ? t("profileSetup.saveChanges") : t("profileSetup.createProfile")
               )}
             </Button>
           </div>

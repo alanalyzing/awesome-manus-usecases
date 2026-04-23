@@ -8,9 +8,9 @@ import { Link } from "wouter";
 import { MadeWithManusBadge } from "./ManusLogo";
 
 const LEARN_MORE_LINKS = [
-  { name: "Product Demo Walkthrough", url: "https://www.youtube.com/watch?v=3mdNmNLcWYQ", icon: "video" },
-  { name: "Manus Academy", url: "https://academy.manus.im/", icon: "graduation" },
-  { name: "Trust Center", url: "https://trust.manus.im/", icon: "shield" },
+  { nameKey: "sidebar.productDemo" as const, url: "https://www.youtube.com/watch?v=3mdNmNLcWYQ", icon: "video" },
+  { nameKey: "sidebar.manusAcademy" as const, url: "https://academy.manus.im/", icon: "graduation" },
+  { nameKey: "sidebar.trustCenter" as const, url: "https://trust.manus.im/", icon: "shield" },
 ];
 
 const SOCIAL_LINKS = [
@@ -254,7 +254,7 @@ export function MobileSidebar({
                   const IconComp = link.icon === "video" ? Video : link.icon === "graduation" ? GraduationCap : link.icon === "shield" ? Shield : BookOpen;
                   return (
                     <a
-                      key={link.name}
+                      key={link.nameKey}
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -262,7 +262,7 @@ export function MobileSidebar({
                       className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
                     >
                       <IconComp size={13} />
-                      {link.name}
+                      {t(link.nameKey)}
                     </a>
                   );
                 })}

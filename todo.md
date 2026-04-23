@@ -400,3 +400,15 @@
 - [x] Sidebar: Add "Product Demo Walkthrough" under Learn More that shows embedded YouTube video on the right panel
 - [x] Sidebar: Add "Manus Academy" link (https://academy.manus.im/) under Learn More
 - [x] Sidebar: Add "Trust Center" link (https://trust.manus.im/) under Learn More
+- [x] i18n: Translate all use case titles and descriptions to ZH, JA, KO, PT-BR (stored in DB)
+- [x] i18n: Translate submission page UI strings to all 5 languages
+- [x] i18n: Translate profile page UI strings to all 5 languages
+- [x] i18n: Display translated use case content based on user's selected locale
+- [x] i18n: Update JP header title to "Manus 厳選実用例集"
+- [x] i18n: Add ?lang= URL parameter support for shareable locale URLs
+- [x] i18n: Add tRPC endpoints for bulk use case translations by locale
+- [x] i18n: Wire frontend to display translated use case titles/descriptions based on locale
+- [x] i18n: Backfill translations for all existing approved use cases
+- [x] QA: 3-pass language QA - Pass 1: check all pages in all 5 languages for untranslated strings
+- [x] QA: 3-pass language QA - Pass 2: fix issues and verify professional/fluent translations (fixed: category chips on submit page, modal category tags, related use case titles/descriptions, profile/detail page category tags)
+- [x] QA: 3-pass language QA - Pass 3: final verification across all subpages (all 5 languages verified across homepage, submit, leaderboard, about, modal, detail, profile)

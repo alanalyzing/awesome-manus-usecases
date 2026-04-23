@@ -33,7 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { AdminEditDialog } from "@/components/AdminEditDialog";
 import { motion } from "framer-motion";
 import { useLocation, Link } from "wouter";
@@ -137,6 +137,23 @@ export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseMod
 
   const uc = useCaseQuery.data;
   const screenshots = uc?.screenshots ?? [];
+
+  // Translation overlay for non-English locales
+  const { locale } = useI18n();
+  const ucIds = useMemo(() => uc ? [uc.id] : [], [uc?.id]);
+  const { data: translationsMap } = trpc.useCases.translations.useQuery(
+    { useCaseIds: ucIds, locale },
+    { enabled: locale !== "en" && ucIds.length > 0, staleTime: 5 * 60 * 1000 }
+  );
+  const translatedTitle = (locale !== "en" && translationsMap && uc && translationsMap[uc.id]?.title) || uc?.title || "";
+  const translatedDescription = (locale !== "en" && translationsMap && uc && translationsMap[uc.id]?.description) || uc?.description || "";
+
+  // Translations for related use cases
+  const relatedIds = useMemo(() => relatedQuery.data?.map((r) => r.id) ?? [], [relatedQuery.data]);
+  const { data: relatedTranslationsMap } = trpc.useCases.translations.useQuery(
+    { useCaseIds: relatedIds, locale },
+    { enabled: locale !== "en" && relatedIds.length > 0, staleTime: 5 * 60 * 1000 }
+  );
 
   return (
     <>
@@ -259,7 +276,7 @@ export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseMod
                 )}
 
                 {/* Title */}
-                <h2 className="font-serif text-2xl font-bold mb-3">{uc.title}</h2>
+                <h2 className="font-serif text-2xl font-bold mb-3">{translatedTitle}</h2>
 
                 {/* Meta */}
                 <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-5">
@@ -302,7 +319,7 @@ export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseMod
                 <div className="flex flex-wrap gap-2 mb-5">
                   {uc.categories.map((cat) => (
                     <Badge key={cat.id} variant="secondary">
-                      {cat.name}
+                      {t(`cat.${cat.slug}` as any) || cat.name}
                     </Badge>
                   ))}
                 </div>
@@ -356,7 +373,7 @@ export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseMod
 
                 {/* Description */}
                 <div className="max-w-none mb-6 text-foreground/90 leading-relaxed">
-                  <MarkdownContent content={uc.description ?? ""} />
+                  <MarkdownContent content={translatedDescription} />
                 </div>
 
                 {/* Action Links */}
@@ -406,10 +423,10 @@ export function UseCaseModal({ slug, onClose, slugList, onNavigate }: UseCaseMod
                             )}
                             <div className="min-w-0">
                               <h4 className="font-medium text-sm line-clamp-1 group-hover:text-primary/80 transition-colors">
-                                {related.title}
+                                {(locale !== "en" && relatedTranslationsMap?.[related.id]?.title) || related.title}
                               </h4>
                               <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-                                {stripMarkdown(related.description ?? "")}
+                                {stripMarkdown((locale !== "en" && relatedTranslationsMap?.[related.id]?.description) || related.description || "")}
                               </p>
                             </div>
                           </button>

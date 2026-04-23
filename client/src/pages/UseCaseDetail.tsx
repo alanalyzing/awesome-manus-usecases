@@ -20,7 +20,7 @@ import {
   ChevronRight,
   Pencil,
 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { AdminEditDialog } from "@/components/AdminEditDialog";
 import { MarkdownContent } from "@/components/MarkdownContent";
 import { motion } from "framer-motion";
@@ -88,6 +88,16 @@ export default function UseCaseDetailPage() {
   }, []);
 
   const uc = useCaseQuery.data;
+
+  // Translation overlay for non-English locales
+  const { locale } = useI18n();
+  const ucIds = useMemo(() => uc ? [uc.id] : [], [uc?.id]);
+  const { data: translationsMap } = trpc.useCases.translations.useQuery(
+    { useCaseIds: ucIds, locale },
+    { enabled: locale !== "en" && ucIds.length > 0, staleTime: 5 * 60 * 1000 }
+  );
+  const translatedTitle = (locale !== "en" && translationsMap && uc && translationsMap[uc.id]?.title) || uc?.title || "";
+  const translatedDescription = (locale !== "en" && translationsMap && uc && translationsMap[uc.id]?.description) || uc?.description || "";
 
   if (useCaseQuery.isLoading) {
     return (
@@ -181,7 +191,7 @@ export default function UseCaseDetailPage() {
         )}
 
         {/* Title */}
-        <h1 className="font-serif text-3xl font-bold mb-3">{uc.title}</h1>
+        <h1 className="font-serif text-3xl font-bold mb-3">{translatedTitle}</h1>
 
         {/* Meta */}
         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
@@ -218,7 +228,7 @@ export default function UseCaseDetailPage() {
         <div className="flex flex-wrap gap-2 mb-6">
           {uc.categories.map((cat) => (
             <Badge key={cat.id} variant="secondary">
-              {cat.name}
+              {t(`cat.${cat.slug}` as any) || cat.name}
             </Badge>
           ))}
         </div>
@@ -269,7 +279,7 @@ export default function UseCaseDetailPage() {
 
         {/* Description */}
         <div className="max-w-none mb-8 text-foreground/90 leading-relaxed">
-          <MarkdownContent content={uc.description ?? ""} />
+          <MarkdownContent content={translatedDescription} />
         </div>
 
         {/* Action Links */}

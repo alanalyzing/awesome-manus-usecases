@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { useI18n } from "@/lib/i18n";
 import { stripMarkdown } from "@/components/MarkdownContent";
 import { useRoute, Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -30,13 +31,6 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const PROFICIENCY_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-  beginner: { label: "Beginner", color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
-  intermediate: { label: "Intermediate", color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
-  advanced: { label: "Advanced", color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
-  expert: { label: "Expert", color: "text-foreground", bgColor: "bg-primary/10 border-primary/20" },
-};
-
 const PLATFORM_ICONS: Record<string, React.ReactNode> = {
   x: <Twitter size={15} />,
   instagram: <Instagram size={15} />,
@@ -53,6 +47,7 @@ const PLATFORM_URLS: Record<string, (handle: string) => string> = {
 
 /** Compact average score display replacing the radar chart */
 function AverageScoreBadge({ userId }: { userId: number }) {
+  const { t } = useI18n();
   const avgQuery = trpc.profile.averageScores.useQuery(
     { userId },
     { enabled: !!userId }
@@ -63,11 +58,11 @@ function AverageScoreBadge({ userId }: { userId: number }) {
 
   const overall = Number(avg.overall) || 0;
   const dimensions = [
-    { label: "Completeness", value: Number(avg.completeness) || 0 },
-    { label: "Innovation", value: Number(avg.innovativeness) || 0 },
-    { label: "Impact", value: Number(avg.impact) || 0 },
-    { label: "Complexity", value: Number(avg.complexity) || 0 },
-    { label: "Presentation", value: Number(avg.presentation) || 0 },
+    { label: t("profile.completeness"), value: Number(avg.completeness) || 0 },
+    { label: t("profile.innovation"), value: Number(avg.innovativeness) || 0 },
+    { label: t("profile.impact"), value: Number(avg.impact) || 0 },
+    { label: t("profile.complexity"), value: Number(avg.complexity) || 0 },
+    { label: t("profile.presentation"), value: Number(avg.presentation) || 0 },
   ];
 
   return (
@@ -81,7 +76,7 @@ function AverageScoreBadge({ userId }: { userId: number }) {
             {overall.toFixed(1)}<span className="text-xs font-normal text-muted-foreground ml-0.5">/5</span>
           </div>
           <div className="text-[10px] text-muted-foreground leading-tight">
-            Avg. across {avg.count} use case{avg.count !== 1 ? "s" : ""}
+            {t("profile.avgScore").replace("{0}", String(avg.count))}
           </div>
         </div>
       </div>
@@ -111,6 +106,7 @@ export default function ProfilePage() {
   const [, params] = useRoute("/profile/:username");
   const username = params?.username ?? "";
   const { user } = useAuth();
+  const { t, locale } = useI18n();
   const [activeTab, setActiveTab] = useState<Tab>("use-cases");
   const trpcUtils = trpc.useUtils();
 
@@ -158,6 +154,14 @@ export default function ProfilePage() {
 
   const stats = statsQuery.data;
 
+  // Proficiency config with translated labels
+  const PROFICIENCY_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
+    beginner: { label: t("profileSetup.beginner"), color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
+    intermediate: { label: t("profileSetup.intermediate"), color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
+    advanced: { label: t("profileSetup.advanced"), color: "text-foreground/70", bgColor: "bg-muted/60 border-border" },
+    expert: { label: t("profileSetup.expert"), color: "text-foreground", bgColor: "bg-primary/10 border-primary/20" },
+  };
+
   if (profileQuery.isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -169,11 +173,11 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-serif font-bold text-foreground">Profile Not Found</h1>
-        <p className="text-muted-foreground">The user @{username} doesn't have a profile yet.</p>
+        <h1 className="text-2xl font-serif font-bold text-foreground">{t("profile.notFound")}</h1>
+        <p className="text-muted-foreground">{t("profile.noProfileYet").replace("{0}", username)}</p>
         <Link href="/">
           <Button variant="outline" className="gap-2">
-            <ArrowLeft size={16} /> Back to Gallery
+            <ArrowLeft size={16} /> {t("profile.backToGallery")}
           </Button>
         </Link>
       </div>
@@ -181,16 +185,25 @@ export default function ProfilePage() {
   }
 
   const proficiency = PROFICIENCY_CONFIG[profile.proficiency] ?? PROFICIENCY_CONFIG.beginner;
-  const memberSince = new Date(profile.user.createdAt).toLocaleDateString("en-US", {
+
+  // Locale-aware date formatting
+  const localeMap: Record<string, string> = {
+    en: "en-US",
+    zh: "zh-CN",
+    ja: "ja-JP",
+    ko: "ko-KR",
+    "pt-BR": "pt-BR",
+  };
+  const memberSince = new Date(profile.user.createdAt).toLocaleDateString(localeMap[locale] || "en-US", {
     month: "long",
     year: "numeric",
   });
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
-    { key: "use-cases", label: "Use Cases", icon: <FileText size={14} />, count: stats?.useCaseCount },
-    { key: "liked", label: "Liked", icon: <Heart size={14} />, count: undefined },
-    { key: "followers", label: "Followers", icon: <Users size={14} />, count: stats?.followerCount },
-    { key: "following", label: "Following", icon: <UserPlus size={14} />, count: stats?.followingCount },
+    { key: "use-cases", label: t("profile.useCases"), icon: <FileText size={14} />, count: stats?.useCaseCount },
+    { key: "liked", label: t("profile.liked"), icon: <Heart size={14} />, count: undefined },
+    { key: "followers", label: t("profile.followers"), icon: <Users size={14} />, count: stats?.followerCount },
+    { key: "following", label: t("profile.followingTab"), icon: <UserPlus size={14} />, count: stats?.followingCount },
   ];
 
   return (
@@ -200,7 +213,7 @@ export default function ProfilePage() {
         <div className="container flex h-14 items-center gap-4">
           <Link href="/">
             <Button variant="ghost" size="sm" className="gap-2 text-xs">
-              <ArrowLeft size={14} /> Gallery
+              <ArrowLeft size={14} /> {t("profile.backToGallery")}
             </Button>
           </Link>
           <div className="flex-1" />
@@ -251,15 +264,15 @@ export default function ProfilePage() {
                           disabled={toggleFollowMutation.isPending}
                         >
                           {isFollowingQuery.data ? (
-                            <><UserCheck size={12} /> Following</>
+                            <><UserCheck size={12} /> {t("profile.following")}</>
                           ) : (
-                            <><UserPlus size={12} /> Follow</>
+                            <><UserPlus size={12} /> {t("profile.follow")}</>
                           )}
                         </Button>
                       ) : (
                         <a href={getLoginUrl()}>
                           <Button variant="default" size="sm" className="gap-1.5 rounded-full px-4 h-8 text-xs">
-                            <UserPlus size={12} /> Follow
+                            <UserPlus size={12} /> {t("profile.follow")}
                           </Button>
                         </a>
                       )}
@@ -268,7 +281,7 @@ export default function ProfilePage() {
                   {isOwnProfile && (
                     <Link href="/profile/setup?edit=1">
                       <Button variant="outline" size="sm" className="gap-1.5 rounded-full px-4 h-8 text-xs">
-                        <Edit size={11} /> Edit Profile
+                        <Edit size={11} /> {t("profile.editProfile")}
                       </Button>
                     </Link>
                   )}
@@ -287,12 +300,14 @@ export default function ProfilePage() {
                 {(profile.jobTitle || profile.company) && (
                   <span className="inline-flex items-center gap-1">
                     <Briefcase size={11} />
-                    {[profile.jobTitle, profile.company].filter(Boolean).join(" at ")}
+                    {profile.jobTitle && profile.company
+                      ? `${profile.jobTitle} ${t("profile.at")} ${profile.company}`
+                      : profile.jobTitle || profile.company}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1">
                   <Calendar size={11} />
-                  Joined {memberSince}
+                  {t("profile.joined")} {memberSince}
                 </span>
                 <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[10px] font-medium ${proficiency.bgColor} ${proficiency.color}`}>
                   <Award size={10} />
@@ -325,10 +340,10 @@ export default function ProfilePage() {
             {/* Stats — compact inline */}
             <div className="flex gap-2">
               {[
-                { label: "Use Cases", value: stats?.useCaseCount ?? 0 },
-                { label: "Upvotes", value: stats?.upvotesReceived ?? 0 },
-                { label: "Followers", value: stats?.followerCount ?? 0, action: () => setActiveTab("followers") },
-                { label: "Following", value: stats?.followingCount ?? 0, action: () => setActiveTab("following") },
+                { label: t("profile.useCases"), value: stats?.useCaseCount ?? 0 },
+                { label: t("profile.upvotes"), value: stats?.upvotesReceived ?? 0 },
+                { label: t("profile.followers"), value: stats?.followerCount ?? 0, action: () => setActiveTab("followers") },
+                { label: t("profile.followingTab"), value: stats?.followingCount ?? 0, action: () => setActiveTab("following") },
               ].map((stat) => (
                 <button
                   key={stat.label}
@@ -379,10 +394,10 @@ export default function ProfilePage() {
             <LikedTab items={likedQuery.data ?? []} isLoading={likedQuery.isLoading} />
           )}
           {activeTab === "followers" && (
-            <UserListTab items={followersQuery.data ?? []} isLoading={followersQuery.isLoading} emptyMessage="No followers yet." />
+            <UserListTab items={followersQuery.data ?? []} isLoading={followersQuery.isLoading} emptyKey="profile.noFollowers" />
           )}
           {activeTab === "following" && (
-            <UserListTab items={followingQuery.data ?? []} isLoading={followingQuery.isLoading} emptyMessage="Not following anyone yet." />
+            <UserListTab items={followingQuery.data ?? []} isLoading={followingQuery.isLoading} emptyKey="profile.noFollowing" />
           )}
         </motion.div>
       </div>
@@ -393,14 +408,16 @@ export default function ProfilePage() {
 // ─── Tab Components ─────────────────────────────────────────────────
 
 function UseCasesTab({ useCases, isOwnProfile }: { useCases: any[]; isOwnProfile: boolean }) {
+  const { t } = useI18n();
+
   if (useCases.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
         <FileText className="h-10 w-10 mx-auto mb-3 opacity-20" />
-        <p className="text-sm">No published use cases yet.</p>
+        <p className="text-sm">{t("profile.noUseCases")}</p>
         {isOwnProfile && (
           <Link href="/submit">
-            <Button variant="outline" size="sm" className="mt-4 rounded-full">Submit your first use case</Button>
+            <Button variant="outline" size="sm" className="mt-4 rounded-full">{t("profile.submitFirst")}</Button>
           </Link>
         )}
       </div>
@@ -437,7 +454,7 @@ function UseCasesTab({ useCases, isOwnProfile }: { useCases: any[]; isOwnProfile
                   <div className="flex flex-wrap gap-1 mb-3">
                     {uc.categories.slice(0, 3).map((cat: any) => (
                       <Badge key={cat.id} variant="secondary" className="text-[10px] px-1.5 py-0">
-                        {cat.name}
+                        {t(`cat.${cat.slug}` as any) || cat.name}
                       </Badge>
                     ))}
                   </div>
@@ -460,6 +477,8 @@ function UseCasesTab({ useCases, isOwnProfile }: { useCases: any[]; isOwnProfile
 }
 
 function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
+  const { t } = useI18n();
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
@@ -472,7 +491,7 @@ function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
     return (
       <div className="text-center py-16 text-muted-foreground">
         <Heart className="h-10 w-10 mx-auto mb-3 opacity-20" />
-        <p className="text-sm">No liked use cases yet.</p>
+        <p className="text-sm">{t("profile.noLiked")}</p>
       </div>
     );
   }
@@ -513,7 +532,7 @@ function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
                     </span>
                   </div>
                   {uc.submitterName && (
-                    <span className="text-muted-foreground">by {uc.submitterName}</span>
+                    <span className="text-muted-foreground">{t("profile.by")} {uc.submitterName}</span>
                   )}
                 </div>
               </CardContent>
@@ -528,12 +547,14 @@ function LikedTab({ items, isLoading }: { items: any[]; isLoading: boolean }) {
 function UserListTab({
   items,
   isLoading,
-  emptyMessage,
+  emptyKey,
 }: {
   items: { id: number; name: string | null; username: string | null; avatarUrl: string | null }[];
   isLoading: boolean;
-  emptyMessage: string;
+  emptyKey: "profile.noFollowers" | "profile.noFollowing";
 }) {
+  const { t } = useI18n();
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-16">
@@ -546,7 +567,7 @@ function UserListTab({
     return (
       <div className="text-center py-16 text-muted-foreground">
         <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
-        <p className="text-sm">{emptyMessage}</p>
+        <p className="text-sm">{t(emptyKey)}</p>
       </div>
     );
   }
@@ -594,9 +615,9 @@ function UserListTab({
                 </div>
                 <div className="min-w-0">
                   <div className="font-medium text-sm text-foreground truncate">
-                    {person.name || "Anonymous"}
+                    {person.name || t("profile.anonymous")}
                   </div>
-                  <div className="text-xs text-muted-foreground">No profile</div>
+                  <div className="text-xs text-muted-foreground">{t("profile.noProfile")}</div>
                 </div>
               </CardContent>
             </Card>

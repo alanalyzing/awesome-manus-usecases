@@ -233,3 +233,19 @@ export const featuredUseCase = mysqlTable("featured_use_case", {
 
 export type FeaturedUseCase = typeof featuredUseCase.$inferSelect;
 export type InsertFeaturedUseCase = typeof featuredUseCase.$inferInsert;
+
+// ─── Use Case Translations ──────────────────────────────────────────
+export const useCaseTranslations = mysqlTable("use_case_translations", {
+  id: int("id").autoincrement().primaryKey(),
+  useCaseId: int("useCaseId").notNull(),
+  locale: varchar("locale", { length: 10 }).notNull(), // en, zh, ja, ko, pt-BR
+  title: varchar("title", { length: 400 }).notNull(),
+  description: text("description").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("uc_locale_unique").on(table.useCaseId, table.locale),
+]);
+
+export type UseCaseTranslation = typeof useCaseTranslations.$inferSelect;
+export type InsertUseCaseTranslation = typeof useCaseTranslations.$inferInsert;

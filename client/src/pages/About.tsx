@@ -35,7 +35,7 @@ export default function About() {
           <Link href="/">
             <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft size={16} />
-              Back to Gallery
+              {t("about.backToGallery")}
             </button>
           </Link>
         </div>
@@ -53,20 +53,11 @@ export default function About() {
           <div className="flex items-center gap-3 mb-6">
             <ManusGlyph size={36} />
             <h1 className="font-serif text-4xl md:text-5xl font-bold tracking-tight">
-              About This Portal
+              {t("about.title")}
             </h1>
           </div>
           <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">
-            A community-curated gallery of real-world use cases built with{" "}
-            <a
-              href="https://manus.im"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground font-medium underline underline-offset-2 hover:text-primary transition-colors"
-            >
-              Manus
-            </a>
-            , the general AI agent that extends human reach.
+            {t("about.subtitle")}
           </p>
         </motion.div>
 
@@ -80,20 +71,11 @@ export default function About() {
         >
           <h2 className="font-serif text-2xl font-bold mb-4 flex items-center gap-2">
             <Globe size={22} className="text-muted-foreground" />
-            What is Awesome Manus Use Cases?
+            {t("about.whatIsTitle")}
           </h2>
           <div className="space-y-4 text-foreground/85 leading-relaxed">
-            <p>
-              This portal is a living collection of real workflows, projects, and solutions that
-              people have built using Manus. From marketing campaigns and financial analyses to
-              full-stack web applications and research reports, every entry here represents a
-              genuine problem solved by a real person with the help of AI.
-            </p>
-            <p>
-              Our goal is to inspire you. Whether you're exploring what Manus can do, looking for
-              ideas for your next project, or trying to understand how others in your industry
-              leverage AI agents, this gallery is your starting point.
-            </p>
+            <p>{t("about.whatIsP1")}</p>
+            <p>{t("about.whatIsP2")}</p>
           </div>
         </motion.section>
 
@@ -109,47 +91,43 @@ export default function About() {
         >
           <h2 className="font-serif text-2xl font-bold mb-6 flex items-center gap-2">
             <Sparkles size={22} className="text-muted-foreground" />
-            What to Expect
+            {t("about.whatToExpect")}
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="bg-card border rounded-xl p-6 space-y-3">
               <div className="flex items-center gap-2 font-semibold">
                 <BookOpen size={18} className="text-primary/70" />
-                Curated Quality
+                {t("about.curatedTitle")}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Every submission is reviewed by our moderation team and scored by AI to ensure
-                it's genuine, well-documented, and useful to the community.
+                {t("about.curatedDesc")}
               </p>
             </div>
             <div className="bg-card border rounded-xl p-6 space-y-3">
               <div className="flex items-center gap-2 font-semibold">
                 <Users size={18} className="text-primary/70" />
-                Community Driven
+                {t("about.communityTitle")}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Anyone can submit a use case. Upvote the ones you find most valuable, and
-                contribute your own to help others discover what's possible.
+                {t("about.communityDesc")}
               </p>
             </div>
             <div className="bg-card border rounded-xl p-6 space-y-3">
               <div className="flex items-center gap-2 font-semibold">
                 <Zap size={18} className="text-primary/70" />
-                Real Workflows
+                {t("about.realTitle")}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                These aren't hypothetical demos. Each use case includes the actual prompt,
-                screenshots, and session replay links so you can see exactly how it was done.
+                {t("about.realDesc")}
               </p>
             </div>
             <div className="bg-card border rounded-xl p-6 space-y-3">
               <div className="flex items-center gap-2 font-semibold">
                 <Shield size={18} className="text-primary/70" />
-                Transparent & Open
+                {t("about.transparentTitle")}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Browse by job function or feature. Filter by industry. Every use case is
-                categorized and searchable to help you find exactly what's relevant.
+                {t("about.transparentDesc")}
               </p>
             </div>
           </div>
@@ -167,22 +145,11 @@ export default function About() {
         >
           <h2 className="font-serif text-2xl font-bold mb-4 flex items-center gap-2">
             <Heart size={22} className="text-muted-foreground" />
-            Built with Manus
+            {t("about.builtWithTitle")}
           </h2>
           <div className="space-y-4 text-foreground/85 leading-relaxed">
-            <p>
-              This portal itself was built entirely using Manus. The database schema, backend API,
-              frontend UI, AI-powered moderation scoring, multilingual support, and even this About
-              page were all created through conversations with the Manus agent. It's a use case
-              about use cases.
-            </p>
-            <p>
-              Manus believes in extending human reach. Others have built the brain for AI to think;
-              Manus is building the hands for AI to do. By putting the full power of AI to work for
-              everyone — not just engineers — Manus helps people operate at a scale previously
-              impossible, automating workflows and deploying production-ready solutions in minutes,
-              not months.
-            </p>
+            <p>{t("about.builtWithP1")}</p>
+            <p>{t("about.builtWithP2")}</p>
           </div>
         </motion.section>
 
@@ -198,7 +165,7 @@ export default function About() {
         >
           <h2 className="font-serif text-2xl font-bold mb-6 flex items-center gap-2">
             <ExternalLink size={22} className="text-muted-foreground" />
-            Learn More
+            {t("about.learnMoreTitle")}
           </h2>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             <a
@@ -211,7 +178,7 @@ export default function About() {
                 Manus
               </div>
               <p className="text-xs text-muted-foreground">
-                The general AI agent
+                {t("about.manusTagline")}
               </p>
             </a>
             <a
@@ -221,10 +188,10 @@ export default function About() {
               className="bg-card border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
             >
               <div className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                About Manus
+                {t("about.aboutManus")}
               </div>
               <p className="text-xs text-muted-foreground">
-                Our mission and vision
+                {t("about.aboutManusDesc")}
               </p>
             </a>
             <a
@@ -234,10 +201,10 @@ export default function About() {
               className="bg-card border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
             >
               <div className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                Team Plan
+                {t("about.teamPlan")}
               </div>
               <p className="text-xs text-muted-foreground">
-                Manus for your whole team
+                {t("about.teamPlanDesc")}
               </p>
             </a>
             <a
@@ -247,10 +214,10 @@ export default function About() {
               className="bg-card border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
             >
               <div className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                Trust Center
+                {t("about.trustCenter")}
               </div>
               <p className="text-xs text-muted-foreground">
-                Security, privacy, and compliance
+                {t("about.trustCenterDesc")}
               </p>
             </a>
             <a
@@ -258,10 +225,10 @@ export default function About() {
               className="bg-card border rounded-xl p-5 hover:border-primary/30 hover:shadow-sm transition-all group"
             >
               <div className="font-semibold mb-1 group-hover:text-primary transition-colors">
-                Submit Yours
+                {t("about.submitYours")}
               </div>
               <p className="text-xs text-muted-foreground">
-                Share your use case with the community
+                {t("about.submitYoursDesc")}
               </p>
             </a>
           </div>
@@ -276,13 +243,11 @@ export default function About() {
           className="text-center py-10"
         >
           <blockquote className="font-serif text-xl md:text-2xl italic text-muted-foreground mb-3">
-            "Others have built the brain for AI to think.
-            <br />
-            Manus is building the hands for AI to do."
+            "{t("about.quote")}"
           </blockquote>
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <ManusGlyph size={16} />
-            <span>Hands on AI</span>
+            <span>{t("about.quoteAttrib")}</span>
           </div>
         </motion.div>
       </main>

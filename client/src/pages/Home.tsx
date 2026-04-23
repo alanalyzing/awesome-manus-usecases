@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useTranslatedUseCases } from "@/hooks/useTranslatedUseCases";
 import { WelcomePopup } from "@/components/WelcomePopup";
 import { UseCaseChatbot } from "@/components/UseCaseChatbot";
 
@@ -86,6 +87,8 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
   const { t } = useI18n();
   const trendingQuery = trpc.useCases.trending.useQuery({ limit: 6 });
   const items = trendingQuery.data ?? [];
+  const trendingIds = useMemo(() => items.map((uc: any) => uc.id), [items]);
+  const { getTranslated: getTrendingTranslated } = useTranslatedUseCases(trendingIds);
 
   if (trendingQuery.isLoading) {
     return (
@@ -173,7 +176,7 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
                 </div>
                 <div className="p-3">
                   <h3 className="font-serif font-bold text-xs leading-snug line-clamp-2 mb-1 group-hover:text-primary transition-colors">
-                    {uc.title}
+                    {getTrendingTranslated(uc.id, { title: uc.title, description: uc.description }).title}
                   </h3>
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -197,17 +200,21 @@ function TrendingSection({ onCardClick }: { onCardClick: (slug: string) => void 
 
 /** Featured Use Case of the Week — spotlight banner */
 function FeaturedSection({ onCardClick }: { onCardClick: (slug: string) => void }) {
+  const { t } = useI18n();
   const featuredQuery = trpc.useCases.featured.useQuery();
   const featured = featuredQuery.data;
+  const featuredIds = useMemo(() => featured ? [featured.useCase.id] : [], [featured]);
+  const { getTranslated: getFeaturedTranslated } = useTranslatedUseCases(featuredIds);
 
   if (featuredQuery.isLoading || !featured) return null;
+  const translatedFeatured = getFeaturedTranslated(featured.useCase.id, { title: featured.useCase.title, description: featured.useCase.aiSummary || featured.useCase.description });
 
   return (
     <div className="border-b bg-gradient-to-r from-primary/5 via-transparent to-primary/5">
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
           <Star size={16} className="text-primary" />
-          <h2 className="font-serif font-bold text-sm">Featured This Week</h2>
+          <h2 className="font-serif font-bold text-sm">{t("sidebar.featuredThisWeek")}</h2>
         </div>
         <div
           className="group bg-card rounded-xl border hover:shadow-xl hover:border-primary/20 transition-all duration-300 overflow-hidden cursor-pointer"
@@ -236,17 +243,17 @@ function FeaturedSection({ onCardClick }: { onCardClick: (slug: string) => void 
             </div>
             <div className="flex-1 p-5 md:p-6 flex flex-col justify-center">
               <h3 className="font-serif font-bold text-lg md:text-xl leading-snug mb-2 group-hover:text-primary transition-colors">
-                {featured.useCase.title}
+                {translatedFeatured.title}
               </h3>
               {featured.editorialBlurb && (
                 <p className="text-sm text-muted-foreground italic mb-3">"{featured.editorialBlurb}"</p>
               )}
               <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                {featured.useCase.aiSummary || featured.useCase.description}
+                {translatedFeatured.description}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {featured.useCase.categories?.map((cat: any) => (
-                  <Badge key={cat.slug} variant="secondary" className="text-[10px]">{cat.name}</Badge>
+                  <Badge key={cat.slug} variant="secondary" className="text-[10px]">{t(`cat.${cat.slug}` as any) || cat.name}</Badge>
                 ))}
               </div>
             </div>
@@ -351,10 +358,10 @@ function CollectionsSection({ onCardClick }: { onCardClick: (slug: string) => vo
 }
 
 const LEARN_MORE_LINKS = [
-  { name: "Product Demo Walkthrough", url: "__demo__", icon: "video" },
-  { name: "Manus Academy", url: "https://academy.manus.im/", icon: "graduation" },
-  { name: "Trust Center", url: "https://trust.manus.im/", icon: "shield" },
-  { name: "API Docs", url: "/api-docs", icon: "book" },
+  { nameKey: "sidebar.productDemo" as const, url: "__demo__", icon: "video" },
+  { nameKey: "sidebar.manusAcademy" as const, url: "https://academy.manus.im/", icon: "graduation" },
+  { nameKey: "sidebar.trustCenter" as const, url: "https://trust.manus.im/", icon: "shield" },
+  { nameKey: "sidebar.apiDocs" as const, url: "/api-docs", icon: "book" },
 ];
 
 const SOCIAL_LINKS = [
@@ -680,6 +687,10 @@ export default function Home() {
 
   const items = accumulatedItems;
   const total = useCasesQuery.data?.total ?? 0;
+
+  // Translation overlay for non-English locales
+  const itemIds = useMemo(() => items.map((uc: any) => uc.id), [items]);
+  const { getTranslated } = useTranslatedUseCases(itemIds);
   const hasMore = items.length < total && !useCasesQuery.isFetching;
 
   // Infinite scroll observer
@@ -989,7 +1000,7 @@ export default function Home() {
                         if (link.url === "__demo__") {
                           return (
                             <button
-                              key={link.name}
+                              key={link.nameKey}
                               onClick={() => setShowDemoVideo(true)}
                               className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm w-full text-left transition-colors ${
                                 showDemoVideo
@@ -998,20 +1009,20 @@ export default function Home() {
                               }`}
                             >
                               <IconComp size={13} />
-                              {link.name}
+                              {t(link.nameKey)}
                             </button>
                           );
                         }
                         return (
                           <a
-                            key={link.name}
+                            key={link.nameKey}
                             href={link.url}
                             target={link.url.startsWith("/") ? undefined : "_blank"}
                             rel={link.url.startsWith("/") ? undefined : "noopener noreferrer"}
                             className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
                           >
                             <IconComp size={13} />
-                            {link.name}
+                            {t(link.nameKey)}
                           </a>
                         );
                       })}
@@ -1067,7 +1078,7 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Video size={20} className="text-primary" />
-                  <h2 className="font-serif text-xl md:text-2xl font-bold">Product Demo Walkthrough</h2>
+                  <h2 className="font-serif text-xl md:text-2xl font-bold">{t("sidebar.productDemo")}</h2>
                 </div>
                 <Button
                   variant="outline"
@@ -1082,7 +1093,7 @@ export default function Home() {
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src="https://www.youtube.com/embed/3mdNmNLcWYQ?si=ImZldzNHddnfJNgv"
-                  title="Manus Product Demo Walkthrough"
+                  title={t("sidebar.productDemo")}
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   referrerPolicy="strict-origin-when-cross-origin"
@@ -1100,8 +1111,8 @@ export default function Home() {
                     <GraduationCap size={20} className="text-primary" />
                   </div>
                   <div>
-                    <div className="font-medium text-sm group-hover:text-primary transition-colors">Manus Academy</div>
-                    <div className="text-xs text-muted-foreground">Learn how to get the most out of Manus with guided courses and tutorials.</div>
+                    <div className="font-medium text-sm group-hover:text-primary transition-colors">{t("sidebar.manusAcademy")}</div>
+                    <div className="text-xs text-muted-foreground">{t("about.manusAcademyDesc")}</div>
                   </div>
                   <ExternalLink size={14} className="ml-auto text-muted-foreground shrink-0" />
                 </a>
@@ -1115,8 +1126,8 @@ export default function Home() {
                     <Shield size={20} className="text-primary" />
                   </div>
                   <div>
-                    <div className="font-medium text-sm group-hover:text-primary transition-colors">Trust Center</div>
-                    <div className="text-xs text-muted-foreground">Review our security practices, compliance certifications, and data policies.</div>
+                    <div className="font-medium text-sm group-hover:text-primary transition-colors">{t("sidebar.trustCenter")}</div>
+                    <div className="text-xs text-muted-foreground">{t("about.trustCenterDesc")}</div>
                   </div>
                   <ExternalLink size={14} className="ml-auto text-muted-foreground shrink-0" />
                 </a>
@@ -1481,10 +1492,10 @@ export default function Home() {
                         {/* Content */}
                         <div className="p-4">
                           <h3 className="font-serif font-bold text-sm leading-snug mb-1.5 line-clamp-2 group-hover:text-primary transition-colors duration-200">
-                            {uc.title}
+                            {getTranslated(uc.id, { title: uc.title, description: uc.description ?? "" }).title}
                           </h3>
                           <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
-                            {stripMarkdown(uc.description ?? "")}
+                            {stripMarkdown(getTranslated(uc.id, { title: uc.title, description: uc.description ?? "" }).description)}
                           </p>
 
                           {/* Tags */}

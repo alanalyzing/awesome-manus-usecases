@@ -84,6 +84,7 @@ import { useCases, users, categories, useCaseCategories } from "../drizzle/schem
 import { eq, inArray } from "drizzle-orm";
 import { notifySlackStatusChange } from "./slack";
 import { backfillBlurhashes, generateAndStoreBlurhash } from "./blurhash";
+import { translateUseCase, getTranslation, getAllTranslations, getBulkTranslations } from "./translate";
 
 /** Derive a stable visitor key from IP + User-Agent for anonymous upvote dedup */
 function getVisitorKey(req: { ip?: string; headers: Record<string, string | string[] | undefined> }): string {
@@ -168,6 +169,16 @@ export const appRouter = router({
       .input(z.object({ slug: z.string() }))
       .query(async ({ input }) => {
         return getCollectionBySlug(input.slug);
+      }),
+
+    // ─── Translations (Public) ───────────────────────────────────
+    translations: publicProcedure
+      .input(z.object({
+        useCaseIds: z.array(z.number()).max(100),
+        locale: z.string(),
+      }))
+      .query(async ({ input }) => {
+        return getBulkTranslations(input.useCaseIds, input.locale);
       }),
 
     // ─── Upvote (Protected — login required) ────────────────────
@@ -632,6 +643,14 @@ Based on this information, generate a title and description for this use case.`;
                 deliverableUrl: uc[0].deliverableUrl || undefined,
               },
             }).catch(() => {});
+
+            // Trigger translation into all supported languages (non-blocking)
+            translateUseCase(
+              input.id,
+              uc[0].title,
+              uc[0].description,
+              uc[0].language || "en"
+            ).catch((err) => console.error("[translate] Error:", err));
           }
         }
 

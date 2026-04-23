@@ -5,6 +5,7 @@ import { ManusLogo } from "@/components/ManusLogo";
 import { Trophy, ArrowLeft, FileText, Heart, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useI18n } from "@/lib/i18n";
 
 type SortMode = "usecases" | "likes";
 
@@ -16,6 +17,7 @@ const MEDAL_COLORS = [
 
 export default function LeaderboardPage() {
   const [sortBy, setSortBy] = useState<SortMode>("usecases");
+  const { t } = useI18n();
 
   const leaderboardQuery = trpc.admin.contributorLeaderboard.useQuery({
     limit: 50,
@@ -48,10 +50,10 @@ export default function LeaderboardPage() {
             <Trophy size={28} className="text-primary" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-2">
-            Contributor Leaderboard
+            {t("leaderboard.title")}
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Recognizing the top contributors who share their Manus use cases with the community.
+            {t("leaderboard.desc")}
           </p>
         </div>
 
@@ -67,7 +69,7 @@ export default function LeaderboardPage() {
               }`}
             >
               <FileText size={14} />
-              By Use Cases
+              {t("leaderboard.byUseCases")}
             </button>
             <button
               onClick={() => setSortBy("likes")}
@@ -78,7 +80,7 @@ export default function LeaderboardPage() {
               }`}
             >
               <Heart size={14} />
-              By Likes
+              {t("leaderboard.byLikes")}
             </button>
           </div>
         </div>
@@ -103,12 +105,12 @@ export default function LeaderboardPage() {
         {!leaderboardQuery.isLoading && entries.length === 0 && (
           <div className="text-center py-16">
             <Trophy size={48} className="mx-auto text-muted-foreground/30 mb-4" />
-            <h3 className="text-lg font-medium mb-1">No contributors yet</h3>
+            <h3 className="text-lg font-medium mb-1">{t("leaderboard.empty")}</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Be the first to submit a use case and appear on the leaderboard!
+              {t("leaderboard.emptyCta")}
             </p>
             <Link href="/submit">
-              <Button>Submit a Use Case</Button>
+              <Button>{t("nav.submit")}</Button>
             </Link>
           </div>
         )}
@@ -121,11 +123,11 @@ export default function LeaderboardPage() {
               const primaryStat = sortBy === "usecases" ? entry.approvedCount : entry.totalUpvotes;
               const secondaryStat = sortBy === "usecases" ? entry.totalUpvotes : entry.approvedCount;
               const primaryLabel = sortBy === "usecases"
-                ? `use case${entry.approvedCount !== 1 ? "s" : ""}`
-                : `like${entry.totalUpvotes !== 1 ? "s" : ""}`;
+                ? (entry.approvedCount !== 1 ? t("leaderboard.useCasePlural") : t("leaderboard.useCaseSingular"))
+                : (entry.totalUpvotes !== 1 ? t("leaderboard.likePlural") : t("leaderboard.likeSingular"));
               const secondaryLabel = sortBy === "usecases"
-                ? `like${entry.totalUpvotes !== 1 ? "s" : ""}`
-                : `use case${entry.approvedCount !== 1 ? "s" : ""}`;
+                ? (entry.totalUpvotes !== 1 ? t("leaderboard.likePlural") : t("leaderboard.likeSingular"))
+                : (entry.approvedCount !== 1 ? t("leaderboard.useCasePlural") : t("leaderboard.useCaseSingular"));
 
               return (
                 <motion.div
