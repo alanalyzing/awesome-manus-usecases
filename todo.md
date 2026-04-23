@@ -424,3 +424,5 @@
 - [x] UI: Move UGC disclaimer from footer into hero section (below subtitle, with Terms of Service link)
 - [x] i18n: Fix CN header title from "Awesome Manus 用例" to "Manus 精选用例集"
 - [x] UGC disclaimer: Add note that use cases may contain synthetic data for demo purposes (all 5 languages)
+- [x] Hero: Remove CATEGORIES and LANGUAGES stat cards, keep only USE CASES
+- [x] Hero: Shorten title to "Discover the best of Manus" (all 5 languages)
