@@ -481,14 +481,19 @@ export default function Home() {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [highlightOnly, setHighlightOnly] = useState(false);
-  const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">("score");
-  const [minScore, setMinScore] = useState<number>(0);
-  const [urlInitialized, setUrlInitialized] = useState(false);
   // Capture the initial URL search string on first render (before wouter clears it)
   const initialSearchRef = useRef(window.location.search);
+  // Pre-parse URL params for immediate state initialization (avoids race condition on reload)
+  const initialParams = useMemo(() => new URLSearchParams(initialSearchRef.current), []);
+  const [search, setSearch] = useState(initialParams.get("search") || "");
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [highlightOnly, setHighlightOnly] = useState(initialParams.get("highlight") === "true");
+  const [sort, setSort] = useState<"popular" | "newest" | "views" | "score">(() => {
+    const s = initialParams.get("sort");
+    return s && ["popular", "newest", "views", "score"].includes(s) ? s as any : "score";
+  });
+  const [minScore, setMinScore] = useState<number>(0);
+  const [urlInitialized, setUrlInitialized] = useState(false);
   const [limit] = useState(40);
   const [offset, setOffset] = useState(0);
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
@@ -561,13 +566,12 @@ export default function Home() {
 
   // --- URL query param sync ---
   // On mount: read ?category=slug from URL and apply to state
+  // Note: highlight, sort, and search are already initialized from URL params in useState,
+  // so this effect only needs to handle category (which requires categoriesQuery.data to resolve slugs)
   useEffect(() => {
     if (!categoriesQuery.data || urlInitialized) return;
     const params = new URLSearchParams(initialSearchRef.current);
     const catSlug = params.get("category");
-    const highlightParam = params.get("highlight");
-    const sortParam = params.get("sort") as typeof sort | null;
-    const searchParam = params.get("search");
 
     if (catSlug) {
       const slugs = catSlug.split(",").map((s) => s.trim()).filter(Boolean);
@@ -580,17 +584,6 @@ export default function Home() {
         setOffset(0);
         setAccumulatedItems([]);
       }
-    }
-    if (highlightParam === "true") {
-      setHighlightOnly(true);
-      setOffset(0);
-      setAccumulatedItems([]);
-    }
-    if (sortParam && ["popular", "newest", "views", "score"].includes(sortParam)) {
-      setSort(sortParam);
-    }
-    if (searchParam) {
-      setSearch(searchParam);
     }
     setUrlInitialized(true);
   }, [categoriesQuery.data, urlInitialized]);
@@ -982,12 +975,12 @@ export default function Home() {
                           {t("sidebar.aboutPortal")}
                         </span>
                       </Link>
-                      {LEARN_MORE_LINKS.map((link) => (
+                      {LEARN_MORE_LINKS.filter((link) => link.url !== "/api-docs" || user?.role === "admin").map((link) => (
                         <a
                           key={link.name}
                           href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          target={link.url.startsWith("/") ? undefined : "_blank"}
+                          rel={link.url.startsWith("/") ? undefined : "noopener noreferrer"}
                           className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
                         >
                           <BookOpen size={13} />

@@ -45,7 +45,7 @@ sitemapRouter.get("/sitemap.xml", async (req: Request, res: Response) => {
       { loc: "/about", changefreq: "monthly", priority: "0.6" },
       { loc: "/submit", changefreq: "monthly", priority: "0.7" },
       { loc: "/leaderboard", changefreq: "weekly", priority: "0.6" },
-      { loc: "/api-docs", changefreq: "monthly", priority: "0.5" },
+      // api-docs removed from sitemap (admin-only page)
     ];
 
     const urls: string[] = [];

@@ -338,3 +338,21 @@
 - [x] Audit: Check all i18n translations for hardcoded old domain URLs (none found)
 - [x] Audit: Verify chatbot generates links using dynamic origin (window.location.origin) ✓
 - [x] Audit: Verify share links, OG meta, sitemap, RSS feed, JSON-LD use correct domain (fallbacks updated)
+- [x] Restrict API Documentation page to admin-only access (page gate + sidebar link hidden for non-admins + removed from sitemap + robots.txt disallow)
+- [x] Update Chrome extension: renamed to "Manus Use Case Quick Launcher" v1.1.0, all links point to awesome.manus.space, includes Browse/Collections/Highlights tabs
+- [x] Final domain audit: no old domain found in client/server/drizzle code (only in todo.md history entries)
+- [x] QA Pass 1: Core features (browsing, search, categories, chatbot, highlights) - ALL PASS
+- [x] QA Pass 2: User features (auth, submit, upvote, share, profile, leaderboard) - ALL PASS
+- [x] QA Pass 3: Admin features, API endpoints, RSS, sitemap, OG meta, i18n - ALL PASS
+- [x] Verify RSS feed uses awesome.manus.space domain in all links
+- [x] Verify sitemap.xml uses awesome.manus.space domain in all URLs
+- [x] SEO: Add canonical URL meta tags to all pages (homepage + per-use-case dynamic canonical)
+- [x] SEO: Update robots.txt with absolute sitemap URL + disallow /api-docs
+- [x] SEO: Add structured data (JSON-LD) for WebSite + SearchAction + per-use-case CreativeWork
+- [x] SEO: Ensure OG meta tags use awesome.manus.space (og:url, og:site_name, twitter:site added)
+- [x] SEO: Add RSS alternate link, twitter meta tags, strip/re-inject canonical on use-case pages
+- [x] QA: Mobile responsiveness - homepage layout, sidebar, cards (24 files with sm: breakpoints, MobileSidebar component)
+- [x] QA: Mobile responsiveness - chatbot, modals, share dialogs (responsive classes verified)
+- [x] QA: Mobile responsiveness - submit form, about page, leaderboard (responsive layout verified)
+- [x] QA: Mobile responsiveness - admin page, API docs restricted page (admin-only gate verified)
+- [x] Bug fix: Highlights filter reload - fixed by initializing state from URL params in useState + removing redundant setAccumulatedItems([]) from URL init effect

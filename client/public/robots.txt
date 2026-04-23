@@ -6,6 +6,7 @@ Allow: /
 Allow: /sitemap.xml
 Disallow: /admin
 Disallow: /api/
+Disallow: /api-docs
 
 # Block common AI/LLM crawlers
 User-agent: GPTBot
@@ -55,4 +56,4 @@ Disallow: /
 Crawl-delay: 10
 
 # Sitemap
-Sitemap: /sitemap.xml
+Sitemap: https://awesome.manus.space/sitemap.xml

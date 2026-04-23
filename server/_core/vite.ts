@@ -91,10 +91,11 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
     };
     const jsonLdScript = `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>`;
 
-    // Strip all existing static OG / Twitter / meta description / title tags
+    // Strip all existing static OG / Twitter / meta description / title / canonical tags
     html = html.replace(/<meta property="og:[^"]*"[^>]*>/g, '');
     html = html.replace(/<meta name="twitter:[^"]*"[^>]*>/g, '');
     html = html.replace(/<meta name="description"[^>]*>/g, '');
+    html = html.replace(/<link rel="canonical"[^>]*>/g, '');
     html = html.replace(/<title>[^<]*<\/title>/, '');
 
     // Insert dynamic tags and JSON-LD before </head>

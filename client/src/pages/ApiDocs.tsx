@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Copy, Check, BookOpen, Key, Send, RefreshCw, List, Rss, Globe } from "lucide-react";
+import { ArrowLeft, Copy, Check, BookOpen, Key, Send, RefreshCw, List, Rss, Globe, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
 
@@ -105,6 +106,36 @@ function EndpointSection({
 }
 
 export default function ApiDocsPage() {
+  const { user, isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || user?.role !== "admin") {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-center space-y-4 max-w-md px-4">
+          <ShieldAlert size={48} className="mx-auto text-muted-foreground" />
+          <h1 className="font-serif text-2xl font-bold">Access Restricted</h1>
+          <p className="text-muted-foreground text-sm">
+            API documentation is only available to administrators. Please sign in with an admin account to view this page.
+          </p>
+          <Link href="/">
+            <Button variant="outline" className="gap-1.5">
+              <ArrowLeft size={14} />
+              Back to Home
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
