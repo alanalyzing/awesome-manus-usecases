@@ -6,6 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, adminProcedure, router } from "./_core/trpc";
 import { notifyOwner } from "./_core/notification";
 import { invokeLLM } from "./_core/llm";
+import { ENV } from "./_core/env";
 
 // Rate limiter for AI chat: Map<IP, timestamp[]>
 const aiChatRateLimits = new Map<string, number[]>();
@@ -1507,6 +1508,25 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
         await logAdminAction({ adminId: ctx.user.id, action: "reorder_categories", targetType: "category", targetId: 0, details: JSON.stringify(input.items) });
         return { success: true };
       }),
+
+    // ─── Settings (Admin) ─────────────────────────────────────
+    getSlackStatus: adminProcedure.query(async () => {
+      const configured = !!ENV.slackWebhookUrl;
+      // Mask the URL for display (show only last 8 chars)
+      const maskedUrl = configured
+        ? "..." + ENV.slackWebhookUrl.slice(-8)
+        : null;
+      return { configured, maskedUrl };
+    }),
+
+    testSlackWebhook: adminProcedure.mutation(async ({ ctx }) => {
+      const result = await notifySlackStatusChange({
+        title: "Test Notification from Admin Settings",
+        status: "approved",
+        adminName: ctx.user.name || "Admin",
+      });
+      return { success: result };
+    }),
 
     // ─── Delete Use Case (Admin) ──────────────────────────────
     deleteUseCase: adminProcedure

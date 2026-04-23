@@ -374,3 +374,6 @@
 - [x] SEO: Use actual use case screenshots as OG images for collection pages (first use case in collection)
 - [x] SEO: Use representative screenshot as OG image for leaderboard, about, and submit pages (top-rated overall)
 - [x] Bug fix: Single use case approval in admin panel — added missing Approve Dialog with category selector + highlight toggle (Dialog component was never rendered, only state existed)
+- [x] Feature: Send Slack webhook notification when a use case is approved (already wired in notifySlackStatusChange)
+- [x] Feature: Add Slack webhook URL configuration in Admin Settings UI (Settings tab with status, test button, quick links)
+- [x] Store Slack webhook URL as environment variable (SLACK_WEBHOOK_URL) — set via webdev_request_secrets
