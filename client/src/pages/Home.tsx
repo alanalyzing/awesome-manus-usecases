@@ -1167,15 +1167,35 @@ export default function Home() {
                   </p>
                 </div>
 
-                {/* Right: Use Cases stat */}
-                <div className="text-center space-y-1">
-                  <div className="w-12 h-12 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-2">
-                    <Zap size={20} className="text-primary" />
+                {/* Right: Animated stats */}
+                <div className="grid grid-cols-3 gap-3 md:gap-5 shrink-0">
+                  <div className="text-center space-y-1">
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
+                      <Zap size={18} className="text-primary" />
+                    </div>
+                    <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                      <AnimatedCounter target={globalTotal} />
+                    </div>
+                    <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.useCases")}</div>
                   </div>
-                  <div className="font-serif text-3xl md:text-4xl font-bold tabular-nums">
-                    <AnimatedCounter target={globalTotal} />
+                  <div className="text-center space-y-1">
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-primary/10 flex items-center justify-center mb-1">
+                      <TrendingUp size={18} className="text-primary" />
+                    </div>
+                    <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                      <AnimatedCounter target={heroStats.categories} />
+                    </div>
+                    <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.categories")}</div>
                   </div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">{t("hero.useCases")}</div>
+                  <div className="text-center space-y-1">
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-accent flex items-center justify-center mb-1">
+                      <Users size={18} className="text-accent-foreground" />
+                    </div>
+                    <div className="font-serif text-xl md:text-2xl font-bold tabular-nums">
+                      <AnimatedCounter target={5} />
+                    </div>
+                    <div className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-wide">{t("hero.languages")}</div>
+                  </div>
                 </div>
               </div>
 
