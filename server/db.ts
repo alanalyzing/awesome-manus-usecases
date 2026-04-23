@@ -2019,3 +2019,121 @@ export async function deleteUseCase(id: number): Promise<void> {
   // Delete the use case itself
   await db.delete(useCases).where(eq(useCases.id, id));
 }
+
+// ─── OG Image Helpers (for SEO subpage meta tags) ──────────────────
+
+/** Get a representative screenshot URL for a category (top-rated approved use case in that category) */
+export async function getCategoryOgScreenshot(categorySlug: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    // Find the category
+    const catRows = await db.select({ id: categories.id }).from(categories).where(eq(categories.slug, categorySlug)).limit(1);
+    if (catRows.length === 0) return null;
+    const catId = catRows[0].id;
+
+    // Find top-rated approved use case in this category (by upvoteCount desc, then viewCount desc)
+    const ucRows = await db
+      .select({ id: useCases.id })
+      .from(useCases)
+      .innerJoin(useCaseCategories, eq(useCaseCategories.useCaseId, useCases.id))
+      .where(and(eq(useCases.status, "approved"), eq(useCaseCategories.categoryId, catId)))
+      .orderBy(desc(useCases.upvoteCount), desc(useCases.viewCount))
+      .limit(1);
+    if (ucRows.length === 0) return null;
+
+    // Get first screenshot
+    const ssRows = await db.select({ url: screenshots.url }).from(screenshots)
+      .where(eq(screenshots.useCaseId, ucRows[0].id))
+      .orderBy(asc(screenshots.sortOrder))
+      .limit(1);
+    return ssRows[0]?.url ?? null;
+  } catch (e) {
+    console.warn("[OG] getCategoryOgScreenshot error:", e);
+    return null;
+  }
+}
+
+/** Get a representative screenshot URL for a user profile (their top use case) */
+export async function getProfileOgScreenshot(username: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    // Find the user profile
+    const profileRows = await db.select({ userId: userProfiles.userId }).from(userProfiles).where(eq(userProfiles.username, username)).limit(1);
+    if (profileRows.length === 0) return null;
+    const userId = profileRows[0].userId;
+
+    // Find their top approved use case
+    const ucRows = await db.select({ id: useCases.id }).from(useCases)
+      .where(and(eq(useCases.status, "approved"), eq(useCases.submitterId, userId)))
+      .orderBy(desc(useCases.upvoteCount), desc(useCases.viewCount))
+      .limit(1);
+    if (ucRows.length === 0) return null;
+
+    // Get first screenshot
+    const ssRows = await db.select({ url: screenshots.url }).from(screenshots)
+      .where(eq(screenshots.useCaseId, ucRows[0].id))
+      .orderBy(asc(screenshots.sortOrder))
+      .limit(1);
+    return ssRows[0]?.url ?? null;
+  } catch (e) {
+    console.warn("[OG] getProfileOgScreenshot error:", e);
+    return null;
+  }
+}
+
+/** Get a representative screenshot URL for a collection (first use case in collection) */
+export async function getCollectionOgScreenshot(collectionSlug: string): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    // Find the collection
+    const colRows = await db.select({ id: collections.id }).from(collections).where(eq(collections.slug, collectionSlug)).limit(1);
+    if (colRows.length === 0) return null;
+    const colId = colRows[0].id;
+
+    // Find first use case in collection
+    const cucRows = await db.select({ useCaseId: collectionUseCases.useCaseId }).from(collectionUseCases)
+      .where(eq(collectionUseCases.collectionId, colId))
+      .orderBy(asc(collectionUseCases.sortOrder))
+      .limit(1);
+    if (cucRows.length === 0) return null;
+
+    // Get first screenshot
+    const ssRows = await db.select({ url: screenshots.url }).from(screenshots)
+      .where(eq(screenshots.useCaseId, cucRows[0].useCaseId))
+      .orderBy(asc(screenshots.sortOrder))
+      .limit(1);
+    return ssRows[0]?.url ?? null;
+  } catch (e) {
+    console.warn("[OG] getCollectionOgScreenshot error:", e);
+    return null;
+  }
+}
+
+/** Get a representative screenshot URL for generic pages (most popular approved use case overall) */
+export async function getTopUseCaseScreenshot(): Promise<string | null> {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const ucRows = await db.select({ id: useCases.id }).from(useCases)
+      .where(eq(useCases.status, "approved"))
+      .orderBy(desc(useCases.upvoteCount), desc(useCases.viewCount))
+      .limit(1);
+    if (ucRows.length === 0) return null;
+
+    const ssRows = await db.select({ url: screenshots.url }).from(screenshots)
+      .where(eq(screenshots.useCaseId, ucRows[0].id))
+      .orderBy(asc(screenshots.sortOrder))
+      .limit(1);
+    return ssRows[0]?.url ?? null;
+  } catch (e) {
+    console.warn("[OG] getTopUseCaseScreenshot error:", e);
+    return null;
+  }
+}

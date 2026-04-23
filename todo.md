@@ -369,3 +369,7 @@
 - [x] SEO: Add structured data for About page (AboutPage + Organization schema)
 - [x] SEO: Add structured data for Leaderboard page (ItemList schema)
 - [x] SEO: Add structured data for Collection pages (CollectionPage schema)
+- [x] SEO: Use actual use case screenshots as OG images for category pages (top-rated use case in category)
+- [x] SEO: Use actual use case screenshots as OG images for profile pages (user's top use case)
+- [x] SEO: Use actual use case screenshots as OG images for collection pages (first use case in collection)
+- [x] SEO: Use representative screenshot as OG image for leaderboard, about, and submit pages (top-rated overall)
