@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manus Use Case Quick Launcher</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="header-logo">💼</div>
+        <div>
+          <h1 class="header-title">Manus Use Cases</h1>
+          <p class="header-subtitle">Quick Launcher</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="selectModeBtn" class="header-btn" title="Multi-select mode">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </button>
+        <a href="https://awesome.manus.space" target="_blank" class="header-btn" title="Open full library">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- Search & Filters -->
+    <div class="search-bar">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search use cases..." autocomplete="off">
+    </div>
+
+    <div class="filters">
+      <select id="categoryFilter">
+        <option value="">All Categories</option>
+      </select>
+      <select id="sortFilter">
+        <option value="top_rated">Top Rated</option>
+        <option value="popular">Most Popular</option>
+        <option value="newest">Newest</option>
+      </select>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab active" data-tab="browse">Browse</button>
+      <button class="tab" data-tab="collections">Collections</button>
+      <button class="tab" data-tab="highlights">Highlights</button>
+    </div>
+
+    <!-- Content -->
+    <div id="content" class="content">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading use cases...</p>
+      </div>
+    </div>
+
+    <!-- Floating Action Bar for multi-select -->
+    <div id="selectBar" class="select-bar hidden">
+      <div class="select-bar-info">
+        <span id="selectCount">0</span> selected
+      </div>
+      <div class="select-bar-actions">
+        <button id="clearSelectBtn" class="select-bar-btn secondary">Clear</button>
+        <button id="openGroupBtn" class="select-bar-btn primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          Open as Tab Group
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <a href="https://awesome.manus.space" target="_blank">awesome.manus.space</a>
+      <span class="footer-sep">&middot;</span>
+      <a href="https://manus.im/team" target="_blank">Team Plan</a>
+    </footer>
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
