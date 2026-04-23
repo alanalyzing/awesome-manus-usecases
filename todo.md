@@ -356,3 +356,16 @@
 - [x] QA: Mobile responsiveness - submit form, about page, leaderboard (responsive layout verified)
 - [x] QA: Mobile responsiveness - admin page, API docs restricted page (admin-only gate verified)
 - [x] Bug fix: Highlights filter reload - fixed by initializing state from URL params in useState + removing redundant setAccumulatedItems([]) from URL init effect
+- [x] Fix: Remove api-docs from sitemap (admin-only page) — confirmed 0 occurrences in dev sitemap
+- [x] SEO: Add lastmod dates to static sitemap pages (homepage=today, about/submit=2026-04-22, leaderboard=today)
+- [x] SEO: Add collection pages to sitemap (0 collections currently in DB, query wired)
+- [x] SEO: Add profile pages to sitemap (2 profiles: alanchan, lucia)
+- [x] SEO: Add dynamic meta title/description for About page (server-side injected)
+- [x] SEO: Add dynamic meta title/description for Leaderboard page (server-side injected)
+- [x] SEO: Add dynamic meta title/description for Submit page (server-side injected)
+- [x] SEO: Add dynamic meta title/description for Profile pages (server-side injected per username)
+- [x] SEO: Add dynamic meta title/description for Collection pages (server-side injected per slug)
+- [x] SEO: Server-side inject canonical URLs for all subpages (about, leaderboard, submit, profile, collection, category)
+- [x] SEO: Add structured data for About page (AboutPage + Organization schema)
+- [x] SEO: Add structured data for Leaderboard page (ItemList schema)
+- [x] SEO: Add structured data for Collection pages (CollectionPage schema)

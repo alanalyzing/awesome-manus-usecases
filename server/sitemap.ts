@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { getDb } from "./db";
-import { useCases, categories } from "../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { useCases, categories, collections, userProfiles } from "../drizzle/schema";
+import { eq, desc, sql } from "drizzle-orm";
 
 const sitemapRouter = Router();
 
@@ -9,7 +9,8 @@ const sitemapRouter = Router();
  * GET /sitemap.xml
  *
  * Returns a dynamic XML sitemap listing all approved use cases,
- * category pages, and static pages for search engine indexing.
+ * category pages, collections, top contributor profiles, and static pages
+ * for search engine indexing.
  */
 sitemapRouter.get("/sitemap.xml", async (req: Request, res: Response) => {
   try {
@@ -21,6 +22,8 @@ sitemapRouter.get("/sitemap.xml", async (req: Request, res: Response) => {
     const protocol = req.headers["x-forwarded-proto"] || "https";
     const host = req.headers["x-forwarded-host"] || ((req.headers.host && !req.headers.host.includes("run.app")) ? req.headers.host : "awesome.manus.space");
     const baseUrl = `${protocol}://${host}`;
+
+    const today = new Date().toISOString().split("T")[0];
 
     // Fetch all approved use cases
     const ucRows = await db
@@ -39,13 +42,29 @@ sitemapRouter.get("/sitemap.xml", async (req: Request, res: Response) => {
       })
       .from(categories);
 
-    // Static pages
+    // Fetch all collections
+    const collectionRows = await db
+      .select({
+        slug: collections.slug,
+        updatedAt: collections.updatedAt,
+        createdAt: collections.createdAt,
+      })
+      .from(collections);
+
+    // Fetch all user profiles (for public profile pages)
+    const profileRows = await db
+      .select({
+        username: userProfiles.username,
+        updatedAt: userProfiles.updatedAt,
+      })
+      .from(userProfiles);
+
+    // Static pages (api-docs excluded — admin-only)
     const staticPages = [
-      { loc: "/", changefreq: "daily", priority: "1.0" },
-      { loc: "/about", changefreq: "monthly", priority: "0.6" },
-      { loc: "/submit", changefreq: "monthly", priority: "0.7" },
-      { loc: "/leaderboard", changefreq: "weekly", priority: "0.6" },
-      // api-docs removed from sitemap (admin-only page)
+      { loc: "/", changefreq: "daily", priority: "1.0", lastmod: today },
+      { loc: "/about", changefreq: "monthly", priority: "0.6", lastmod: "2026-04-22" },
+      { loc: "/submit", changefreq: "monthly", priority: "0.7", lastmod: "2026-04-22" },
+      { loc: "/leaderboard", changefreq: "weekly", priority: "0.6", lastmod: today },
     ];
 
     const urls: string[] = [];
@@ -54,6 +73,7 @@ sitemapRouter.get("/sitemap.xml", async (req: Request, res: Response) => {
     for (const page of staticPages) {
       urls.push(`  <url>
     <loc>${escapeXml(baseUrl + page.loc)}</loc>
+    <lastmod>${page.lastmod}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
   </url>`);
@@ -67,6 +87,28 @@ sitemapRouter.get("/sitemap.xml", async (req: Request, res: Response) => {
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>`);
+    }
+
+    // Add collection pages
+    for (const col of collectionRows) {
+      const lastmod = formatDate(col.updatedAt || col.createdAt);
+      urls.push(`  <url>
+    <loc>${escapeXml(baseUrl + "/collections/" + col.slug)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`);
+    }
+
+    // Add public profile pages
+    for (const profile of profileRows) {
+      const lastmod = profile.updatedAt ? formatDate(profile.updatedAt) : today;
+      urls.push(`  <url>
+    <loc>${escapeXml(baseUrl + "/profile/" + encodeURIComponent(profile.username))}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
   </url>`);
     }
 
