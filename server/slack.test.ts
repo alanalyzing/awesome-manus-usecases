@@ -134,7 +134,7 @@ describe("Slack webhook integration", () => {
 
       mockFetch.mockResolvedValueOnce({ ok: true, text: async () => "ok" } as Response);
 
-      const longDesc = "A".repeat(500);
+      const longDesc = "A".repeat(600);
       await notifySlackStatusChange({
         title: "Test",
         status: "approved",
@@ -151,11 +151,16 @@ describe("Slack webhook integration", () => {
 
       const body = JSON.parse(mockFetch.mock.calls[0][1].body);
       // Find the description block (section with plain text, not bold title, not fields)
+      // Now prefixed with emoji: "📝 *Description:*\n..."
       const descBlock = body.blocks.find(
-        (b: any) => b.type === "section" && b.text && !b.fields && b.text.text.startsWith("A")
+        (b: any) => b.type === "section" && b.text && !b.fields && b.text.text.includes("Description")
       );
       expect(descBlock).toBeDefined();
-      expect(descBlock.text.text.length).toBeLessThanOrEqual(303); // 297 + "..."
+      // 500 chars > 500 limit, so it should be truncated to 497 + "..."
+      expect(descBlock.text.text).toContain("...");
+      // The A's portion should be truncated (not full 500)
+      const aCount = (descBlock.text.text.match(/A/g) || []).length;
+      expect(aCount).toBeLessThanOrEqual(497);
 
       process.env.SLACK_WEBHOOK_URL = originalEnv || "";
     });

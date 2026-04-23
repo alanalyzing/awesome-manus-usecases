@@ -20,6 +20,8 @@ interface SlackStatusChangePayload {
     language: string;
     categoryNames: string[];
     screenshotCount: number;
+    /** Actual screenshot URLs for embedding in Slack */
+    screenshotUrls?: string[];
     sessionReplayUrl?: string;
     deliverableUrl?: string;
   };
@@ -64,8 +66,8 @@ export async function notifySlackStatusChange(
   if (payload.status === "approved" && payload.details) {
     const d = payload.details;
     const truncatedDesc =
-      d.description.length > 300
-        ? d.description.slice(0, 297) + "..."
+      d.description.length > 500
+        ? d.description.slice(0, 497) + "..."
         : d.description;
 
     const categoryText =
@@ -73,13 +75,37 @@ export async function notifySlackStatusChange(
         ? d.categoryNames.join(", ")
         : "Uncategorized";
 
+    // Description block
     blocks.push({
       type: "section",
       text: {
         type: "mrkdwn",
-        text: escapeSlackMarkdown(truncatedDesc),
+        text: `📝 *Description:*\n${escapeSlackMarkdown(truncatedDesc)}`,
       },
     });
+
+    // If we have screenshot URLs, show the first one as an image block
+    if (d.screenshotUrls && d.screenshotUrls.length > 0) {
+      const firstScreenshot = d.screenshotUrls[0];
+      blocks.push({
+        type: "image",
+        image_url: firstScreenshot,
+        alt_text: `Screenshot for ${payload.title}`,
+      });
+
+      // If there are more screenshots, note the count
+      if (d.screenshotUrls.length > 1) {
+        blocks.push({
+          type: "context",
+          elements: [
+            {
+              type: "mrkdwn",
+              text: `📸 +${d.screenshotUrls.length - 1} more screenshot${d.screenshotUrls.length - 1 > 1 ? "s" : ""}`,
+            },
+          ],
+        });
+      }
+    }
 
     blocks.push({
       type: "section",

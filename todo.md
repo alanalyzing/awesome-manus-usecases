@@ -412,3 +412,5 @@
 - [x] QA: 3-pass language QA - Pass 1: check all pages in all 5 languages for untranslated strings
 - [x] QA: 3-pass language QA - Pass 2: fix issues and verify professional/fluent translations (fixed: category chips on submit page, modal category tags, related use case titles/descriptions, profile/detail page category tags)
 - [x] QA: 3-pass language QA - Pass 3: final verification across all subpages (all 5 languages verified across homepage, submit, leaderboard, about, modal, detail, profile)
+- [x] Slack: Include use case description in approval webhook notification (now with 📝 prefix, 500-char truncation)
+- [x] Slack: Include screenshot image in approval webhook notification (first screenshot shown as image block, count of remaining noted)

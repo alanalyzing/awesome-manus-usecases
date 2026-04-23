@@ -639,6 +639,7 @@ Based on this information, generate a title and description for this use case.`;
                 language: uc[0].language || "en",
                 categoryNames,
                 screenshotCount: screenshotRows.length,
+                screenshotUrls: screenshotRows.map(s => s.url),
                 sessionReplayUrl: uc[0].sessionReplayUrl || undefined,
                 deliverableUrl: uc[0].deliverableUrl || undefined,
               },
