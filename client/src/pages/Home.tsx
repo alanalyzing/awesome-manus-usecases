@@ -801,11 +801,14 @@ export default function Home() {
               </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 p-1.5 hover:bg-accent rounded-full transition-colors">
+                  <button className="relative flex items-center gap-1.5 p-1.5 hover:bg-accent rounded-full transition-colors">
                     {hasProfile && profileQuery.data?.avatarUrl ? (
                       <img src={profileQuery.data.avatarUrl} alt={user?.name || ""} className="w-6 h-6 rounded-full object-cover" />
                     ) : (
                       <UserCircle size={18} className="text-muted-foreground" />
+                    )}
+                    {!hasProfile && (
+                      <span className="absolute top-0.5 left-5 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-background" />
                     )}
                     <ChevronDown size={12} className="text-muted-foreground" />
                   </button>

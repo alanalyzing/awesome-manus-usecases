@@ -393,3 +393,4 @@
 - [x] Slack: Remove webhook notification on new submission (only fire on approval)
 - [x] Slack: Update approval notification to rich format with full use case details (title, description, submitter, categories, screenshots, language, approved by, session replay button, deliverable button)
 - [x] Refine launch announcement copy for Awesome Use Case Library v2
+- [x] UX: Add notification badge (red dot) on profile icon in navbar when logged-in user hasn't set up their profile
