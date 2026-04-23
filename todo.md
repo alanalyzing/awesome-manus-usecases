@@ -373,3 +373,4 @@
 - [x] SEO: Use actual use case screenshots as OG images for profile pages (user's top use case)
 - [x] SEO: Use actual use case screenshots as OG images for collection pages (first use case in collection)
 - [x] SEO: Use representative screenshot as OG image for leaderboard, about, and submit pages (top-rated overall)
+- [x] Bug fix: Single use case approval in admin panel — added missing Approve Dialog with category selector + highlight toggle (Dialog component was never rendered, only state existed)

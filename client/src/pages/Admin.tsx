@@ -1371,6 +1371,74 @@ export default function AdminPage() {
         }}
       />
 
+      {/* Approve Dialog */}
+      <Dialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("admin.approve")} Use Case</DialogTitle>
+            <DialogDescription>
+              Review and confirm the category assignments and highlight status before approving.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label className="text-sm font-medium">Categories</Label>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {(categoriesQuery.data ?? []).map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => {
+                      setEditCategoryIds((prev) =>
+                        prev.includes(cat.id)
+                          ? prev.filter((id) => id !== cat.id)
+                          : [...prev, cat.id]
+                      );
+                    }}
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
+                      editCategoryIds.includes(cat.id)
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setHighlightToggle(!highlightToggle)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                  highlightToggle ? "bg-primary" : "bg-muted"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
+                    highlightToggle ? "translate-x-4" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+              <Label className="text-sm">Mark as Highlight</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setApproveDialogOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              onClick={confirmApprove}
+              disabled={approveMutation.isPending}
+              className="gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {approveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              {t("admin.approve")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Remove Approved Dialog */}
       <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
         <DialogContent>
