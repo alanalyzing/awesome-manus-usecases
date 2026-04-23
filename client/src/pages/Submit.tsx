@@ -106,6 +106,7 @@ export default function SubmitPage() {
   const [deliverableUrl, setDeliverableUrl] = useState("");
   const [language, setLanguage] = useState("en");
   const [consent, setConsent] = useState(false);
+  const [rightsAgreed, setRightsAgreed] = useState(false);
   const [selectedJobFunctions, setSelectedJobFunctions] = useState<number[]>([]);
   const [selectedFeatures, setSelectedFeatures] = useState<number[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -630,7 +631,19 @@ export default function SubmitPage() {
             </Select>
           </div>
 
-          {/* Consent */}
+          {/* Rights Agreement */}
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="rightsAgreement"
+              checked={rightsAgreed}
+              onCheckedChange={(checked) => setRightsAgreed(checked === true)}
+            />
+            <Label htmlFor="rightsAgreement" className="text-sm text-muted-foreground leading-relaxed">
+              {t("submit.rightsAgreement")}
+            </Label>
+          </div>
+
+          {/* Interview Consent (optional) */}
           <div className="flex items-start gap-3">
             <Checkbox
               id="consent"
@@ -643,7 +656,7 @@ export default function SubmitPage() {
           </div>
 
           {/* Submit */}
-          <Button type="submit" disabled={submitting} className="w-full gap-2">
+          <Button type="submit" disabled={submitting || !rightsAgreed} className="w-full gap-2">
             {submitting ? (
               <>
                 <Loader2 size={16} className="animate-spin" />

@@ -28,9 +28,10 @@ interface ManusLogoProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   showTitle?: boolean;
+  title?: string;
 }
 
-export function ManusLogo({ size = "md", className = "", showTitle = true }: ManusLogoProps) {
+export function ManusLogo({ size = "md", className = "", showTitle = true, title }: ManusLogoProps) {
   const glyphSize = size === "sm" ? 20 : size === "md" ? 28 : 36;
   const textClass =
     size === "sm"
@@ -39,13 +40,16 @@ export function ManusLogo({ size = "md", className = "", showTitle = true }: Man
       ? "text-base sm:text-lg"
       : "text-xl sm:text-2xl";
 
+  const displayTitle = title || "Awesome Manus Use Cases";
+  const shortTitle = title || "Manus Use Cases";
+
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <ManusGlyph size={glyphSize} />
       {showTitle && (
         <span className={`font-serif font-bold tracking-tight leading-tight ${textClass}`}>
-          <span className="hidden sm:inline">Awesome Manus Use Cases</span>
-          <span className="sm:hidden">Manus Use Cases</span>
+          <span className="hidden sm:inline">{displayTitle}</span>
+          <span className="sm:hidden">{shortTitle}</span>
         </span>
       )}
     </span>

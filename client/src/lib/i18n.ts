@@ -349,6 +349,21 @@ type TranslationKeys = {
   "common.close": string;
   "common.loginRequired": string;
   "common.loginRequiredDesc": string;
+  // Modal top bar
+  "modal.previous": string;
+  "modal.next": string;
+  "modal.edit": string;
+  "modal.fullPage": string;
+  "modal.copyLink": string;
+  // Profile dropdown
+  "nav.myProfile": string;
+  "nav.mySubmissions": string;
+  "nav.editProfile": string;
+  // Legal / compliance
+  "submit.rightsAgreement": string;
+  "footer.ugcDisclaimer": string;
+  "footer.copyright": string;
+  "footer.terms": string;
 };
 
 const translations: Record<Locale, TranslationKeys> = {
@@ -462,6 +477,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "Close",
     "common.loginRequired": "Sign In Required",
     "common.loginRequiredDesc": "Please sign in with your Manus account to continue.",
+    "modal.previous": "Previous",
+    "modal.next": "Next",
+    "modal.edit": "Edit",
+    "modal.fullPage": "Full Page",
+    "modal.copyLink": "Copy Link",
+    "nav.myProfile": "My Profile",
+    "nav.mySubmissions": "My Submissions",
+    "nav.editProfile": "Edit Profile",
+    "submit.rightsAgreement": "By submitting, I confirm that I have the right to share this content and grant Manus permission to display it publicly in the Use Case Library and related channels. I understand my submission will be reviewed before publication and I can request removal at any time.",
+    "footer.ugcDisclaimer": "Use cases are user-generated and user-inspired. Content does not represent the views or endorsements of Manus.",
+    "footer.copyright": "© 2026 Manus. User-submitted content remains the property of its respective authors.",
+    "footer.terms": "Terms of Service",
     "hero.title1": "Discover what people build",
     "hero.title2": "with Manus",
     "hero.desc": "A curated gallery of real-world use cases from the Manus community. Browse by industry, feature, or explore our highlighted picks.",
@@ -781,6 +808,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "关闭",
     "common.loginRequired": "需要登录",
     "common.loginRequiredDesc": "请使用 Manus 账号登录以继续。",
+    "modal.previous": "上一个",
+    "modal.next": "下一个",
+    "modal.edit": "编辑",
+    "modal.fullPage": "完整页面",
+    "modal.copyLink": "复制链接",
+    "nav.myProfile": "我的主页",
+    "nav.mySubmissions": "我的投稿",
+    "nav.editProfile": "编辑资料",
+    "submit.rightsAgreement": "提交即表示我确认有权分享此内容，并授权 Manus 在用例库及相关渠道公开展示。我了解提交内容将在审核后发布，并可随时申请移除。",
+    "footer.ugcDisclaimer": "用例由用户生成和启发。内容不代表 Manus 的观点或认可。",
+    "footer.copyright": "© 2026 Manus。用户提交的内容归其各自作者所有。",
+    "footer.terms": "服务条款",
     "hero.title1": "发现人们用 Manus",
     "hero.title2": "构建的作品",
     "hero.desc": "来自 Manus 社区的真实用例精选集。按行业、功能浏览，或探索我们的精选推荐。",
@@ -991,7 +1030,7 @@ const translations: Record<Locale, TranslationKeys> = {
     "sidebar.featuredThisWeek": "本周精选",
   },
   ja: {
-    "nav.useCaseLibrary": "Manus 厳選実用例集",
+    "nav.useCaseLibrary": "Manus厳選実用例集",
     "nav.submit": "ユースケースを投稿",
     "nav.admin": "管理画面",
     "nav.login": "ログイン",
@@ -1100,6 +1139,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "閉じる",
     "common.loginRequired": "ログインが必要です",
     "common.loginRequiredDesc": "続けるにはManusアカウントでログインしてください。",
+    "modal.previous": "前へ",
+    "modal.next": "次へ",
+    "modal.edit": "編集",
+    "modal.fullPage": "全ページ",
+    "modal.copyLink": "リンクをコピー",
+    "nav.myProfile": "マイプロフィール",
+    "nav.mySubmissions": "投稿一覧",
+    "nav.editProfile": "プロフィール編集",
+    "submit.rightsAgreement": "提出することで、このコンテンツを共有する権利があることを確認し、Manus がユースケースライブラリおよび関連チャネルで公開展示することを許可します。提出内容は審査後に公開され、いつでも削除を申請できます。",
+    "footer.ugcDisclaimer": "ユースケースはユーザーが作成・着想したものです。コンテンツは Manus の見解や推奨を表すものではありません。",
+    "footer.copyright": "© 2026 Manus。ユーザー提出コンテンツの著作権は各作者に帰属します。",
+    "footer.terms": "利用規約",
     "hero.title1": "Manusで人々が",
     "hero.title2": "何を作るか発見しよう",
     "hero.desc": "Manusコミュニティからの実際のユースケースを厳選したギャラリー。業界、機能別に閲覧するか、おすすめの精選ピックを探索しましょう。",
@@ -1419,6 +1470,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "닫기",
     "common.loginRequired": "로그인 필요",
     "common.loginRequiredDesc": "계속하려면 Manus 계정으로 로그인해 주세요.",
+    "modal.previous": "이전",
+    "modal.next": "다음",
+    "modal.edit": "편집",
+    "modal.fullPage": "전체 페이지",
+    "modal.copyLink": "링크 복사",
+    "nav.myProfile": "내 프로필",
+    "nav.mySubmissions": "내 제출",
+    "nav.editProfile": "프로필 편집",
+    "submit.rightsAgreement": "제출함으로써 이 콘텐츠를 공유할 권리가 있음을 확인하며, Manus가 유스케이스 라이브러리 및 관련 채널에서 공개 전시하는 것을 허용합니다. 제출 콘텐츠는 검토 후 공개되며, 언제든지 삭제를 요청할 수 있습니다.",
+    "footer.ugcDisclaimer": "유스케이스는 사용자가 생성하고 영감을 받은 콘텐츠입니다. Manus의 견해나 보증을 나타내지 않습니다.",
+    "footer.copyright": "© 2026 Manus. 사용자 제출 콘텐츠의 저작권은 각 작성자에게 있습니다.",
+    "footer.terms": "이용약관",
     "hero.title1": "사람들이 Manus로",
     "hero.title2": "무엇을 만드는지 발견하세요",
     "hero.desc": "Manus 커뮤니티의 실제 사용 사례를 엄선한 갤러리입니다. 산업별, 기능별로 탐색하거나 엄선된 추천 사례를 확인하세요.",
@@ -1738,6 +1801,18 @@ const translations: Record<Locale, TranslationKeys> = {
     "common.close": "Fechar",
     "common.loginRequired": "Login Necessário",
     "common.loginRequiredDesc": "Faça login com sua conta Manus para continuar.",
+    "modal.previous": "Anterior",
+    "modal.next": "Próximo",
+    "modal.edit": "Editar",
+    "modal.fullPage": "Página Completa",
+    "modal.copyLink": "Copiar Link",
+    "nav.myProfile": "Meu Perfil",
+    "nav.mySubmissions": "Minhas Submissões",
+    "nav.editProfile": "Editar Perfil",
+    "submit.rightsAgreement": "Ao enviar, confirmo que tenho o direito de compartilhar este conteúdo e autorizo a Manus a exibi-lo publicamente na Biblioteca de Casos de Uso e canais relacionados. Entendo que minha submissão será revisada antes da publicação e posso solicitar a remoção a qualquer momento.",
+    "footer.ugcDisclaimer": "Os casos de uso são gerados e inspirados por usuários. O conteúdo não representa as opiniões ou endossos da Manus.",
+    "footer.copyright": "© 2026 Manus. O conteúdo enviado por usuários permanece propriedade de seus respectivos autores.",
+    "footer.terms": "Termos de Serviço",
     "hero.title1": "Descubra o que as pessoas",
     "hero.title2": "constroem com o Manus",
     "hero.desc": "Uma galeria curada de casos de uso reais da comunidade Manus. Navegue por setor, recurso ou explore nossas escolhas em destaque.",

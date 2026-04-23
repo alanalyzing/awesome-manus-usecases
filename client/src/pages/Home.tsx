@@ -734,7 +734,7 @@ export default function Home() {
           </button>
 
           <Link href="/" className="flex items-center mr-auto" onClick={handleShowAll}>
-            <ManusLogo size="sm" />
+            <ManusLogo size="sm" title={t("nav.useCaseLibrary")} />
           </Link>
 
           {/* Language Selector */}
@@ -840,7 +840,7 @@ export default function Home() {
                   {hasProfile && profileQuery.data?.username ? (
                     <DropdownMenuItem onClick={() => navigate(`/profile/${profileQuery.data!.username}`)}>
                       <User size={14} className="mr-2" />
-                      My Profile
+                      {t("nav.myProfile")}
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem onClick={() => navigate("/profile/setup")}>
@@ -850,19 +850,19 @@ export default function Home() {
                   )}
                   <DropdownMenuItem onClick={() => navigate("/my-submissions")}>
                     <FileText size={14} className="mr-2" />
-                    My Submissions
+                    {t("nav.mySubmissions")}
                   </DropdownMenuItem>
                   {hasProfile && (
                     <DropdownMenuItem onClick={() => navigate("/profile/setup")}>
                       <Settings size={14} className="mr-2" />
-                      Edit Profile
+                      {t("nav.editProfile")}
                     </DropdownMenuItem>
                   )}
 
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => { logout(); }} className="text-destructive focus:text-destructive">
                     <LogOut size={14} className="mr-2" />
-                    Log Out
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -1614,6 +1614,26 @@ export default function Home() {
             )}
           </div>
           </>)}
+
+          {/* ─── Footer: UGC Disclaimer & Copyright ─── */}
+          <footer className="border-t bg-muted/30 px-6 py-6 mt-8">
+            <div className="max-w-7xl mx-auto space-y-2 text-center">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {t("footer.ugcDisclaimer")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("footer.copyright")}{" "}
+                <a
+                  href="https://manus.im/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-foreground transition-colors"
+                >
+                  {t("footer.terms")}
+                </a>
+              </p>
+            </div>
+          </footer>
         </main>
       </div>
 

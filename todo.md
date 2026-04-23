@@ -414,3 +414,9 @@
 - [x] QA: 3-pass language QA - Pass 3: final verification across all subpages (all 5 languages verified across homepage, submit, leaderboard, about, modal, detail, profile)
 - [x] Slack: Include use case description in approval webhook notification (now with 📝 prefix, 500-char truncation)
 - [x] Slack: Include screenshot image in approval webhook notification (first screenshot shown as image block, count of remaining noted)
+- [x] i18n: Translate modal top bar (Previous, Next, Edit, Full Page, Copy Link) in all 5 languages
+- [x] i18n: Translate profile dropdown (My Profile, My Submissions, Edit Profile, Log Out) in all 5 languages
+- [x] i18n: Translate header site title (e.g. JP: "Manus厳選実用例集") — ManusLogo now accepts title prop from i18n
+- [x] Legal: Add submission agreement checkbox on submit page (rights confirmation + interview consent kept as separate optional checkbox)
+- [x] Legal: Add UGC disclaimer in footer ("user-generated / user-inspired")
+- [x] Legal: Add copyright notice in footer linking to https://manus.im/terms
