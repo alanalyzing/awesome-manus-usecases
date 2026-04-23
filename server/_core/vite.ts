@@ -17,35 +17,142 @@ function getSiteOrigin(req?: express.Request): string {
   return "https://awesome.manus.space";
 }
 
-const SITE_NAME = "Awesome Manus Use Cases";
-const DEFAULT_DESC = "Discover, share, and celebrate awesome things built with Manus. Browse use cases by industry, feature, and more.";
 const DEFAULT_IMAGE = "https://files.manuscdn.com/user_upload_by_module/session_file/310519663249428057/irFogdbwAhLjdhsN.png";
 
-/** Static subpage SEO definitions */
-const SUBPAGE_SEO: Record<string, { title: string; description: string; priority?: string }> = {
-  "/about": {
-    title: `About — ${SITE_NAME}`,
-    description: "Learn about the Awesome Manus Use Cases portal — a curated gallery of real-world AI automation examples built with Manus. Discover how teams across industries leverage AI agents.",
+/** Server-side i18n for meta tags */
+type LangKey = "en" | "zh" | "ja" | "ko" | "pt-BR";
+const SUPPORTED_LANGS: LangKey[] = ["en", "zh", "ja", "ko", "pt-BR"];
+
+const META_I18N: Record<LangKey, {
+  siteName: string;
+  defaultDesc: string;
+  about: { title: string; description: string };
+  leaderboard: { title: string; description: string };
+  submit: { title: string; description: string };
+}> = {
+  en: {
+    siteName: "Awesome Manus Use Cases",
+    defaultDesc: "Discover, share, and celebrate awesome things built with Manus. Browse use cases by industry, feature, and more.",
+    about: {
+      title: "About",
+      description: "Learn about the Awesome Manus Use Cases portal \u2014 a curated gallery of real-world AI automation examples built with Manus.",
+    },
+    leaderboard: {
+      title: "Top Contributors Leaderboard",
+      description: "See the top contributors to the Manus use case library. Ranked by number of published use cases and community upvotes.",
+    },
+    submit: {
+      title: "Submit Your Use Case",
+      description: "Share your Manus use case with the community. Submit your AI automation project and get featured in the gallery.",
+    },
   },
-  "/leaderboard": {
-    title: `Top Contributors Leaderboard — ${SITE_NAME}`,
-    description: "See the top contributors to the Manus use case library. Ranked by number of published use cases and community upvotes. Join the community and share your own AI automation stories.",
+  zh: {
+    siteName: "Manus \u7cbe\u9009\u7528\u4f8b\u96c6",
+    defaultDesc: "\u53d1\u73b0\u3001\u5206\u4eab\u548c\u5c55\u793a\u4f7f\u7528 Manus \u6784\u5efa\u7684\u7cbe\u5f69\u4f5c\u54c1\u3002\u6309\u884c\u4e1a\u3001\u529f\u80fd\u6d4f\u89c8\u7528\u4f8b\u3002",
+    about: {
+      title: "\u5173\u4e8e",
+      description: "\u4e86\u89e3 Manus \u7cbe\u9009\u7528\u4f8b\u96c6 \u2014\u2014 \u4e00\u4e2a\u7cbe\u5fc3\u7b56\u5c55\u7684\u771f\u5b9e AI \u81ea\u52a8\u5316\u6848\u4f8b\u5e93\u3002",
+    },
+    leaderboard: {
+      title: "\u8d21\u732e\u8005\u6392\u884c\u699c",
+      description: "\u67e5\u770b Manus \u7528\u4f8b\u5e93\u7684\u9876\u7ea7\u8d21\u732e\u8005\u3002\u6309\u53d1\u5e03\u7528\u4f8b\u6570\u548c\u793e\u533a\u70b9\u8d5e\u6392\u540d\u3002",
+    },
+    submit: {
+      title: "\u63d0\u4ea4\u4f60\u7684\u7528\u4f8b",
+      description: "\u4e0e\u793e\u533a\u5206\u4eab\u4f60\u7684 Manus \u7528\u4f8b\u3002\u63d0\u4ea4\u4f60\u7684 AI \u81ea\u52a8\u5316\u9879\u76ee\uff0c\u5728\u5e93\u4e2d\u5c55\u793a\u3002",
+    },
   },
-  "/submit": {
-    title: `Submit Your Use Case — ${SITE_NAME}`,
-    description: "Share your Manus use case with the community. Submit your AI automation project, get featured in the gallery, and inspire others with what you've built using Manus.",
+  ja: {
+    siteName: "Manus\u53b3\u9078\u5b9f\u7528\u4f8b\u96c6",
+    defaultDesc: "Manus\u3067\u69cb\u7bc9\u3055\u308c\u305f\u512a\u308c\u305f\u4f5c\u54c1\u3092\u767a\u898b\u30fb\u5171\u6709\u30fb\u7d39\u4ecb\u3002\u696d\u754c\u3084\u6a5f\u80fd\u5225\u306b\u30e6\u30fc\u30b9\u30b1\u30fc\u30b9\u3092\u95b2\u89a7\u3002",
+    about: {
+      title: "\u6982\u8981",
+      description: "Manus\u53b3\u9078\u5b9f\u7528\u4f8b\u96c6\u306b\u3064\u3044\u3066 \u2014 \u5b9f\u969b\u306eAI\u81ea\u52d5\u5316\u4e8b\u4f8b\u3092\u53b3\u9078\u3057\u305f\u30ae\u30e3\u30e9\u30ea\u30fc\u3002",
+    },
+    leaderboard: {
+      title: "\u30c8\u30c3\u30d7\u8ca2\u732e\u8005\u30e9\u30f3\u30ad\u30f3\u30b0",
+      description: "Manus\u30e6\u30fc\u30b9\u30b1\u30fc\u30b9\u30e9\u30a4\u30d6\u30e9\u30ea\u306e\u30c8\u30c3\u30d7\u8ca2\u732e\u8005\u3002\u516c\u958b\u6570\u3068\u30b3\u30df\u30e5\u30cb\u30c6\u30a3\u306e\u8a55\u4fa1\u3067\u30e9\u30f3\u30ad\u30f3\u30b0\u3002",
+    },
+    submit: {
+      title: "\u30e6\u30fc\u30b9\u30b1\u30fc\u30b9\u3092\u6295\u7a3f",
+      description: "\u3042\u306a\u305f\u306eManus\u30e6\u30fc\u30b9\u30b1\u30fc\u30b9\u3092\u30b3\u30df\u30e5\u30cb\u30c6\u30a3\u3068\u5171\u6709\u3002AI\u81ea\u52d5\u5316\u30d7\u30ed\u30b8\u30a7\u30af\u30c8\u3092\u6295\u7a3f\u3057\u3066\u30ae\u30e3\u30e9\u30ea\u30fc\u306b\u63b2\u8f09\u3002",
+    },
+  },
+  ko: {
+    siteName: "Manus \uc5c4\uc120 \uc0ac\uc6a9 \uc0ac\ub840\uc9d1",
+    defaultDesc: "Manus\ub85c \uad6c\ucd95\ud55c \ub6f0\uc5b4\ub09c \uc791\ud488\uc744 \ubc1c\uacac\ud558\uace0 \uacf5\uc720\ud558\uc138\uc694. \uc0b0\uc5c5\ubcc4, \uae30\ub2a5\ubcc4\ub85c \uc0ac\uc6a9 \uc0ac\ub840\ub97c \ud0d0\uc0c9\ud558\uc138\uc694.",
+    about: {
+      title: "\uc18c\uac1c",
+      description: "Manus \uc5c4\uc120 \uc0ac\uc6a9 \uc0ac\ub840\uc9d1 \uc18c\uac1c \u2014 \uc2e4\uc81c AI \uc790\ub3d9\ud654 \uc0ac\ub840\ub97c \uc5c4\uc120\ud55c \uac24\ub7ec\ub9ac.",
+    },
+    leaderboard: {
+      title: "\ud1b1 \uae30\uc5ec\uc790 \ub9ac\ub354\ubcf4\ub4dc",
+      description: "Manus \uc0ac\uc6a9 \uc0ac\ub840 \ub77c\uc774\ube0c\ub7ec\ub9ac\uc758 \ud1b1 \uae30\uc5ec\uc790. \ubc1c\ud45c \uc218\uc640 \ucee4\ubba4\ub2c8\ud2f0 \ud22c\ud45c\ub85c \ub7ad\ud0b9.",
+    },
+    submit: {
+      title: "\uc0ac\uc6a9 \uc0ac\ub840 \uc81c\ucd9c",
+      description: "\ucee4\ubba4\ub2c8\ud2f0\uc640 Manus \uc0ac\uc6a9 \uc0ac\ub840\ub97c \uacf5\uc720\ud558\uc138\uc694. AI \uc790\ub3d9\ud654 \ud504\ub85c\uc81d\ud2b8\ub97c \uc81c\ucd9c\ud558\uace0 \uac24\ub7ec\ub9ac\uc5d0 \uc18c\uac1c\ub418\uc138\uc694.",
+    },
+  },
+  "pt-BR": {
+    siteName: "Melhores Casos de Uso Manus",
+    defaultDesc: "Descubra, compartilhe e celebre coisas incr\u00edveis constru\u00eddas com Manus. Navegue por casos de uso por setor e recurso.",
+    about: {
+      title: "Sobre",
+      description: "Conhe\u00e7a o portal Melhores Casos de Uso Manus \u2014 uma galeria curada de exemplos reais de automa\u00e7\u00e3o com IA.",
+    },
+    leaderboard: {
+      title: "Ranking de Contribuidores",
+      description: "Veja os maiores contribuidores da biblioteca de casos de uso Manus. Classificados por n\u00famero de publica\u00e7\u00f5es e votos.",
+    },
+    submit: {
+      title: "Envie Seu Caso de Uso",
+      description: "Compartilhe seu caso de uso Manus com a comunidade. Envie seu projeto de automa\u00e7\u00e3o com IA e seja destaque na galeria.",
+    },
   },
 };
+
+/** Resolve the language from the ?lang= query parameter */
+function resolveLang(url: string): LangKey {
+  const searchParams = new URLSearchParams(url.split("?")[1] || "");
+  const lang = searchParams.get("lang");
+  if (lang && SUPPORTED_LANGS.includes(lang as LangKey)) return lang as LangKey;
+  return "en";
+}
+
+function getSiteName(lang: LangKey): string { return META_I18N[lang].siteName; }
+function getDefaultDesc(lang: LangKey): string { return META_I18N[lang].defaultDesc; }
+
+/** Get static subpage SEO definitions for a given language */
+function getSubpageSeo(lang: LangKey): Record<string, { title: string; description: string }> {
+  const i = META_I18N[lang];
+  return {
+    "/about": {
+      title: `${i.about.title} — ${i.siteName}`,
+      description: i.about.description,
+    },
+    "/leaderboard": {
+      title: `${i.leaderboard.title} — ${i.siteName}`,
+      description: i.leaderboard.description,
+    },
+    "/submit": {
+      title: `${i.submit.title} — ${i.siteName}`,
+      description: i.submit.description,
+    },
+  };
+}
 
 /** Inject dynamic OG meta tags and JSON-LD structured data for all pages */
 async function injectOgMeta(html: string, url: string, req?: express.Request): Promise<string> {
   const origin = getSiteOrigin(req);
   const pathname = url.split("?")[0].split("#")[0];
+  const lang = resolveLang(url);
+  const SITE_NAME = getSiteName(lang);
 
   // ── Use case detail pages (/use-case/:slug) ──
   const ucMatch = pathname.match(/^\/use-case\/([^?#]+)/);
   if (ucMatch) {
-    return injectUseCaseMeta(html, ucMatch[1], origin);
+    return injectUseCaseMeta(html, ucMatch[1], origin, SITE_NAME);
   }
 
   // ── Profile pages (/profile/:username) ──
@@ -54,10 +161,11 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
     const username = decodeURIComponent(profileMatch[1]);
     return injectSubpageMeta(html, {
       title: `${username}'s Profile — ${SITE_NAME}`,
-      description: `Explore use cases submitted by ${username} on the Awesome Manus Use Cases portal. See their AI automation projects, community contributions, and expertise.`,
+      description: `Explore use cases submitted by ${username} on ${SITE_NAME}.`,
       canonicalUrl: `${origin}/profile/${encodeURIComponent(username)}`,
       origin,
       type: "profile",
+      siteName: SITE_NAME,
     });
   }
 
@@ -68,10 +176,11 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
     const readableTitle = slug.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
     return injectSubpageMeta(html, {
       title: `${readableTitle} — Collections — ${SITE_NAME}`,
-      description: `Browse the "${readableTitle}" collection on Awesome Manus Use Cases. A curated set of AI automation examples and real-world projects built with Manus.`,
+      description: `Browse the "${readableTitle}" collection on ${SITE_NAME}.`,
       canonicalUrl: `${origin}/collections/${encodeURIComponent(slug)}`,
       origin,
       type: "website",
+      siteName: SITE_NAME,
       jsonLd: {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
@@ -83,7 +192,7 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
   }
 
   // ── Static subpages (about, leaderboard, submit) ──
-  const subpageSeo = SUBPAGE_SEO[pathname];
+  const subpageSeo = getSubpageSeo(lang)[pathname];
   if (subpageSeo) {
     const jsonLd: Record<string, any> | undefined = pathname === "/about" ? {
       "@context": "https://schema.org",
@@ -113,6 +222,7 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
       canonicalUrl: `${origin}${pathname}`,
       origin,
       type: "website",
+      siteName: SITE_NAME,
       jsonLd: jsonLd,
     });
   }
@@ -123,11 +233,24 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
   if (categoryParam && pathname === "/") {
     const readableCat = categoryParam.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
     return injectSubpageMeta(html, {
-      title: `${readableCat} Use Cases — ${SITE_NAME}`,
-      description: `Browse ${readableCat.toLowerCase()} use cases built with Manus. Discover real-world AI automation examples in ${readableCat.toLowerCase()}.`,
+      title: `${readableCat} — ${SITE_NAME}`,
+      description: `${readableCat} — ${getDefaultDesc(lang)}`,
       canonicalUrl: `${origin}/?category=${encodeURIComponent(categoryParam)}`,
       origin,
       type: "website",
+      siteName: SITE_NAME,
+    });
+  }
+
+  // ── Default homepage ── inject lang-aware meta for homepage
+  if (pathname === "/" && lang !== "en") {
+    return injectSubpageMeta(html, {
+      title: SITE_NAME,
+      description: getDefaultDesc(lang),
+      canonicalUrl: `${origin}/?lang=${lang}`,
+      origin,
+      type: "website",
+      siteName: SITE_NAME,
     });
   }
 
@@ -135,7 +258,8 @@ async function injectOgMeta(html: string, url: string, req?: express.Request): P
 }
 
 /** Inject meta tags for use case detail pages (with full DB lookup) */
-async function injectUseCaseMeta(html: string, rawSlug: string, origin: string): Promise<string> {
+async function injectUseCaseMeta(html: string, rawSlug: string, origin: string, siteName: string = "Awesome Manus Use Cases"): Promise<string> {
+  const SITE_NAME = siteName;
   try {
     const slug = decodeURIComponent(rawSlug);
     const uc = await getUseCaseMetaBySlug(slug);
@@ -211,8 +335,10 @@ function injectSubpageMeta(html: string, opts: {
   type?: string;
   image?: string;
   jsonLd?: Record<string, any>;
+  siteName?: string;
 }): string {
-  const { title, description, canonicalUrl, origin, type = "website", image, jsonLd } = opts;
+  const { title, description, canonicalUrl, origin, type = "website", image, jsonLd, siteName = "Awesome Manus Use Cases" } = opts;
+  const SITE_NAME = siteName;
   const safeTitle = title.replace(/"/g, '&quot;').replace(/</g, '&lt;');
   const safeDesc = description.replace(/"/g, '&quot;').replace(/</g, '&lt;');
   const ogImage = image || DEFAULT_IMAGE;
