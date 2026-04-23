@@ -95,6 +95,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useMemo(() => getTranslation(locale), [locale]);
 
+  // Update document.title when locale changes
+  useEffect(() => {
+    document.title = t("nav.useCaseLibrary");
+  }, [locale, t]);
+
   const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 
   return (
