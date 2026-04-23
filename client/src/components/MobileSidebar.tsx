@@ -3,13 +3,14 @@ import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, ExternalLink, X, Trophy, Heart, BookOpen, Info } from "lucide-react";
+import { Sparkles, ExternalLink, X, Trophy, Heart, BookOpen, Info, Video, GraduationCap, Shield } from "lucide-react";
 import { Link } from "wouter";
 import { MadeWithManusBadge } from "./ManusLogo";
 
 const LEARN_MORE_LINKS = [
-  { name: "Team Plan", url: "https://manus.im/team" },
-  { name: "Trust Center", url: "https://trust.manus.im/" },
+  { name: "Product Demo Walkthrough", url: "https://www.youtube.com/watch?v=3mdNmNLcWYQ", icon: "video" },
+  { name: "Manus Academy", url: "https://academy.manus.im/", icon: "graduation" },
+  { name: "Trust Center", url: "https://trust.manus.im/", icon: "shield" },
 ];
 
 const SOCIAL_LINKS = [
@@ -249,18 +250,22 @@ export function MobileSidebar({
                     {t("sidebar.aboutPortal")}
                   </span>
                 </Link>
-                {LEARN_MORE_LINKS.map((link) => (
-                  <a
-                    key={link.name}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
-                  >
-                    <BookOpen size={13} />
-                    {link.name}
-                  </a>
-                ))}
+                {LEARN_MORE_LINKS.map((link) => {
+                  const IconComp = link.icon === "video" ? Video : link.icon === "graduation" ? GraduationCap : link.icon === "shield" ? Shield : BookOpen;
+                  return (
+                    <a
+                      key={link.name}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={onClose}
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
+                    >
+                      <IconComp size={13} />
+                      {link.name}
+                    </a>
+                  );
+                })}
               </div>
             </div>
 

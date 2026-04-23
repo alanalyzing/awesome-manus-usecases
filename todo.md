@@ -397,3 +397,6 @@
 - [x] OG: Create homepage OG image with Manus brand logo and "Awesome Manus Use Cases" title on oil painting background
 - [x] OG: Update og:image and twitter:image meta tags with new OG image
 - [x] OG: Use the same OG image (oil painting background) across all pages including individual use case pages
+- [x] Sidebar: Add "Product Demo Walkthrough" under Learn More that shows embedded YouTube video on the right panel
+- [x] Sidebar: Add "Manus Academy" link (https://academy.manus.im/) under Learn More
+- [x] Sidebar: Add "Trust Center" link (https://trust.manus.im/) under Learn More

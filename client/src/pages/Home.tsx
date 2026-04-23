@@ -60,6 +60,8 @@ import {
   X,
   MessageCircle,
   Play,
+  Video,
+  GraduationCap,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -349,8 +351,10 @@ function CollectionsSection({ onCardClick }: { onCardClick: (slug: string) => vo
 }
 
 const LEARN_MORE_LINKS = [
-  { name: "Trust Center", url: "https://trust.manus.im/" },
-  { name: "API Docs", url: "/api-docs" },
+  { name: "Product Demo Walkthrough", url: "__demo__", icon: "video" },
+  { name: "Manus Academy", url: "https://academy.manus.im/", icon: "graduation" },
+  { name: "Trust Center", url: "https://trust.manus.im/", icon: "shield" },
+  { name: "API Docs", url: "/api-docs", icon: "book" },
 ];
 
 const SOCIAL_LINKS = [
@@ -500,6 +504,7 @@ export default function Home() {
   const [accumulatedItems, setAccumulatedItems] = useState<any[]>([]);
   const [modalSlug, setModalSlug] = useState<string | null>(null);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
+  const [showDemoVideo, setShowDemoVideo] = useState(false);
   // showHero removed - hero is always visible now
 
   // Infinite scroll sentinel
@@ -979,18 +984,37 @@ export default function Home() {
                           {t("sidebar.aboutPortal")}
                         </span>
                       </Link>
-                      {LEARN_MORE_LINKS.filter((link) => link.url !== "/api-docs" || user?.role === "admin").map((link) => (
-                        <a
-                          key={link.name}
-                          href={link.url}
-                          target={link.url.startsWith("/") ? undefined : "_blank"}
-                          rel={link.url.startsWith("/") ? undefined : "noopener noreferrer"}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
-                        >
-                          <BookOpen size={13} />
-                          {link.name}
-                        </a>
-                      ))}
+                      {LEARN_MORE_LINKS.filter((link) => link.url !== "/api-docs" || user?.role === "admin").map((link) => {
+                        const IconComp = link.icon === "video" ? Video : link.icon === "graduation" ? GraduationCap : link.icon === "shield" ? Shield : BookOpen;
+                        if (link.url === "__demo__") {
+                          return (
+                            <button
+                              key={link.name}
+                              onClick={() => setShowDemoVideo(true)}
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm w-full text-left transition-colors ${
+                                showDemoVideo
+                                  ? "bg-sidebar-accent text-foreground font-medium"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+                              }`}
+                            >
+                              <IconComp size={13} />
+                              {link.name}
+                            </button>
+                          );
+                        }
+                        return (
+                          <a
+                            key={link.name}
+                            href={link.url}
+                            target={link.url.startsWith("/") ? undefined : "_blank"}
+                            rel={link.url.startsWith("/") ? undefined : "noopener noreferrer"}
+                            className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
+                          >
+                            <IconComp size={13} />
+                            {link.name}
+                          </a>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1037,6 +1061,70 @@ export default function Home() {
 
         {/* ─── Main Content ─── */}
         <main id="main-content" className="flex-1 overflow-auto" style={{ height: 'calc(100vh - 3.5rem)' }} tabIndex={-1}>
+          {/* ─── Product Demo Walkthrough Panel ─── */}
+          {showDemoVideo && (
+            <div className="p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Video size={20} className="text-primary" />
+                  <h2 className="font-serif text-xl md:text-2xl font-bold">Product Demo Walkthrough</h2>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDemoVideo(false)}
+                >
+                  <X size={14} className="mr-1" />
+                  Close
+                </Button>
+              </div>
+              <div className="relative w-full rounded-xl overflow-hidden border shadow-lg" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src="https://www.youtube.com/embed/3mdNmNLcWYQ?si=ImZldzNHddnfJNgv"
+                  title="Manus Product Demo Walkthrough"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4 pt-2">
+                <a
+                  href="https://academy.manus.im/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <GraduationCap size={20} className="text-primary" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm group-hover:text-primary transition-colors">Manus Academy</div>
+                    <div className="text-xs text-muted-foreground">Learn how to get the most out of Manus with guided courses and tutorials.</div>
+                  </div>
+                  <ExternalLink size={14} className="ml-auto text-muted-foreground shrink-0" />
+                </a>
+                <a
+                  href="https://trust.manus.im/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Shield size={20} className="text-primary" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm group-hover:text-primary transition-colors">Trust Center</div>
+                    <div className="text-xs text-muted-foreground">Review our security practices, compliance certifications, and data policies.</div>
+                  </div>
+                  <ExternalLink size={14} className="ml-auto text-muted-foreground shrink-0" />
+                </a>
+              </div>
+            </div>
+          )}
+
+          {!showDemoVideo && (<>
           {/* ─── Hero Section with Search ─── */}
           <div className="relative overflow-hidden border-b bg-gradient-to-br from-background via-background to-accent/30">
             {/* Decorative background pattern */}
@@ -1514,6 +1602,7 @@ export default function Home() {
               </>
             )}
           </div>
+          </>)}
         </main>
       </div>
 
