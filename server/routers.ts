@@ -82,7 +82,7 @@ import {
 } from "./db";
 import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
-import { notifySlackNewSubmission, notifySlackStatusChange } from "./slack";
+import { notifySlackStatusChange } from "./slack";
 import { backfillBlurhashes, generateAndStoreBlurhash } from "./blurhash";
 
 /** Derive a stable visitor key from IP + User-Agent for anonymous upvote dedup */
@@ -213,31 +213,6 @@ export const appRouter = router({
           });
         } catch (e) {
           console.warn("[Notification] Failed to notify owner:", e);
-        }
-
-        // Notify Slack channel (non-blocking)
-        try {
-          const db = await getDb();
-          let categoryNames: string[] = [];
-          if (db && input.categoryIds.length > 0) {
-            const cats = await db.select({ name: categories.name })
-              .from(categories)
-              .where(inArray(categories.id, input.categoryIds));
-            categoryNames = cats.map(c => c.name);
-          }
-          notifySlackNewSubmission({
-            title: input.title,
-            description: input.description,
-            submitterName: ctx.user.name || "Anonymous",
-            submitterEmail: ctx.user.email || "no email",
-            language: input.language,
-            categoryNames,
-            sessionReplayUrl: input.sessionReplayUrl || undefined,
-            deliverableUrl: input.deliverableUrl || undefined,
-            screenshotCount: input.screenshotUrls.length,
-          }).catch(err => console.warn("[Slack] Failed:", err));
-        } catch (e) {
-          console.warn("[Slack] Failed to prepare notification:", e);
         }
 
         return { success: true, slug: useCase.slug };
@@ -631,11 +606,31 @@ Based on this information, generate a title and description for this use case.`;
               content: `Admin ${ctx.user.name || "Unknown"} approved the use case "${uc[0].title}" submitted by ${submitterName} (${submitterEmail}).\n\nThe use case is now live in the gallery.`,
             }).catch(() => {}); // Non-blocking
 
-            // Slack notification
+            // Slack notification with full details
+            let categoryNames: string[] = [];
+            if (input.categoryIds.length > 0) {
+              const cats = await db.select({ name: categories.name })
+                .from(categories)
+                .where(inArray(categories.id, input.categoryIds));
+              categoryNames = cats.map(c => c.name);
+            }
+            const { screenshots } = await import("../drizzle/schema");
+            const screenshotRows = await db.select().from(screenshots).where(eq(screenshots.useCaseId, input.id));
+
             notifySlackStatusChange({
               title: uc[0].title,
               status: "approved",
               adminName: ctx.user.name || "Unknown",
+              details: {
+                description: uc[0].description || "",
+                submitterName,
+                submitterEmail,
+                language: uc[0].language || "en",
+                categoryNames,
+                screenshotCount: screenshotRows.length,
+                sessionReplayUrl: uc[0].sessionReplayUrl || undefined,
+                deliverableUrl: uc[0].deliverableUrl || undefined,
+              },
             }).catch(() => {});
           }
         }
