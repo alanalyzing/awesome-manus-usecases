@@ -1149,9 +1149,7 @@ export default function Home() {
                 {/* Left: Text content */}
                 <div className="flex-1 space-y-3">
                   <h1 className="font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
-                    {t("hero.title1")}
-                    <br />
-                    <span className="text-primary/70">{t("hero.title2")}</span>
+                    {t("hero.title1")} <span className="text-primary/70">{t("hero.title2")}</span>
                   </h1>
                   <p className="text-muted-foreground text-sm md:text-base max-w-lg leading-relaxed">
                     {t("hero.desc")}
