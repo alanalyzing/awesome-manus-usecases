@@ -59,6 +59,7 @@ import {
   Check,
   X,
   MessageCircle,
+  Play,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -1434,30 +1435,54 @@ export default function Home() {
                                 <Eye size={12} />
                                 {uc.viewCount}
                               </span>
-                              <span className="flex items-center gap-1">
-                                <Calendar size={12} />
-                                {new Date(uc.createdAt).toLocaleDateString()}
-                              </span>
                             </div>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUpvote(uc.id);
-                              }}
-                              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all duration-200 mt-2 ${
-                                uc.hasUpvoted
-                                  ? "bg-primary/10 text-primary font-semibold scale-105"
-                                  : "hover:bg-accent hover:scale-105"
-                              }`}
-                            >
-                              <motion.div
-                                whileTap={{ scale: 1.3, rotate: -10 }}
-                                transition={{ type: "spring", stiffness: 400 }}
+                            <div className="flex items-center justify-between pt-2">
+                              <div className="flex items-center gap-1">
+                                {/* Shortcut buttons: show deliverable only if both exist, otherwise show whichever is available */}
+                                {uc.deliverableUrl ? (
+                                  <a
+                                    href={uc.deliverableUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground hover:bg-accent hover:text-primary hover:scale-105 transition-all duration-200"
+                                    title="See deliverable"
+                                  >
+                                    <ExternalLink size={13} />
+                                  </a>
+                                ) : uc.sessionReplayUrl ? (
+                                  <a
+                                    href={uc.sessionReplayUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-muted-foreground hover:bg-accent hover:text-primary hover:scale-105 transition-all duration-200"
+                                    title="See replay"
+                                  >
+                                    <Play size={13} />
+                                  </a>
+                                ) : null}
+                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUpvote(uc.id);
+                                }}
+                                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
+                                  uc.hasUpvoted
+                                    ? "bg-primary/10 text-primary font-semibold scale-105"
+                                    : "hover:bg-accent hover:scale-105"
+                                }`}
                               >
-                                <Heart size={13} className={uc.hasUpvoted ? "fill-current text-primary" : ""} />
-                              </motion.div>
-                              <span className="tabular-nums">{uc.upvoteCount}</span>
-                            </button>
+                                <motion.div
+                                  whileTap={{ scale: 1.3, rotate: -10 }}
+                                  transition={{ type: "spring", stiffness: 400 }}
+                                >
+                                  <Heart size={13} className={uc.hasUpvoted ? "fill-current text-primary" : ""} />
+                                </motion.div>
+                                <span className="tabular-nums">{uc.upvoteCount}</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>

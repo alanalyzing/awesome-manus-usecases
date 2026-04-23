@@ -377,3 +377,16 @@
 - [x] Feature: Send Slack webhook notification when a use case is approved (already wired in notifySlackStatusChange)
 - [x] Feature: Add Slack webhook URL configuration in Admin Settings UI (Settings tab with status, test button, quick links)
 - [x] Store Slack webhook URL as environment variable (SLACK_WEBHOOK_URL) — set via webdev_request_secrets
+- [x] Chrome extension: Convert from popup to side panel format (right panel) — v2.0.0 with sidePanel API
+- [x] Chrome extension: Use suitcase emoji/briefcase logo (programmatically generated at 16/32/48/128px)
+- [x] Chrome extension: Keep current UI design intact (same tabs, cards, search, filters)
+- [x] Chrome extension: Add multi-select mode for use case cards (checkbox toggle button in header)
+- [x] Chrome extension: Add floating action bar showing selected count + "Open as Tab Group" button
+- [x] Chrome extension: Implement Chrome tab group creation with selected use cases (named group with category context)
+- [x] Chrome extension: Add tabGroups permission to manifest (v2.1.0)
+- [x] Chrome extension: Change default sort to "Top Rated" instead of "Most Popular"
+- [x] UI: Remove upload date from use case cards (keep in detail page)
+- [x] UI: Add shortcut icon buttons on cards for "See Replay" and "See Deliverable"
+- [x] UI: If both replay and deliverable exist, show only deliverable button
+- [x] UI: If only one exists, show that one
+- [x] UI: Reorder sidebar "By Feature" - move Browser above Mail Manus, move Mail Manus below Skills
