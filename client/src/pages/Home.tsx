@@ -368,7 +368,7 @@ const SOCIAL_LINKS = [
   { name: "LinkedIn", url: "https://www.linkedin.com/company/maboroshiinc/" },
   { name: "X / Twitter", url: "https://x.com/maboroshi_inc" },
   { name: "YouTube", url: "https://www.youtube.com/@manus_im" },
-  { name: "Instagram", url: "https://www.instagram.com/manus_im/" },
+  { name: "Instagram", url: "https://www.instagram.com/manus/" },
   { name: "TikTok", url: "https://www.tiktok.com/@manus_im" },
 ];
 

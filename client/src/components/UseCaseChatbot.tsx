@@ -36,8 +36,8 @@ export function UseCaseChatbot() {
         {
           role: "assistant",
           content: isRateLimit
-            ? "You've reached the AI chat limit (20 messages per 10 minutes). Please try again shortly."
-            : "Sorry, something went wrong. Please try again.",
+            ? t("chatbot.errorRateLimit")
+            : t("chatbot.errorGeneric"),
         },
       ]);
     },

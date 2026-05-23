@@ -426,6 +426,9 @@
 - [x] UGC disclaimer: Add note that use cases may contain synthetic data for demo purposes (all 5 languages)
 - [x] Hero: Remove CATEGORIES and LANGUAGES stat cards, keep only USE CASES
 - [x] Hero: Shorten title to "Discover the best of Manus" (all 5 languages)
-- [ ] SEO: Translate meta description based on selected language (?lang= param)
+- [x] SEO: Translate meta description based on selected language (?lang= param)
 - [x] SEO: Server-side translated meta title and description based on ?lang= param (for social media link previews)
-- [ ] SEO: Client-side document.title update when language changes
+- [x] SEO: Client-side document.title update when language changes
+- [x] i18n: Update Welcome popup title to match new branding (all 5 languages)
+- [x] i18n: Translate AI chatbot error/rate-limit messages (all 5 languages)
+- [x] UI: Update Instagram link to https://www.instagram.com/manus/
