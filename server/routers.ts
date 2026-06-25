@@ -80,7 +80,7 @@ import {
   checkDuplicateSessionUrl,
   checkDuplicateDeliverableUrl,
 } from "./db";
-import { useCases, users, categories, useCaseCategories } from "../drizzle/schema";
+import { useCases, users, categories, useCaseCategories, screenshots } from "../drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
 import { notifySlackStatusChange } from "./slack";
 import { backfillBlurhashes, generateAndStoreBlurhash } from "./blurhash";
@@ -615,7 +615,7 @@ Based on this information, generate a title and description for this use case.`;
             await notifyOwner({
               title: `Use Case Approved: ${uc[0].title}`,
               content: `Admin ${ctx.user.name || "Unknown"} approved the use case "${uc[0].title}" submitted by ${submitterName} (${submitterEmail}).\n\nThe use case is now live in the gallery.`,
-            }).catch(() => {}); // Non-blocking
+            }).catch((e) => console.warn("[Notify] Owner notification failed:", e)); // Non-blocking
 
             // Slack notification with full details
             let categoryNames: string[] = [];
@@ -625,7 +625,6 @@ Based on this information, generate a title and description for this use case.`;
                 .where(inArray(categories.id, input.categoryIds));
               categoryNames = cats.map(c => c.name);
             }
-            const { screenshots } = await import("../drizzle/schema");
             const screenshotRows = await db.select().from(screenshots).where(eq(screenshots.useCaseId, input.id));
 
             notifySlackStatusChange({
@@ -643,7 +642,7 @@ Based on this information, generate a title and description for this use case.`;
                 sessionReplayUrl: uc[0].sessionReplayUrl || undefined,
                 deliverableUrl: uc[0].deliverableUrl || undefined,
               },
-            }).catch(() => {});
+            }).catch((e) => console.warn("[Slack] Approval notification failed:", e));
 
             // Trigger translation into all supported languages (non-blocking)
             translateUseCase(
@@ -695,7 +694,7 @@ Based on this information, generate a title and description for this use case.`;
             await notifyOwner({
               title: `Use Case Rejected: ${uc[0].title}`,
               content: `Admin ${ctx.user.name || "Unknown"} rejected the use case "${uc[0].title}" submitted by ${submitterName} (${submitterEmail}).\n\nReason: ${input.reason}`,
-            }).catch(() => {}); // Non-blocking
+            }).catch((e) => console.warn("[Notify] Owner notification failed:", e)); // Non-blocking
 
             // Slack notification
             notifySlackStatusChange({
@@ -703,7 +702,7 @@ Based on this information, generate a title and description for this use case.`;
               status: "rejected",
               adminName: ctx.user.name || "Unknown",
               reason: input.reason,
-            }).catch(() => {});
+            }).catch((e) => console.warn("[Slack] Rejection notification failed:", e));
           }
         }
 
@@ -1307,13 +1306,13 @@ Return the title on the first line, then a blank line, then the 2-sentence descr
         title: `Bulk approved ${result.approved} use cases`,
         status: "approved",
         adminName: ctx.user.name || "Unknown",
-      }).catch(() => {});
+      }).catch((e) => console.warn("[Slack] Bulk approval notification failed:", e));
 
       // Owner notification
       await notifyOwner({
         title: `Bulk Approved: ${result.approved} Use Cases`,
         content: `Admin ${ctx.user.name || "Unknown"} bulk-approved ${result.approved} pending use cases.`,
-      }).catch(() => {});
+      }).catch((e) => console.warn("[Notify] Owner notification failed:", e));
 
       return { approved: result.approved };
     }),

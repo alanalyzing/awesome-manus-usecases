@@ -7,17 +7,19 @@
   ],
   "dev_command": "pnpm run dev",
   "env_vars": {
-    "DATABASE_URL": "mysql://3U88QiHqLLRvau3.3ccbfad70b32:5aeRV7hD589oNen4JjXn@gateway02.us-east-1.prod.aws.tidbcloud.com:4000/jnjQ5dYouig6ULcXneQuMs?ssl={\"rejectUnauthorized\":true}"
+    "DATABASE_URL": "mysql://3U88QiHqLLRvau3.3ccbfad70b32:5aeRV7hD589oNen4JjXn@gateway02.us-east-1.prod.aws.tidbcloud.com:4000/jnjQ5dYouig6ULcXneQuMs?ssl={\"rejectUnauthorized\":true}",
+    "DRIZZLE_DATABASE_URL": "mysql://3U88QiHqLLRvau3.3ccbfad70b32:5aeRV7hD589oNen4JjXn@gateway02.us-east-1.prod.aws.tidbcloud.com:4000/jnjQ5dYouig6ULcXneQuMs?ssl={\"rejectUnauthorized\":true}"
   },
   "experiments": [
     "no_db_push"
   ],
   "git_remote": {
     "repo_url": "s3://vida-prod-gitrepo/webdev-git/310519663249428057/jnjQ5dYouig6ULcXneQuMs",
-    "access_key_id": "ASIAZV3A2ECZDAWVJ57D",
-    "secret_access_key": "Cl708Mf1k/SxHvhQ67XnRA2n/0gbMXlMt7aKtazZ",
-    "session_token": "IQoJb3JpZ2luX2VjEG8aCXVzLWVhc3QtMSJHMEUCIQD5Q7IKbv3FqLjLUSGgebQAA89ZJ8uZrF8/RW3u1mxf5QIgSoz0jq8c5onYs9hikBgCqJDbuRfbLM3LIih5Q6PP0WUq9gMIOBAEGgw2NjUzODYwOTg4NjYiDMkcg/WF8IZFE2PfSyrTA3cjFPWD7Ply4R/ac1BP5gZtgCYv8dMbnF8fnGU++MfwsSSnSJRNmguHRjnBCozXqdfuuenWzeMeojrCgiyY29Qc03bQTTBzQLrLcZVdcE+H7YcjVzfecO61sRMZ4SnZmy+g4cJwgq6Y1EVsjctFPzatGw0gohjyIekSYafoc3Hw2azxbSU5BbQAG3NkCE+l0yDXr43fKC80U8Qr/rAQFaxg+xNyt55CjHEDFkPgQoOblO/T0uOzRbCfwzjparyqKR49NonklNoU8wyni4fQ9fgI9uWfdg939n3BJsx51AjoHD0pvHZ0d8bybP6yjzzwVukj/3KmbP5RDhRHfVdUqhBVq1FuXbeeopOu2EmgXp1hjE/+xzGT0NjEgMPirvLdb9wgbtQdIYQDjska6lk5tgiXt/T5Ah32ZxVb6AR6wD7nGt2pP+QcFim1202I9DlW9bO71ZTxTS33FB9pzpQygAtgNfLMnXXKvgHLuKGVmKHu6JAlt7dsYdij2CcqRgW21UZ0FoXj6vRUtIHpG2nJkS9FDi9bFzWsGPTnxsCbp69H5W3L8FXkxm9xfcVted+xajWnC31YoknQPDgwXU+BQLgc4yg8f444f7x5zaUh5luhg9lKML72xtAGOp0ByU67HSCCy0Pm8ATZqx/ka3nMJHJ0gsjHuF2KjDKcBywjlsdutmsu3vGWQ8QzurzCLkJhZ/KhbIJb2wJ468eWteDe2PYBapS5XmPbtQ0/TwpdEUaG6gDbgcKh6ad3I1tPtpmMstKYNrEd1xrNnAeZYqOzWHeVLhtBbV1t09RL3aTeR7j0PRSSK0zX6qtUkJdQyPVNzRrkKBfxI/XkjA==",
-    "expiration": "2026-05-24T02:35:42.000Z"
+    "access_key_id": "ASIAZV3A2ECZO4DN5MJ4",
+    "secret_access_key": "zF+SAtz6q2kN2qjXoLlUaM4fk8Nu+fvyN/VVDjSH",
+    "session_token": "IQoJb3JpZ2luX2VjEIH//////////wEaCXVzLWVhc3QtMSJHMEUCIQDYL6BO4emB/254sRKfR0KK7kElUZ5wROIAsxdah4Hi3gIgRzZymSFARIApQ/LQ/UgGp/hhsm80GW5Gs1+mIAB+lwIq9gMIShAEGgw2NjUzODYwOTg4NjYiDB3p5Knqq1wW+19/RirTA0/z7KhOmP/kM9O6r0Uo6b1YcoYTmHqK9KGs+wH+283jdy2gaEKIl7NkW+UUm1VVAuc/yHiZUmbqFecyGZpf5Z5W0iDbmbJoc/yzxZytybDceD0niH/pQnSBbfFlrP6+dHyNkaZbDhskgx57YLkwICp1Jv/f2d5Tgha8m0ZRvupxxcYYpV5VyspIqaYUnmUPfm9vlQznDqzhr5+3hFWMZ645Sdfx2cnJ8957G9Bd1MObTxjmgJgYotVNlZnclYU7DJv4a+pPuwGmGfL4cB24UsnZcF3zCx/Yi9UvJ6TTZQLjnSvlbKI5PNqIMQSPV88/P9YBZlEJ3RVIo0Pz0yqXfSUF6KSYaV3yt0tPArClDYkUV2D3feoquWBQJf6nrCluj8axbrAkHHQr8wKGOZsqFOs7SeQtGf6oyrGT4tZ9SQ8b5BxKn1bSjUSNxEZ0FiFL+g+5G9fBpudRNGq5cLGt0NPNUtINqMohs3fhzGX5+l5SeIveEkfiFlduVx7A74w6garXhaJMH5I/pXjDvWXfLpMGRZ/vXK71oAKGiKczH6jz5dsdg8ThIiEESkntihhwmWHqMVxbOWEoNf6xI9f4UZwqQEhLaIoSxlSietSUWpEKBaMiMMDc89EGOp0B+ZRcIfHoeEYhcrhHTITdaIdQ19yzkViFCwf2D9fBCBExY8PuN/ikhJRx8lmXO7y6MAOTTIV7H2tqhuDK2ywLdOqBqzdwZcz5Ckp1MJHN5evUsj+vIQ1sQw1gzVDXGdloGlR68PNbWrW0YoA/76Yg5jcrySp9XDkK5KqW/iGXXYLXZRyBjXcTcMnE715+FzP8jUtALBglaGcmpi/QQw==",
+    "expiration": "2026-06-25T21:00:48.000Z",
+    "backend": "GIT_BACKEND_S3"
   },
   "name": "manus-use-case-library",
   "path": "/home/ubuntu/manus-use-case-library",
@@ -31,7 +33,7 @@
     "OAUTH_SERVER_URL": "https://api.manus.im",
     "OWNER_NAME": "Alan Chan",
     "OWNER_OPEN_ID": "4JtvhEkCft8cZAa4diQy6f",
-    "SLACK_WEBHOOK_URL": "https://hooks.slack.com/services/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",
+    "SLACK_WEBHOOK_URL": "https://hooks.slack.com/services/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",
     "VITE_ANALYTICS_ENDPOINT": "https://manus-analytics.com",
     "VITE_ANALYTICS_WEBSITE_ID": "1679a35a-76e6-4206-9a75-7f8b220df4c1",
     "VITE_APP_ID": "jnjQ5dYouig6ULcXneQuMs",

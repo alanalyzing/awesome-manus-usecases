@@ -432,3 +432,4 @@
 - [x] i18n: Update Welcome popup title to match new branding (all 5 languages)
 - [x] i18n: Translate AI chatbot error/rate-limit messages (all 5 languages)
 - [x] UI: Update Instagram link to https://www.instagram.com/manus/
+- [x] BUG FIX: Slack notification not sent on approval — root cause was expired SLACK_WEBHOOK_URL (404). Updated webhook URL, replaced dynamic import with static import, added error logging to all .catch() blocks
