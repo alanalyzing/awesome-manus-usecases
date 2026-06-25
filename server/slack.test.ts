@@ -101,17 +101,10 @@ describe("Slack webhook integration", () => {
       expect(headerBlock).toBeDefined();
       expect(headerBlock.text.text).toContain("Approved");
 
-      // Should have fields block with submitter info, language, categories, screenshots
+      // Should have fields block with submitter info, language, categories
       const fieldsBlock = body.blocks.find((b: any) => b.type === "section" && b.fields);
       expect(fieldsBlock).toBeDefined();
-      expect(fieldsBlock.fields.length).toBe(4);
-
-      // Should have "Approved by" section
-      const approvedByBlock = body.blocks.find(
-        (b: any) => b.type === "section" && b.text?.text?.includes("Approved by")
-      );
-      expect(approvedByBlock).toBeDefined();
-      expect(approvedByBlock.text.text).toContain("Admin Alice");
+      expect(fieldsBlock.fields.length).toBe(3);
 
       // Should have action buttons for session replay and deliverable
       const actionsBlock = body.blocks.find((b: any) => b.type === "actions");

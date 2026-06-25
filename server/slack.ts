@@ -122,20 +122,7 @@ export async function notifySlackStatusChange(
           type: "mrkdwn",
           text: `*Categories:*\n${escapeSlackMarkdown(categoryText)}`,
         },
-        {
-          type: "mrkdwn",
-          text: `*Screenshots:*\n${d.screenshotCount}`,
-        },
       ],
-    });
-
-    // Approved by line
-    blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*Approved by:* ${escapeSlackMarkdown(payload.adminName)}`,
-      },
     });
 
     // Action buttons for session replay and deliverable
